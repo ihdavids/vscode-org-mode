@@ -61,7 +61,7 @@ export class OrgFile {
         let i : number = 0;
         while((chunk = chunks.next())) {
             i += 1;
-            let heading = Org.Heading.FromChunk(chunk);
+            let heading : Org.Heading = Org.Heading.FromChunk(chunk);
             this._headings.push(heading);
             heading.SetIndex(i);
             heading.PostParse();
