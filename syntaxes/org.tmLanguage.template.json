@@ -14,8 +14,11 @@
         },
         {
             "name": "entity.name.type.org",
-            "begin": "^\\s*[*]{2}\\s+",
+            "begin": "^\\s*([*])[*]\\s+",
             "end": "$",
+            "captures": {
+                "1": { "name": "keyword.control.block.org.empty" }
+            },
             "patterns": [
                 {
                     "include": "#header-matches"
@@ -24,8 +27,11 @@
         },
         {
             "name": "entity.name.function.org",
-            "begin": "^\\s*[*]{3}\\s+",
+            "begin": "^\\s*([*]{2})[*]\\s+",
             "end": "$",
+            "captures": {
+                "1": { "name": "keyword.control.block.org.empty" }
+            },
             "patterns": [
                 {
                     "include": "#header-matches"
@@ -34,8 +40,11 @@
         },
         {
             "name": "entity.other.attribute-name.org",
-            "begin": "^\\s*[*]{4}\\s+",
+            "begin": "^\\s*([*]{3})[*]\\s+",
             "end": "$",
+            "captures": {
+                "1": { "name": "keyword.control.block.org.empty" }
+            },
             "patterns": [
                 {
                     "include": "#header-matches"
@@ -50,6 +59,9 @@
         },
         {
             "include": "#blocks"
+        },
+        {
+            "include": "#agenda"
         }
     ],
     "repository": {
@@ -130,6 +142,14 @@
                 },
                 {
                     "include": "#userKeywords"
+                }
+            ]
+        },
+        "datetime": {
+            "patterns": [
+                {
+                    "name": "variable.org",
+                    "match": "\\d{4}-\\d{1,2}-\\d{1,2}(?:\\s*\\w{3})?\\s*(\\d{2}\\:\\d{2}(-\\d{2}\\:\\d{2})?)?\\s*([+]*\\d[wdmy])?"
                 }
             ]
         },
@@ -262,6 +282,34 @@
                 }
             ]
         },
+        "agenda": {
+            "patterns": [
+                {
+                    "begin": "(DEADLINE:)\\s+\\<\\s*",
+                    "end": "\\s*\\>",
+                    "captures": {
+                        "1": {"name":"support.type.property-name.org.statekeyword"}
+                    },
+                    "patterns": [{ "include": "#datetime" }]
+                },
+                {
+                    "begin": "(SCHEDULED:)\\s+\\<\\s*",
+                    "end": "\\s*\\>",
+                    "captures": {
+                        "1": {"name":"support.type.property-name.org.statekeyword"}
+                    },
+                    "patterns": [{ "include": "#datetime" }]
+                },
+                {
+                    "begin": "(CLOSED:)\\s+\\[\\s*",
+                    "end": "\\s*\\]",
+                    "captures": {
+                        "1": {"name":"support.type.property-name.org.statekeyword"}
+                    },
+                    "patterns": [{ "include": "#datetime" }]
+                }
+            ]
+        },        
         "keywords": {
             "patterns": [
                 {
