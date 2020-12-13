@@ -266,3 +266,19 @@ export function isBlockStartLine(line: string): boolean {
 export function isHeaderLine(line: string): boolean {
     return /^\*+ /.test(line);
 }
+
+const indentRe : RegExp  = /^(\s*).*$/;
+// Extract the indent of this thing.
+// RETURNS: a string with the indent of this line.
+export function getIndent(content:string) : string
+{
+    let match  = content.match(indentRe);
+    if(match && match[1])
+    {
+        return match[1]
+    }
+    else
+    {
+        console.error("Could not match indent: ${content}");
+    }
+}
