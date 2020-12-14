@@ -51,86 +51,147 @@ function findChildren(doc : TextDocument, pos: Position)
 function findSiblings(doc: TextDocument, child : Position, parent: Position)
 {
     let siblings = [];
-
+    let row = parent.line;
+    let parentIndent = utils.getIndent(doc.lineAt(row).text);
+    let childIndent  = utils.getIndent(doc.lineAt(child).text);
+    row += 1;
+    while(row <= doc.lineCount)
+    {
+        let content : string = doc.lineAt(row).text;
+        if(content.trim().length)
+        {
+            let curIndent = utils.getIndent(content);
+            if(curIndent.length <= parentIndent.length)
+            {
+                // Indent same as parent found! exit out.
+                break;
+            }
+            if(curIndent.length == childIndent.length)
+            {
+                siblings.push([row,content])                
+            }
+        }
+        row += 1;
+    }
+    return siblings;
 }
 
-def find_siblings(view, child, parent):
-    row, col      = view.rowcol(parent.begin())
-    parent_indent = get_indent(view, parent)
-    child_indent  = get_indent(view, child)
-    siblings = []
-    row += 1
-    last_row, _ = view.rowcol(view.size())
-    while row <= last_row:  # Don't go past end of document.
-        line = view.text_point(row, 0)
-        line = view.line(line)
-        content = view.substr(line)
-        # print content
-        if len(content.strip()):
-            cur_indent = get_indent(view, content)
-            if len(cur_indent) <= len(parent_indent):
-                break  # Indent same as parent found!
-            if len(cur_indent) == len(child_indent):
-                siblings.append((line, content))
-        row += 1
-    return siblings
+function getSummary(doc : TextDocument, pos: Position)
+{
+    let row  = pos.line;
+    let content = doc.lineAt(pos).text
+    let m = summaryRe.exec(content)
+    if(!m)
+    {
+        return null;
+    }
+    let start = m.index;
+    let end = m.index + m[0].length;
+    return [new Position(row, start), new Position(row, end)];
+}
 
-def get_summary(view, line):
-    row, _ = view.rowcol(line.begin())
-    content = view.substr(line)
-    match = summary_regex.search(content)
-    if not match:
-        return None
-    col_start, col_stop = match.span()
-    return sublime.Region(
-        view.text_point(row, col_start),
-        view.text_point(row, col_stop),
-    )
+function getCheckbox(doc: TextDocument, pos: Position)
+{
+    let row = pos.line;
+    let content = doc.lineAt(pos).text;
+    let m = checkboxRe.exec(content);
+    if(!m)
+    {
+        return null;
+    }
+    let start = m.index;
+    let end = m.index + m[0].length;
+    return [new Position(row, start), new Position(row, end)];
+}
 
-def get_checkbox(view, line):
-    row, _ = view.rowcol(line.begin())
-    content = view.substr(line)
-    # print content
-    match = checkbox_regex.search(content)
-    if not match:
-        return None
-    # checkbox = match.group(1)
-    # print repr(checkbox)
-    # print dir(match), match.start(), match.span()
-    col_start, col_stop = match.span()
-    return sublime.Region(
-        view.text_point(row, col_start),
-        view.text_point(row, col_stop),
-    )
+enum CheckState
+{
+    Indeterminate,
+    Unchecked,
+    Checked,
+    Error
+}
 
-def get_check_state(view, line):
-    if '[-]' in view.substr(line):
-        return CheckState.Indeterminate
-    if '[ ]' in view.substr(line):
-        return CheckState.Unchecked 
-    if '[X]' in view.substr(line) or '[x]' in view.substr(line):
+function getCheckState(doc: TextDocument, pos: Position)
+{
+    let line = doc.lineAt(pos).text;
+    if(line.indexOf('[-]') >= 0)
+    {
+        return CheckState.Indeterminate;
+    }
+    if(line.indexOf('[ ]') >= 0)
+    {
+        return CheckState.Unchecked;
+    }
+    if(line.indexOf('[X]') >= 0 || line.indexOf('[x]') >= 0)
+    {
         return CheckState.Checked
+    }
     return CheckState.Error
+}
 
-def get_check_char(view, check_state):
-    if check_state == CheckState.Unchecked:
-        return ' '
-    elif check_state == CheckState.Checked:
-        return 'x'
-    elif check_state == CheckState.Indeterminate:
-        return '-'
-    else:
-        return 'E'
+function getCheckChar(doc: TextDocument, state: CheckState)
+{
+    if(state == CheckState.Unchecked)
+    {
+        return ' ';
+    }
+    else if(state == CheckState.Checked)
+    {
+        return 'x';
+    }
+    else if(state == CheckState.Indeterminate)
+    {
+        return '-';
+    }
+    else
+    {
+        return 'E';
+    }
+}
 
-def recalc_summary(view, region):
-    children = find_children(view, region)
-    if not len(children) > 0:
-        return (0, 0)
-    num_children = len(children)
-    checked_children = len(
-        [child for child in children if (get_check_state(view,child) == CheckState.Checked)])
-    # print ('checked_children: ' + str(checked_children) + ', num_children: ' + str(num_children))
-    return (num_children, checked_children)
+function recalcSummary(doc: TextDocument, pos: Position)
+{
+    let children = findChildren(doc, pos);
+    let numChildren = children.length;
+    if(numChildren <= 0)
+    {
+        return [0,0];
+    }
+    let checkedChildren = children.reduce( (child) => {
+        return getCheckState(doc, child) == CheckState.Checked;
+    });
+    let numChecked = checkedChildren.length;
+    return [numChildren, checkedChildren];
+}
+
+function updateLine(doc: TextDocument, pos: Position, parentUpdate: boolean)
+{
+    let [numChildren, numChecked] = recalcSummary(doc, pos);
+    // No children to update
+    if(numChildren <= 0)
+    {
+        return false;
+    }
+    // Update region checkbox
+    let newState = CheckState.Unchecked;
+    if(numChildren == numChecked)
+    {
+        newState = CheckState.Checked;
+    }
+    else
+    {
+        if(numChecked != 0)
+        {
+            newState = CheckState.Indeterminate;
+        }        
+        else
+        {
+            newState = CheckState.Unchecked;
+        }
+    }
+    // TODO: Continue here
+}
 
 def update_line(view, edit, region, parent_update=True):
     #print ('update_line', self.view.rowcol(region.begin())[0]+1)
