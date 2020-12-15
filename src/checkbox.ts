@@ -1,5 +1,5 @@
 import * as utils from "./utils";
-import {TextDocument, Position} from "vscode";
+import {Range, TextDocument, Position, TextEditor, TextEditorEdit, Selection} from "vscode";
 
 
 let summaryRe         = new RegExp('(\[\d*[/%]\d*\])');
@@ -13,7 +13,7 @@ function findParent(doc : TextDocument, pos: Position) : Position
 }
 
 // Returns a list of child checkbox line numbers (Do I want that to be positions)?
-function findChildren(doc : TextDocument, pos: Position)
+function findChildren(doc : TextDocument, pos: Position) : Position[]
 {
     let row = pos.line;
     let indent = utils.getIndent(doc.lineAt(row).text).length;
@@ -40,7 +40,7 @@ function findChildren(doc : TextDocument, pos: Position)
             }
             if(curIndent == childIndent)
             {
-                children.push(row);            
+                children.push(new Position(row,0));            
             }
         }
         row += 1;
@@ -76,7 +76,7 @@ function findSiblings(doc: TextDocument, child : Position, parent: Position)
     return siblings;
 }
 
-function getSummary(doc : TextDocument, pos: Position)
+function getSummary(doc : TextDocument, pos: Position) : Range
 {
     let row  = pos.line;
     let content = doc.lineAt(pos).text
@@ -87,10 +87,10 @@ function getSummary(doc : TextDocument, pos: Position)
     }
     let start = m.index;
     let end = m.index + m[0].length;
-    return [new Position(row, start), new Position(row, end)];
+    return new Range(new Position(row, start), new Position(row, end));
 }
 
-function getCheckbox(doc: TextDocument, pos: Position)
+function getCheckbox(doc: TextDocument, pos: Position) : Range
 {
     let row = pos.line;
     let content = doc.lineAt(pos).text;
@@ -101,7 +101,7 @@ function getCheckbox(doc: TextDocument, pos: Position)
     }
     let start = m.index;
     let end = m.index + m[0].length;
-    return [new Position(row, start), new Position(row, end)];
+    return new Range(new Position(row, start), new Position(row, end));
 }
 
 enum CheckState
@@ -150,7 +150,7 @@ function getCheckChar(doc: TextDocument, state: CheckState)
     }
 }
 
-function recalcSummary(doc: TextDocument, pos: Position)
+function recalcSummary(doc: TextDocument, pos: Position) : number[]
 {
     let children = findChildren(doc, pos);
     let numChildren = children.length;
@@ -158,16 +158,16 @@ function recalcSummary(doc: TextDocument, pos: Position)
     {
         return [0,0];
     }
-    let checkedChildren = children.reduce( (child) => {
-        return getCheckState(doc, child) == CheckState.Checked;
+    let checkedChildren = children.filter( (child : Position, index: number, array: Position[]) => {
+        return (getCheckState(doc, child) == CheckState.Checked);
     });
     let numChecked = checkedChildren.length;
-    return [numChildren, checkedChildren];
+    return [numChildren, checkedChildren.length];
 }
 
-function updateLine(doc: TextDocument, pos: Position, parentUpdate: boolean)
+function updateLine(doc: TextEditor, pos: Position, parentUpdate: boolean)
 {
-    let [numChildren, numChecked] = recalcSummary(doc, pos);
+    let [numChildren, numChecked] = recalcSummary(doc.document, pos);
     // No children to update
     if(numChildren <= 0)
     {
@@ -190,160 +190,200 @@ function updateLine(doc: TextDocument, pos: Position, parentUpdate: boolean)
             newState = CheckState.Unchecked;
         }
     }
-    // TODO: Continue here
+    toggleCheckbox(doc, pos, newState);
+    updateSummary(doc, pos, numChecked, numChildren);
+    let children = findChildren(doc.document, pos);
+    for(let child of children)
+    {
+        let line = doc.document.lineAt(child);
+        let summary = getSummary(doc.document, child);
+        if(summary)
+        {
+            return updateLine(doc, child, false);
+        }
+        if(parentUpdate)
+        {
+            let parent = findParent(doc.document, pos);
+            if(parent)
+            {
+                updateLine(doc, parent, parentUpdate);                
+            }
+        }
+    }
+    return true;
 }
 
-def update_line(view, edit, region, parent_update=True):
-    #print ('update_line', self.view.rowcol(region.begin())[0]+1)
-    (num_children, checked_children) = recalc_summary(view, region)
-    # No children we don't have to update anything else.
-    if num_children <= 0:
-        return False
-    # update region checkbox
-    if checked_children == num_children:
-        newstate = CheckState.Checked
-    else:
-        if checked_children != 0:
-            newstate = CheckState.Indeterminate
-        else:
-            newstate = CheckState.Unchecked
-    toggle_checkbox(view, edit, region, newstate)
-    # update region summary
-    update_summary(view, edit, region, checked_children, num_children)
-    children = find_children(view, region)
-    for child in children:
-        line = view.line(child)
-        summary = get_summary(view, view.line(child))
-        if summary:
-            return update_line(view, edit, line, parent_update=False)
-    if parent_update:
-        parent = find_parent(view, region)
-        if parent:
-            update_line(view, edit, parent)
-    return True
+function updateSummary(doc: TextEditor, pos: Position, numChecked: number, numChildren: number ) : boolean
+{
+    let summary = getSummary(doc.document, pos);
+    if(!summary)
+    {
+        return false;
+    }
+    let line = doc.document.lineAt(pos).text;
+    if(line.indexOf("%") >= 0)
+    {
+        doc.edit( (edit) => {
+            let percent = Math.floor(numChecked/numChildren*100)
+            edit.replace(summary, `[${percent}%]`);
+        });
+    }
+    else
+    {
+        doc.edit( (edit) => {
+            edit.replace(summary, `[${numChecked}/${numChildren}]`);
+        });      
+    }
+    return true;
+}
 
-def update_summary(view, edit, region, checked_children, num_children):
-    # print('update_summary', self.view.rowcol(region.begin())[0]+1)
-    summary = get_summary(view, region)
-    if not summary:
-        return False
-    # print('checked_children: ' + str(checked_children) + ', num_children: ' + str(num_children))
-    line = view.substr(summary)
-    if("%" in line):
-        view.replace(edit, summary, '[{0}%]'.format(int(checked_children/num_children*100)))
-    else:
-        view.replace(edit, summary, '[%d/%d]' % (checked_children, num_children))
+function toggleCheckbox(doc: TextEditor, pos: Position, checked : CheckState, recurseUp : boolean = false, recurseDown: boolean = false)
+{
+    let checkbox = getCheckbox(doc.document, pos);
+    if(!checkbox)
+    {
+        return false;
+    }
+    if(checked == null)
+    {
+        checked = getCheckState(doc.document, pos);
+        if(checked == CheckState.Unchecked || checked == CheckState.Indeterminate)
+        {
+            checked = CheckState.Checked;
+        }
+        else if(checked == CheckState.Checked)
+        {
+            checked = CheckState.Unchecked;
+        }
+    }
+    doc.edit( (edit) => {
+        let checkedChar = getCheckChar(doc.document, checked);
+        edit.replace(checkbox, `[${checkedChar}]`);
+    });
+    if(recurseDown)
+    {
+        let children = findChildren(doc.document, pos);
+        for(let child of children) {
+            toggleCheckbox(doc, child, checked, false, true);
+        }
+    }
+    if(recurseUp)
+    {
+        let parent = findParent(doc.document, pos);
+        if(parent)
+        {
+           updateLine(doc, pos, true);
+        }
+    }
+}
 
-def toggle_checkbox(view, edit, region, checked=None, recurse_up=False, recurse_down=False):
-    # print 'toggle_checkbox', self.view.rowcol(region.begin())[0]+1
-    checkbox = get_checkbox(view, region)
-    if not checkbox:
-        return False
-    if checked is None:
-        check_state = get_check_state(view, region)
-        if (check_state == CheckState.Unchecked) | (check_state == CheckState.Indeterminate):
-            check_state = CheckState.Checked
-        elif (check_state == CheckState.Checked):
-            check_state = CheckState.Unchecked
-    else:
-        check_state = checked
-    view.replace(edit, checkbox, '[%s]' % ( get_check_char(view, check_state)))
-    if recurse_down:
-        # all children should follow
-        children = find_children(view, region)
-        for child in children:
-            toggle_checkbox(view, edit, child, check_state, recurse_down=True)
-    if recurse_up:
-        # update parent
-        parent = find_parent(view, region)
-        if parent:
-            update_line(view, edit, parent)
+function isCheckbox(doc: TextDocument, pos: Position)
+{
+    let content = doc.lineAt(pos).text;
+    return checkboxLineRe.test(content);
+}
 
-def is_checkbox(view, sel):
-    names = view.scope_name(sel.end())
-    return 'orgmode.checkbox' in names or 'orgmode.checkbox.checked' in names or 'orgmode.checkbox.blocked' in names
+function isCheckboxSummary(doc: TextDocument, pos: Position)
+{
+    let content = doc.lineAt(pos).text;
+    return summaryRe.test(content);
+}
 
-def is_checkbox_line(view,sel=None):
-    point = None
-    if(sel == None):
-        row = view.curRow()
-        point = view.text_point(row, 0)
-    else:
-        point = sel.end()
-    line = view.line(point)
-    content = view.substr(line)
-    return checkbox_line_regex.search(content)
+function findAllSummaries(doc: TextDocument)
+{
+    let sums = [];
+    var m;
+    let re = /\[\d*[/%]\d*\]/;
+    for(let row = 0; row < doc.lineCount; ++row)
+    {
+        let t = doc.lineAt(row).text;
+        let m = re.exec(t);
+        if(m)
+        {
+            sums.push(new Position(row, m.index));
+        }
+    }
+    return sums;
+}
 
-def find_all_summaries(view):
-    return view.find_by_selector("orgmode.checkbox.summary")
+function recalculateCheckboxSummary(doc: TextEditor, pos: Position)
+{
+    updateLine(doc, pos, true);
+}
 
-def recalculate_checkbox_summary(view, sel, edit):
-    line    = view.line(sel.begin())
-    update_line(view, edit, line)
+function recalculateAllCheckboxSummaries(doc: TextEditor, pos: Position)
+{
+    let sums = findAllSummaries(doc.document);
+    for(let sum of sums)
+    {
+        recalculateCheckboxSummary(doc, sum);
+    }
+}
 
-def recalculate_all_checkbox_summaries(view, edit):
-    sums = find_all_summaries(view)
-    for sel in sums:
-        recalculate_checkbox_summary(view, sel, edit)
+let clineInfoRe = /^(\s*)([-+0-9](\.)?)?.*$/;
+export function insertCheckboxCommand(doc: TextEditor)
+{
+    let row = doc.selection.start.line;
+    let line = doc.document.lineAt(row).text;
+    let m = clineInfoRe.exec(line);
+    let indent = m[1];
+    let start  = m[2];
+    if(start)
+    {
+        indent = indent + start + " [ ] ";
+    }
+    doc.edit((edit) => {
+        let pos = new Position(row,line.length);
+        edit.insert(pos, "\n" + indent);
+    });
+    row = row + 1;
+    let pos = new Position(row, 0);
+    doc.selection = new Selection(pos, pos);
+}
 
-cline_info_regex = re.compile(r'^(\s*)([-+0-9](\.)?)?.*$')
-class OrgInsertCheckboxCommand(sublime_plugin.TextCommand):
-    def run(self, edit):
-        row = self.view.curRow()
-        line = self.view.getLine(row)
-        match = cline_info_regex.match(line)
-        indent = match.group(1)
-        start  = match.group(2)
-        if(start):
-            indent = indent + start + " [ ] "
-        reg = self.view.curLine()
-        self.view.insert(edit,reg.end(),"\n" + indent)
-        # Move to end of line
-        row = row + 1
-        pt = self.view.text_point(row,0)
-        ln = self.view.line(pt)
-        self.view.sel().clear()
-        self.view.sel().add(ln.end())
+let cbslineInfoRe = /^(\s*)(.*)\[\s*[0-9]*\/[0-9]\s*\]\s*$/;
+export function insertCheckboxSummaryCommand(doc: TextEditor)
+{
+    let row = doc.selection.start.line;
+    let line = doc.document.lineAt(row).text;
+    let m = cbslineInfoRe.exec(line);
+    if(!m)
+    {
+        doc.edit((edit) => {
+            let pos = new Position(row,line.length);
+            edit.insert(pos, " [/] ");
+        });
+        recalculateAllCheckboxSummaries(doc, new Position(row, 0));
+    }
+}
 
+export function toggleCheckboxCommand(doc: TextEditor)
+{
+    for(let sel of doc.selections)
+    {
+        if(!isCheckbox(doc.document, sel.start))
+        {
+            continue;            
+        }
+        let pos = sel.end;
+        toggleCheckbox(doc, pos, null, true, true);
+    }
+    recalculateAllCheckboxSummaries(doc, doc.selection.start);
+}
 
-cbsline_info_regex = re.compile(r'^(\s*)(.*)\[\s*[0-9]*/[0-9]\s*\]\s*$')
-class OrgInsertCheckboxSummaryCommand(sublime_plugin.TextCommand):
-    def run(self, edit):
-        row = self.view.curRow()
-        line = self.view.getLine(row)
-        match = cbsline_info_regex.match(line)
-        if(not match):
-            reg = self.view.curLine()
-            self.view.insert(edit,reg.end()," [/] ")
-            recalculate_all_checkbox_summaries(self.view, edit)
+export function recalcCheckboxSummaryCommand(doc: TextEditor)
+{
+    for(let sel of doc.selections)
+    {
+        if(!isCheckboxSummary(doc.document, sel.end))
+        {
+            updateLine(doc,sel.end, true);
+        }
+    }
+}
 
-class OrgToggleCheckboxCommand(sublime_plugin.TextCommand):
-    def run(self, edit):
-        view = self.view
-        for sel in view.sel():
-            if(not is_checkbox_line(view, sel)):
-                continue
-            line     = view.line(sel.end())
-            toggle_checkbox(view, edit, line, recurse_up=True, recurse_down=True)
-        recalculate_all_checkbox_summaries(self.view, edit)
+export function recalcAllCheckboxSummariesCommand(doc: TextEditor)
+{
+    recalculateAllCheckboxSummaries(doc, new Position(0,0));
+}
 
-
-class OrgRecalcCheckboxSummaryCommand(sublime_plugin.TextCommand):
-    def run(self, edit):
-        view = self.view
-        backup = []
-        for sel in view.sel():
-            if 'orgmode.checkbox.summary' not in view.scope_name(sel.end()):
-                continue
-            backup.append(sel)
-            #summary = view.extract_scope(sel.end())
-            line = view.line(sel.end())
-            update_line(view, edit, line)
-        view.sel().clear()
-        for region in backup:
-            view.sel().add(region)
-
-
-class OrgRecalcAllCheckboxSummariesCommand(sublime_plugin.TextCommand):
-    def run(self, edit):
-        recalculate_all_checkbox_summaries(self.view, edit)
