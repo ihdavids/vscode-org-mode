@@ -67,6 +67,12 @@
             "include": "#blocks"
         },
         {
+            "include": "#checkbox"
+        },
+        {
+            "include": "#misc"
+        },
+        {
             "include": "#agenda"
         }
     ],
@@ -1944,6 +1950,46 @@
                             "include": "#datetime"
                         }
                     ]
+                }
+            ]
+        },
+        "checkbox": {
+            "patterns": [
+                {
+                    "match": "(\\[[ ]\\])\\s?",
+                    "name": "keyword.control.org.checkbox"
+                },
+                {
+                    "match": "(\\[[xX]\\])\\s?",
+                    "name": "keyword.control.org.checkbox.checked"
+                },
+                {
+                    "match": "(\\[\\d*[/%]\\d*\\])",
+                    "name": "keyword.control.org.checkbox.summary"
+                },
+                {
+                    "match": "(\\[[-]\\])\\s?",
+                    "name": "keyword.control.org.checkbox.inprogress"
+                }
+            ]
+        },
+        "misc": {
+            "patterns": [
+                {
+                    "match": "\\b([a-zA-Z0-9_\\-\\.]+)@([a-zA-Z0-9_\\-\\.]+)\\.([a-zA-Z]{2,5})\\b",
+                    "name": "keyword.control.org.email"
+                },
+                {
+                    "match": "\\{(\\d+)\\}",
+                    "name": "keyword.number.org.link.internal.number"
+                },
+                {
+                    "match": "\\{\\{(.+?)\\}\\}",
+                    "name": "keyword.control.org.link.internal.headline"
+                },
+                {
+                    "match": "(^|\\s):[\\w\\d:]+:",
+                    "name": "keyword.control.org.tags"
                 }
             ]
         },

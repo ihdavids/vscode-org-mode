@@ -2,10 +2,10 @@ import * as utils from "./utils";
 import {Range, TextDocument, Position, TextEditor, TextEditorEdit, Selection} from "vscode";
 
 
-let summaryRe         = new RegExp('(\[\d*[/%]\d*\])');
-let checkboxRe        = new RegExp('(\[[xX\- ]\])');
-let checkboxLineRe    = new RegExp('\s*[-+]?\s*(\[[xX\- ]\])\s+');
-let headingRe = new RegExp('^[*]+ ');
+let summaryRe         = /(\[\d*[/%]\d*\])/;
+let checkboxRe        = /(\[[xX -]\])/;
+let checkboxLineRe    = /\s*[+-]?\s*(\[[xX -]\])\s+/;
+let headingRe = /^[*]+ /;
 
 function findParent(doc : TextDocument, pos: Position) : Position
 {
@@ -18,8 +18,9 @@ function findChildren(doc : TextDocument, pos: Position) : Position[]
     let row = pos.line;
     let indent = utils.getIndent(doc.lineAt(row).text).length;
     let lastRow = doc.lineCount;
-    let childIndent = indent;
+    let childIndent = null;
     let children = [];
+    row += 1;
     while(row < lastRow)
     {
         let content = doc.lineAt(row);
@@ -34,9 +35,9 @@ function findChildren(doc : TextDocument, pos: Position) : Position[]
             {
                 break;
             }
-            if(childIndent == indent)
+            if(childIndent == null)
             {
-                childIndent = indent;
+                childIndent = curIndent;
             }
             if(curIndent == childIndent)
             {
@@ -359,6 +360,8 @@ export function insertCheckboxSummaryCommand(doc: TextEditor)
 
 export function toggleCheckboxCommand(doc: TextEditor)
 {
+    console.log("SOMETHING");
+    console.error("WHAT IN THE WORLD");
     for(let sel of doc.selections)
     {
         if(!isCheckbox(doc.document, sel.start))
