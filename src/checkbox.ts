@@ -1,4 +1,5 @@
 import * as utils from "./utils";
+import * as vscode from "vscode";
 import {Range, TextDocument, Position, TextEditor, TextEditorEdit, Selection} from "vscode";
 
 
@@ -192,6 +193,7 @@ function updateLine(doc: TextEditor, pos: Position, parentUpdate: boolean) : The
         }
     }
     return toggleCheckbox(doc, pos, newState).then( (res) => {
+        [numChildren, numChecked] = recalcSummary(doc.document, pos);
         return updateSummary(doc, pos, numChecked, numChildren).then( (res2) => {
             let children = findChildren(doc.document, pos);
             for(let child of children)
@@ -229,6 +231,7 @@ function updateSummary(doc: TextEditor, pos: Position, numChecked: number, numCh
         return doc.edit( (edit) => {
             let percent = Math.floor(numChecked/numChildren*100)
             edit.replace(summary, `[${percent}%]`);
+            //vscode.workspace.applyEdit(edit);
         });
     }
     else
@@ -366,8 +369,6 @@ export function insertCheckboxSummaryCommand(doc: TextEditor)
 
 export function toggleCheckboxCommand(doc: TextEditor)
 {
-    console.log("SOMETHING");
-    console.error("WHAT IN THE WORLD");
     for(let sel of doc.selections)
     {
         if(!isCheckbox(doc.document, sel.start))
