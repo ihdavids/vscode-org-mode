@@ -1,6 +1,7 @@
 import * as utils from "./utils";
 import * as vscode from "vscode";
 import {Range, TextDocument, Position, TextEditor, TextEditorEdit, Selection} from "vscode";
+import { resolve } from "url";
 
 
 let summaryRe         = /(\[\d*[/%]\d*\])/;
@@ -195,6 +196,7 @@ function updateLine(doc: TextEditor, pos: Position, parentUpdate: boolean) : The
     return toggleCheckbox(doc, pos, newState).then( (res) => {
         [numChildren, numChecked] = recalcSummary(doc.document, pos);
         return updateSummary(doc, pos, numChecked, numChildren).then( (res2) => {
+            let rv : Thenable<boolean> = new Promise<boolean>((resolve,reject) => { return resolve(true); });
             let children = findChildren(doc.document, pos);
             for(let child of children)
             {
@@ -209,10 +211,11 @@ function updateLine(doc: TextEditor, pos: Position, parentUpdate: boolean) : The
                     let parent = findParent(doc.document, pos);
                     if(parent)
                     {
-                        updateLine(doc, parent, parentUpdate);                
+                        rv = updateLine(doc, parent, parentUpdate);                
                     }
                 }
             }
+            return rv;
         });
     });
 }
@@ -318,16 +321,28 @@ function findAllSummaries(doc: TextDocument)
 
 function recalculateCheckboxSummary(doc: TextEditor, pos: Position)
 {
-    updateLine(doc, pos, true);
+    return updateLine(doc, pos, true);
+}
+
+function recurseAndCheckSummaries(doc: TextEditor, pos: Position, i : number, sums: Position[])
+{
+    if( i < sums.length )
+    {
+        recalculateCheckboxSummary(doc, sums[i]).then(
+            () => {
+                if( (i+1) < sums.length )
+                {
+                    recurseAndCheckSummaries(doc, pos, i+1, sums );
+                }
+            }
+        );
+    }
 }
 
 function recalculateAllCheckboxSummaries(doc: TextEditor, pos: Position)
 {
     let sums = findAllSummaries(doc.document);
-    for(let sum of sums)
-    {
-        recalculateCheckboxSummary(doc, sum);
-    }
+    recurseAndCheckSummaries(doc, pos, 0, sums);
 }
 
 let clineInfoRe = /^(\s*)([-+0-9](\.)?)?.*$/;
@@ -362,13 +377,15 @@ export function insertCheckboxSummaryCommand(doc: TextEditor)
         doc.edit((edit) => {
             let pos = new Position(row,line.length);
             edit.insert(pos, " [/] ");
+        }).then( () => { 
+            recalculateAllCheckboxSummaries(doc, new Position(row, 0))
         });
-        recalculateAllCheckboxSummaries(doc, new Position(row, 0));
     }
 }
 
 export function toggleCheckboxCommand(doc: TextEditor)
 {
+    let rv = null;
     for(let sel of doc.selections)
     {
         if(!isCheckbox(doc.document, sel.start))
@@ -376,9 +393,18 @@ export function toggleCheckboxCommand(doc: TextEditor)
             continue;            
         }
         let pos = sel.end;
-        toggleCheckbox(doc, pos, null, true, true);
+        rv = toggleCheckbox(doc, pos, null, true, true);
     }
-    recalculateAllCheckboxSummaries(doc, doc.selection.start);
+    if(rv)
+    {
+        rv.then( () => {
+            recalculateAllCheckboxSummaries(doc, doc.selection.start);
+        });
+    }
+    else
+    {
+        recalculateAllCheckboxSummaries(doc, doc.selection.start);
+    }
 }
 
 export function recalcCheckboxSummaryCommand(doc: TextEditor)
