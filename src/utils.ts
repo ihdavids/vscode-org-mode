@@ -279,6 +279,7 @@ export function getIndent(content:string) : string
     }
     else
     {
-        console.error(`Could not match indent: ${content}`);
+        return "";
+        //console.error(`Could not match indent: ${content}`);
     }
 }

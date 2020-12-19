@@ -166,13 +166,13 @@ function recalcSummary(doc: TextDocument, pos: Position) : number[]
     return [numChildren, checkedChildren.length];
 }
 
-function updateLine(doc: TextEditor, pos: Position, parentUpdate: boolean)
+function updateLine(doc: TextEditor, pos: Position, parentUpdate: boolean) : Thenable<boolean>
 {
     let [numChildren, numChecked] = recalcSummary(doc.document, pos);
     // No children to update
     if(numChildren <= 0)
     {
-        return false;
+        return new Promise( (resolve, reject) => { resolve(false); });
     }
     // Update region checkbox
     let newState = CheckState.Unchecked;
@@ -191,59 +191,62 @@ function updateLine(doc: TextEditor, pos: Position, parentUpdate: boolean)
             newState = CheckState.Unchecked;
         }
     }
-    toggleCheckbox(doc, pos, newState);
-    updateSummary(doc, pos, numChecked, numChildren);
-    let children = findChildren(doc.document, pos);
-    for(let child of children)
-    {
-        let line = doc.document.lineAt(child);
-        let summary = getSummary(doc.document, child);
-        if(summary)
-        {
-            return updateLine(doc, child, false);
-        }
-        if(parentUpdate)
-        {
-            let parent = findParent(doc.document, pos);
-            if(parent)
+    return toggleCheckbox(doc, pos, newState).then( (res) => {
+        return updateSummary(doc, pos, numChecked, numChildren).then( (res2) => {
+            let children = findChildren(doc.document, pos);
+            for(let child of children)
             {
-                updateLine(doc, parent, parentUpdate);                
+                let line = doc.document.lineAt(child);
+                let summary = getSummary(doc.document, child);
+                if(summary)
+                {
+                    return updateLine(doc, child, false);
+                }
+                if(parentUpdate)
+                {
+                    let parent = findParent(doc.document, pos);
+                    if(parent)
+                    {
+                        updateLine(doc, parent, parentUpdate);                
+                    }
+                }
             }
-        }
-    }
-    return true;
+        });
+    });
 }
 
-function updateSummary(doc: TextEditor, pos: Position, numChecked: number, numChildren: number ) : boolean
+function updateSummary(doc: TextEditor, pos: Position, numChecked: number, numChildren: number ) : Thenable<boolean>
 {
     let summary = getSummary(doc.document, pos);
     if(!summary)
     {
-        return false;
+        return new Promise( (resolve, reject) => { resolve(false); });
     }
     let line = doc.document.lineAt(pos).text;
+   
     if(line.indexOf("%") >= 0)
     {
-        doc.edit( (edit) => {
+        return doc.edit( (edit) => {
             let percent = Math.floor(numChecked/numChildren*100)
             edit.replace(summary, `[${percent}%]`);
         });
     }
     else
     {
-        doc.edit( (edit) => {
+        return doc.edit( (edit) => {
             edit.replace(summary, `[${numChecked}/${numChildren}]`);
         });      
     }
-    return true;
 }
 
-function toggleCheckbox(doc: TextEditor, pos: Position, checked : CheckState, recurseUp : boolean = false, recurseDown: boolean = false)
+function toggleCheckbox(doc: TextEditor, pos: Position, checked : CheckState, recurseUp : boolean = false, recurseDown: boolean = false) : Thenable<boolean>
 {
     let checkbox = getCheckbox(doc.document, pos);
     if(!checkbox)
     {
-        return false;
+        return new Promise( (resolve, reject ) => {
+            resolve(false);
+        });
     }
     if(checked == null)
     {
@@ -257,10 +260,11 @@ function toggleCheckbox(doc: TextEditor, pos: Position, checked : CheckState, re
             checked = CheckState.Unchecked;
         }
     }
-    doc.edit( (edit) => {
+    let future = doc.edit( (edit) => {
         let checkedChar = getCheckChar(doc.document, checked);
         edit.replace(checkbox, `[${checkedChar}]`);
-    });
+
+
     if(recurseDown)
     {
         let children = findChildren(doc.document, pos);
@@ -276,6 +280,8 @@ function toggleCheckbox(doc: TextEditor, pos: Position, checked : CheckState, re
            updateLine(doc, pos, true);
         }
     }
+    });
+    return future;
 }
 
 function isCheckbox(doc: TextDocument, pos: Position)
