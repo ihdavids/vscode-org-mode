@@ -66,11 +66,11 @@ export function findBeginningOfSectionWithHeader(document: vscode.TextDocument, 
     return beginningOfSection;
 }
 
-export function findBeginningOfSection(document: vscode.TextDocument, pos: vscode.Position, levelSym: string = "") {
+export function findBeginningOfSection(document: vscode.TextDocument, pos: vscode.Position, levelSym: string = "") : vscode.Position {
     const sectionRegex = getSectionRegex(levelSym);
 
     let curLine = pos.line;
-    let curPos;
+    let curPos : vscode.Position;
     let curLinePrefix;
 
     do {
