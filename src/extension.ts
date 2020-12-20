@@ -11,6 +11,7 @@ import * as PascuaneseFunctions from './pascuanese-functions';
 import * as SubtreeFunctions from './subtree-functions';
 import * as TimestampFunctions from './timestamp-functions';
 import * as checkbox from './checkbox';
+import * as list from './lists';
 
 export function activate(context: vscode.ExtensionContext) {
     const insertHeadingRespectContentCmd = vscode.commands.registerTextEditorCommand('org.insertHeadingRespectContent', HeaderFunctions.insertHeadingRespectContent);
@@ -42,7 +43,13 @@ export function activate(context: vscode.ExtensionContext) {
     const toggleCheckboxCmd = vscode.commands.registerTextEditorCommand('org.toggleCheckbox', checkbox.toggleCheckboxCommand);
     const recalcCheckboxSummaryCmd = vscode.commands.registerTextEditorCommand('org.recalcCheckboxSummary', checkbox.recalcCheckboxSummaryCommand);
     const recalcAllCheckboxSummaryCmd = vscode.commands.registerTextEditorCommand('org.recalcAllCheckboxSummaries', checkbox.recalcAllCheckboxSummariesCommand);
-    
+
+    const updateNumberedListCmd = vscode.commands.registerTextEditorCommand('org.updateNumberedList', list.updateNumberedListCommand);
+    const appendNumberedListCmd = vscode.commands.registerTextEditorCommand('org.appendNumberedList', list.appendNumberedListCommand);
+
+    context.subscriptions.push(updateNumberedListCmd);
+    context.subscriptions.push(appendNumberedListCmd );
+
     context.subscriptions.push(insertCheckboxCmd );
     context.subscriptions.push(insertCheckboxSummaryCmd );
     context.subscriptions.push(toggleCheckboxCmd );

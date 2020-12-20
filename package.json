@@ -20,7 +20,7 @@
         "vscode": "^1.23.0"
     },
     "categories": [
-        "Languages"
+        "Programming Languages"
     ],
     "activationEvents": [
         "onLanguage:org"
@@ -28,6 +28,14 @@
     "main": "./out/src/extension",
     "contributes": {
         "commands": [
+            {
+                "command": "org.insertNumberedList",
+                "title": "Org: Insert Numbered List"
+            },
+            {
+                "command": "org.appendNumberedList",
+                "title": "Org: Append Numbered List"
+            },
             {
                 "command": "org.insertHeadingRespectContent",
                 "title": "Org: Insert Heading Respect Content"
