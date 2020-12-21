@@ -170,6 +170,11 @@ function recalcSummary(doc: TextDocument, pos: Position) : number[]
 
 function updateLine(doc: TextEditor, pos: Position, parentUpdate: boolean) : Thenable<boolean>
 {
+    if(!isCheckbox(doc.document, pos) && !isCheckboxSummary(doc.document, pos))
+    {
+        return new Promise( (resolve, reject) => { resolve(false); });
+    }
+
     let [numChildren, numChecked] = recalcSummary(doc.document, pos);
     // No children to update
     if(numChildren <= 0)
@@ -192,6 +197,11 @@ function updateLine(doc: TextEditor, pos: Position, parentUpdate: boolean) : The
         {
             newState = CheckState.Unchecked;
         }
+    }
+    let oldState = getCheckState(doc.document, pos);
+    if(oldState == newState)
+    {
+        return new Promise( (resolve, reject) => { resolve(false); });
     }
     return toggleCheckbox(doc, pos, newState).then( (res) => {
         [numChildren, numChecked] = recalcSummary(doc.document, pos);
