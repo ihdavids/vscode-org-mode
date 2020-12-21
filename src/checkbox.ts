@@ -192,12 +192,14 @@ function updateItemInChildren(doc: TextEditor, pos: Position, parentUpdate: bool
     }
     if(rv)
     {
-        rv.then(
+        rv = rv.then(
             (res) => {
-                updateItemInChildren(doc, pos, parentUpdate, children, index + 1);
+                return updateItemInChildren(doc, pos, parentUpdate, children, index + 1);
             }
         );
     }
+    return rv ? rv : new Promise<boolean>((resolve,reject) => { return resolve(true); });
+;
 }
 
 function updateSummaryForLine(doc: TextEditor, pos: Position, parentUpdate: boolean) : Thenable<boolean>
@@ -244,19 +246,19 @@ function updateLine(doc: TextEditor, pos: Position, parentUpdate: boolean) : The
             newState = CheckState.Unchecked;
         }
     }
-    let oldState = getCheckState(doc.document, pos);
-    if(oldState != newState)
-    {
-        return toggleCheckbox(doc, pos, newState).then( 
+    //let oldState = getCheckState(doc.document, pos);
+    //if(oldState != newState)
+    //{
+        return toggleCheckbox(doc, pos, newState, parentUpdate).then( 
         (res) => 
         {
             return updateSummaryForLine(doc, pos, parentUpdate);
         });
-    }
-    else
-    {
-        return updateSummaryForLine(doc, pos, parentUpdate);
-    }
+    //}
+    //else
+    //{
+    //    return updateSummaryForLine(doc, pos, parentUpdate);
+    //}
 }
 
 function updateSummary(doc: TextEditor, pos: Position, numChecked: number, numChildren: number ) : Thenable<boolean>
@@ -325,14 +327,15 @@ function toggleCheckbox(doc: TextEditor, pos: Position, checked : CheckState, re
     let future = doc.edit( (edit) => {
         let checkedChar = getCheckChar(doc.document, checked);
         edit.replace(checkbox, `[${checkedChar}]`);
-
+    });
+    future = future.then((res) => {
         let rv : Thenable<boolean> = new Promise((okay,refuse) => { okay(true); });
         if(recurseDown)
         {
             let children = findChildren(doc.document, pos);
             rv = processChildren(doc, pos, children, checked, 0);
         }
-        rv.then( (res) => {
+        rv = rv.then( (res) => {
         if(recurseUp)
         {
             let parent = utils.findParentByIndent(doc.document, pos);
