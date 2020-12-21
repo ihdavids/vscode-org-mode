@@ -284,6 +284,23 @@ function updateSummary(doc: TextEditor, pos: Position, numChecked: number, numCh
     }
 }
 
+function processChildren(doc: TextEditor, pos: Position, children: Position[], checked: CheckState, index: number ) : Thenable<boolean>
+{
+    if(index >= children.length)
+    {
+        return new Promise( (resolve, refuse) => { return resolve(true); });
+    }
+    let child = children[index];
+    let rv = toggleCheckbox(doc, child, checked, false, true);
+    rv.then(
+        (res) =>
+        {
+            processChildren(doc, pos, children, checked, index + 1);
+        }
+    );
+    return rv;
+}
+
 function toggleCheckbox(doc: TextEditor, pos: Position, checked : CheckState, recurseUp : boolean = false, recurseDown: boolean = false) : Thenable<boolean>
 {
     let checkbox = getCheckbox(doc.document, pos);
@@ -309,22 +326,22 @@ function toggleCheckbox(doc: TextEditor, pos: Position, checked : CheckState, re
         let checkedChar = getCheckChar(doc.document, checked);
         edit.replace(checkbox, `[${checkedChar}]`);
 
-
-    if(recurseDown)
-    {
-        let children = findChildren(doc.document, pos);
-        for(let child of children) {
-            toggleCheckbox(doc, child, checked, false, true);
-        }
-    }
-    if(recurseUp)
-    {
-        let parent = findParent(doc.document, pos);
-        if(parent)
+        let rv : Thenable<boolean> = new Promise((okay,refuse) => { okay(true); });
+        if(recurseDown)
         {
-           updateLine(doc, pos, true);
+            let children = findChildren(doc.document, pos);
+            rv = processChildren(doc, pos, children, checked, 0);
         }
-    }
+        rv.then( (res) => {
+        if(recurseUp)
+        {
+            let parent = findParent(doc.document, pos);
+            if(parent)
+            {
+               return updateLine(doc, pos, true);
+            }
+        }});
+        return rv;
     });
     return future;
 }
@@ -381,6 +398,7 @@ function recurseAndCheckSummaries(doc: TextEditor, pos: Position, i : number, su
 function recalculateAllCheckboxSummaries(doc: TextEditor, pos: Position)
 {
     let sums = findAllSummaries(doc.document);
+    sums = sums.reverse();
     recurseAndCheckSummaries(doc, pos, 0, sums);
 }
 
