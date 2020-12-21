@@ -184,7 +184,7 @@ function updateItemInChildren(doc: TextEditor, pos: Position, parentUpdate: bool
     }
     if(parentUpdate)
     {
-        let parent = findParent(doc.document, pos);
+        let parent = utils.findParentByIndent(doc.document, pos);
         if(parent)
         {
             rv = updateLine(doc, parent, parentUpdate);                
@@ -335,10 +335,10 @@ function toggleCheckbox(doc: TextEditor, pos: Position, checked : CheckState, re
         rv.then( (res) => {
         if(recurseUp)
         {
-            let parent = findParent(doc.document, pos);
+            let parent = utils.findParentByIndent(doc.document, pos);
             if(parent)
             {
-               return updateLine(doc, pos, true);
+               return updateLine(doc, parent, true);
             }
         }});
         return rv;
