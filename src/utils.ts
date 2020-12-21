@@ -66,6 +66,74 @@ export function findBeginningOfSectionWithHeader(document: vscode.TextDocument, 
     return beginningOfSection;
 }
 
+export function findParentByIndentAndLineRe(doc: vscode.TextDocument, pos: vscode.Position, re : RegExp) : vscode.Position {
+    let row      = pos.line;
+    let content  = doc.lineAt(pos).text;
+    let indent   = getIndent(content).length;
+    row         -= 1;
+    let found    = false;
+    // Look upward 
+    while(row >= 0)
+    {
+        content = doc.lineAt(row).text;
+        if(content.trim().length > 0)
+        {
+            if(/^\*+ /.test(content) || !re.test(content))
+            {
+                found = true;
+                break;
+            }
+            let curIndent = getIndent(content).length;
+            if(curIndent < indent)
+            {
+                found = true;
+                break;
+            }
+        }
+        row -= 1;
+    }
+    if(found)
+    {
+        // return the parent we found.
+        return new vscode.Position(row,0);
+    }
+    return new vscode.Position(0,0);
+}
+
+export function findParentByIndent(doc: vscode.TextDocument, pos: vscode.Position) : vscode.Position {
+    let row      = pos.line;
+    let content  = doc.lineAt(pos).text;
+    let indent   = getIndent(content).length;
+    row         -= 1;
+    let found    = false;
+    // Look upward 
+    while(row >= 0)
+    {
+        content = doc.lineAt(row).text;
+        if(content.trim().length > 0)
+        {
+            if(/^\*+ /.test(content))
+            {
+                found = true;
+                break;
+            }
+            let curIndent = getIndent(content).length;
+            if(curIndent < indent)
+            {
+                found = true;
+                break;
+            }
+        }
+        row -= 1;
+    }
+    if(found)
+    {
+        // return the parent we found.
+        return new vscode.Position(row,0);
+    }
+    return new vscode.Position(0,0);
+}
+
 export function findBeginningOfSection(document: vscode.TextDocument, pos: vscode.Position, levelSym: string = "") : vscode.Position {
     const sectionRegex = getSectionRegex(levelSym);
 
@@ -73,11 +141,18 @@ export function findBeginningOfSection(document: vscode.TextDocument, pos: vscod
     let curPos : vscode.Position;
     let curLinePrefix;
 
-    do {
-        curLine--;
-        curPos = new vscode.Position(curLine, 0);
-        curLinePrefix = getPrefix(getLine(document, curPos));
-    } while (curLine > 0 && inSubsection(curLinePrefix, sectionRegex))
+    if(curLine > 0)
+    {
+        do {
+            curLine--;
+            curPos = new vscode.Position(curLine, 0);
+            curLinePrefix = getPrefix(getLine(document, curPos));
+        } while (curLine > 0 && inSubsection(curLinePrefix, sectionRegex))
+    }
+    else
+    {
+        return pos;
+    }
 
     if (curPos) {
         curPos = new vscode.Position(curPos.line + 1, 0);

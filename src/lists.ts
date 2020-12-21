@@ -5,6 +5,12 @@ import {Range, TextDocument, Position, TextEditor, TextEditorEdit, Selection} fr
 import { resolve } from "url";
 
 let numlineRe = /^\s*(?<num>[0-9]+)(?<sep>[.)])(?<data>\s+(([^:]+\s+)(::))?.*)/;
+enum NumMatches
+{
+    num  = 1,
+    sep  = 2,
+    data = 3
+}
 
 // Returns a list of child checkbox line numbers (Do I want that to be positions)?
 function findChildren(doc : TextDocument, pos: Position) : any []
@@ -43,11 +49,14 @@ function findChildren(doc : TextDocument, pos: Position) : any []
     return [children, row];
 }
 
-function updateLine(doc: TextEditor)
+function updateLine(doc: TextEditor, pos: Position = null)
 {
-    let pos : Position = doc.selection.active;
+    if(!pos)
+    {
+        pos = doc.selection.active;
+    }
     let crow = pos.line;
-    let parent : Position = utils.findBeginningOfSection(doc.document, pos, "*");
+    let parent : Position = utils.findParentByIndent(doc.document, pos);
     let prow : number = parent.line;
     let [children, erow] = findChildren(doc.document, pos);
     let cur = 1;
@@ -78,11 +87,11 @@ function updateLine(doc: TextEditor)
             let m = line.match(numlineRe);
             if(m)
             {
-                let num : number = +m['num'];
+                let num : number = +m[NumMatches.num];
                 if(num != cur)
                 {
                     let region = doc.document.lineAt(r).range;
-                    edit.replace(region, `${curIndent}${cur}${m['sep']}${m['data']}`);
+                    edit.replace(region, `${curIndent}${cur}${m[NumMatches.sep]}${m[NumMatches.data]}`);
                 }
                 cur += 1;
             }
@@ -95,20 +104,39 @@ function appendLine(doc: TextEditor)
 {
     let pos : Position = doc.selection.active;
     let crow = pos.line;
-    let parent : Position = utils.findBeginningOfSection(doc.document, pos, "*");
+    let lineRe = /^\s*[0-9a-zA-Z]/;
+    let parent : Position = utils.findParentByIndentAndLineRe(doc.document, pos, lineRe);
     let prow : number = parent.line;
     let [children, erow] = findChildren(doc.document, pos);
     let cur = 1;
 
-    let curIndent : string = utils.getIndent(doc.document.lineAt(prow).text);
+    // Skip empty lines at the start.
+    let line = doc.document.lineAt(prow+1).text;
+    while(line.trim().length <= 0)
+    {
+        prow += 1;
+        line = doc.document.lineAt(prow+1).text;
+    }
+
+    let curIndent : string = utils.getIndent(doc.document.lineAt(prow+1).text);
     let curLen    = curIndent.length;
     let indentStack = [];
     let sep = '.';
+    let seenOnce = false;
 
     doc.edit((edit) => {
     for(let r = prow + 1; r <= erow; ++r)
     {
+        if( r >= doc.document.lineCount)
+        {
+            break;
+        }
+        // trim empty lines in the mid.
         let line = doc.document.lineAt(r).text;
+        if(line.trim().length <= 0)
+        {
+            continue;
+        }
         let thisIndent = utils.getIndent(line);
         let thisLen    = thisIndent.length;
         if(thisLen > curLen)
@@ -127,48 +155,63 @@ function appendLine(doc: TextEditor)
             let m = line.match(numlineRe);
             if(m)
             {
-                let num : number = +m['num'];
-                let sep : string = m['sep'];
+                seenOnce = true;
+                let num : number = +m[NumMatches.num];
+                let sep : string = m[NumMatches.sep];
                 if(num != cur)
                 {
                     let region = doc.document.lineAt(r).range;
-                    edit.replace(region, `${curIndent}${cur}${m['sep']}${m['data']}`);
+                    edit.replace(region, `${curIndent}${cur}${m[NumMatches.sep]}${m[NumMatches.data]}`);
                 }
                 cur += 1;
             }
             else
             {
-                let point  = doc.document.positionAt(r);
-                edit.insert(point,`${curIndent}${cur}${sep} \n`);
-                doc.selection.active = new Position(point.line, point.character + (curIndent.length + 3));
-                return updateLine(doc);
+                // We will not append if we haven't see anything yet.
+                if(seenOnce)
+                {
+                    let point  = new Position(r, 0);
+                    edit.insert(point,`${curIndent}${cur}${sep} \n`);
+                    let npos : Position = new Position(point.line, point.character + (curIndent.length + 3)); 
+                    doc.selection = new Selection(npos, npos);
+                    return updateLine(doc, point);
+                }
             }
         }
         else
         {
-            let point  = doc.document.positionAt(r);
+            let point  = new Position(r,0);
             edit.insert(point,`${curIndent}${cur}${sep} \n`);
-            doc.selection.active = new Position(point.line, point.character + (curIndent.length + 3));
-            return updateLine(doc);
+            let npos : Position = new Position(point.line, point.character + (curIndent.length + 3)); 
+            doc.selection = new Selection(npos, npos);
+            return updateLine(doc, point);
         }
     } // for
     // Okay we didn't insert, have to now
     let lastRow = doc.document.lineCount;
-    if(erow > lastRow)
+    if(erow >= lastRow)
     {
-        let point  = doc.document.positionAt(lastRow);
-        edit.insert(point,'\n');
+        let curLineText = doc.document.lineAt(lastRow-1);
+        let point       = new Position(lastRow-1, Math.max(curLineText.text.length, 0));
+        edit.insert(point, `\n${curIndent}${cur}${sep} `);
+        let npos : Position = new Position(point.line+1, (curIndent.length + 3)); 
+        doc.selection = new Selection(npos, npos);
+        //return updateLine(doc, point);
     }
-    let point  = doc.document.positionAt(erow);
-    let line   = doc.document.lineAt(erow).text;
-    let newLine = '';
-    if(line.length > 0)
+    else
     {
-        newLine = '\n';
+        let point  = new Position(erow, 0);
+        let line   = doc.document.lineAt(erow).text;
+        let newLine = '';
+        if(line.length > 0)
+        {
+            newLine = '\n';
+        }
+        edit.insert(point,`${curIndent}${cur}${sep} ${newLine}`);
+        let npos : Position = new Position(point.line, point.character + (curIndent.length + 3)); 
+        doc.selection = new Selection(npos, npos);
+        return updateLine(doc, point);
     }
-    edit.insert(point,`${curIndent}${cur}${sep} ${newLine}`);
-    doc.selection.active = new Position(point.line, point.character + (curIndent.length + 3));
-    return updateLine(doc);
     }); // edit
 }
 
