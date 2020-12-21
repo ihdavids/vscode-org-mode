@@ -29,8 +29,12 @@
     "contributes": {
         "commands": [
             {
-                "command": "org.insertNumberedList",
-                "title": "Org: Insert Numbered List"
+                "command": "org.addDoWhatIMean",
+                "title": "Org: Add DWIM"
+            },
+            {
+                "command": "org.updateNumberedList",
+                "title": "Org: Update Numbered Lists"
             },
             {
                 "command": "org.appendNumberedList",
@@ -278,6 +282,11 @@
             {
                 "command": "org.literal",
                 "key": "ctrl+alt+o l",
+                "when": "editorLangId == 'org'"
+            },
+            {
+                "command": "org.addDoWhatIMean",
+                "key": "ctrl+enter",
                 "when": "editorLangId == 'org'"
             }
         ]

@@ -12,6 +12,7 @@ import * as SubtreeFunctions from './subtree-functions';
 import * as TimestampFunctions from './timestamp-functions';
 import * as checkbox from './checkbox';
 import * as list from './lists';
+import * as dwim from './dwim';
 
 export function activate(context: vscode.ExtensionContext) {
     const insertHeadingRespectContentCmd = vscode.commands.registerTextEditorCommand('org.insertHeadingRespectContent', HeaderFunctions.insertHeadingRespectContent);
@@ -46,7 +47,10 @@ export function activate(context: vscode.ExtensionContext) {
 
     const updateNumberedListCmd = vscode.commands.registerTextEditorCommand('org.updateNumberedList', list.updateNumberedListCommand);
     const appendNumberedListCmd = vscode.commands.registerTextEditorCommand('org.appendNumberedList', list.appendNumberedListCommand);
+    
+    const addDwimCmd = vscode.commands.registerTextEditorCommand('org.addDoWhatIMean', dwim.addDoWhatIMean);
 
+    context.subscriptions.push(addDwimCmd);
     context.subscriptions.push(updateNumberedListCmd);
     context.subscriptions.push(appendNumberedListCmd );
 

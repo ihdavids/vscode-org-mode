@@ -56,18 +56,33 @@ function updateLine(doc: TextEditor, pos: Position = null)
         pos = doc.selection.active;
     }
     let crow = pos.line;
-    let parent : Position = utils.findParentByIndent(doc.document, pos);
+    let lineRe = /^\s*[0-9a-zA-Z]/;
+    let parent : Position = utils.findParentByIndentAndLineRe(doc.document, pos, lineRe);
     let prow : number = parent.line;
     let [children, erow] = findChildren(doc.document, pos);
     let cur = 1;
+    let seenOnce = false;
+    
+    // Skip empty lines at the start.
+    let line = doc.document.lineAt(prow+1).text;
+    while(line.trim().length <= 0)
+    {
+        prow += 1;
+        line = doc.document.lineAt(prow+1).text;
+    }
 
-    let curIndent : string = utils.getIndent(doc.document.lineAt(prow).text);
+    let curIndent : string = utils.getIndent(doc.document.lineAt(prow+1).text);
     let curLen    = curIndent.length;
+    let minLen    = curLen;
     let indentStack = [];
 
     doc.edit((edit) => {
-    for(let r = prow + 1; r < erow; ++r)
+    for(let r = prow + 1; r <= doc.document.lineCount; ++r)
     {
+        if(r >= doc.document.lineCount)
+        {
+            break;
+        }
         let line = doc.document.lineAt(r).text;
         let thisIndent = utils.getIndent(line);
         let thisLen    = thisIndent.length;
@@ -78,6 +93,11 @@ function updateLine(doc: TextEditor, pos: Position = null)
             curLen    = thisLen;
             cur       = 1;
         }
+        // Break out when we see crap.
+        if(seenOnce && (!lineRe.test(line) || thisLen < minLen))
+        {
+            break;   
+        }
         while(thisLen < curLen && indentStack.length > 0)
         {
             [curIndent, curLen, cur] = indentStack.pop();
@@ -87,6 +107,7 @@ function updateLine(doc: TextEditor, pos: Position = null)
             let m = line.match(numlineRe);
             if(m)
             {
+                seenOnce = true;
                 let num : number = +m[NumMatches.num];
                 if(num != cur)
                 {
@@ -210,8 +231,9 @@ function appendLine(doc: TextEditor)
         edit.insert(point,`${curIndent}${cur}${sep} ${newLine}`);
         let npos : Position = new Position(point.line, point.character + (curIndent.length + 3)); 
         doc.selection = new Selection(npos, npos);
-        return updateLine(doc, point);
     }
+    }).then(() => {
+        updateLine(doc, pos);
     }); // edit
 }
 
