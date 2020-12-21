@@ -168,6 +168,52 @@ function recalcSummary(doc: TextDocument, pos: Position) : number[]
     return [numChildren, checkedChildren.length];
 }
 
+function updateItemInChildren(doc: TextEditor, pos: Position, parentUpdate: boolean, children: Position[], index: number) : Thenable<boolean>
+{
+    if(index >= children.length)
+    {
+        return new Promise<boolean>((resolve,reject) => { return resolve(true); });
+    }
+    let rv : Thenable<boolean> = null;
+    let child = children[index];
+    let line = doc.document.lineAt(child);
+    let summary = getSummary(doc.document, child);
+    if(summary)
+    {
+        rv = updateLine(doc, child, false);
+    }
+    if(parentUpdate)
+    {
+        let parent = findParent(doc.document, pos);
+        if(parent)
+        {
+            rv = updateLine(doc, parent, parentUpdate);                
+        }
+    }
+    if(rv)
+    {
+        rv.then(
+            (res) => {
+                updateItemInChildren(doc, pos, parentUpdate, children, index + 1);
+            }
+        );
+    }
+}
+
+function updateSummaryForLine(doc: TextEditor, pos: Position, parentUpdate: boolean) : Thenable<boolean>
+{
+    let [numChildren, numChecked] = recalcSummary(doc.document, pos);
+    return updateSummary(doc, pos, numChecked, numChildren).then( (res2) => {
+        let rv : Thenable<boolean> = new Promise<boolean>((resolve,reject) => { return resolve(true); });
+        let children = findChildren(doc.document, pos);
+        if(children.length > 0)
+        {
+            return updateItemInChildren(doc, pos, parentUpdate, children, 0);
+        }
+        return rv;
+    });
+}
+
 function updateLine(doc: TextEditor, pos: Position, parentUpdate: boolean) : Thenable<boolean>
 {
     if(!isCheckbox(doc.document, pos) && !isCheckboxSummary(doc.document, pos))
@@ -199,35 +245,18 @@ function updateLine(doc: TextEditor, pos: Position, parentUpdate: boolean) : The
         }
     }
     let oldState = getCheckState(doc.document, pos);
-    if(oldState == newState)
+    if(oldState != newState)
     {
-        return new Promise( (resolve, reject) => { resolve(false); });
-    }
-    return toggleCheckbox(doc, pos, newState).then( (res) => {
-        [numChildren, numChecked] = recalcSummary(doc.document, pos);
-        return updateSummary(doc, pos, numChecked, numChildren).then( (res2) => {
-            let rv : Thenable<boolean> = new Promise<boolean>((resolve,reject) => { return resolve(true); });
-            let children = findChildren(doc.document, pos);
-            for(let child of children)
-            {
-                let line = doc.document.lineAt(child);
-                let summary = getSummary(doc.document, child);
-                if(summary)
-                {
-                    return updateLine(doc, child, false);
-                }
-                if(parentUpdate)
-                {
-                    let parent = findParent(doc.document, pos);
-                    if(parent)
-                    {
-                        rv = updateLine(doc, parent, parentUpdate);                
-                    }
-                }
-            }
-            return rv;
+        return toggleCheckbox(doc, pos, newState).then( 
+        (res) => 
+        {
+            return updateSummaryForLine(doc, pos, parentUpdate);
         });
-    });
+    }
+    else
+    {
+        return updateSummaryForLine(doc, pos, parentUpdate);
+    }
 }
 
 function updateSummary(doc: TextEditor, pos: Position, numChecked: number, numChildren: number ) : Thenable<boolean>
@@ -329,16 +358,16 @@ function findAllSummaries(doc: TextDocument)
     return sums;
 }
 
-function recalculateCheckboxSummary(doc: TextEditor, pos: Position)
+function recalculateCheckboxSummary(doc: TextEditor, pos: Position, parentUpdate: boolean = true)
 {
-    return updateLine(doc, pos, true);
+    return updateLine(doc, pos, parentUpdate);
 }
 
 function recurseAndCheckSummaries(doc: TextEditor, pos: Position, i : number, sums: Position[])
 {
     if( i < sums.length )
     {
-        recalculateCheckboxSummary(doc, sums[i]).then(
+        recalculateCheckboxSummary(doc, sums[i], false).then(
             () => {
                 if( (i+1) < sums.length )
                 {
