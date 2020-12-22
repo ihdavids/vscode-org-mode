@@ -288,6 +288,11 @@
                 "command": "org.addDoWhatIMean",
                 "key": "ctrl+enter",
                 "when": "editorLangId == 'org'"
+            },
+            {
+                "command": "org.toggleDoWhatIMean",
+                "key": "ctrl+o a t",
+                "when": "editorLangId == 'org'"
             }
         ]
     },

@@ -20,3 +20,14 @@ export function addDoWhatIMean(doc: TextEditor)
         list.appendNumberedListCommand(doc);
     }
 }
+
+export function toggleDoWhatIMean(doc: TextEditor)
+{
+    let pos : Position = doc.selection.active;
+    let line : string  = doc.document.lineAt(pos).text;
+    // Checkbox list
+    if(/^\s*[+-] \[[xX -]\]/.test(line))
+    {
+        checkbox.toggleCheckboxCommand(doc);
+    }
+}

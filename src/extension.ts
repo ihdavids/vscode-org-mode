@@ -49,8 +49,10 @@ export function activate(context: vscode.ExtensionContext) {
     const appendNumberedListCmd = vscode.commands.registerTextEditorCommand('org.appendNumberedList', list.appendNumberedListCommand);
     
     const addDwimCmd = vscode.commands.registerTextEditorCommand('org.addDoWhatIMean', dwim.addDoWhatIMean);
+    const toggleDwimCmd = vscode.commands.registerTextEditorCommand('org.toggleDoWhatIMean', dwim.toggleDoWhatIMean);
 
     context.subscriptions.push(addDwimCmd);
+    context.subscriptions.push(toggleDwimCmd);
     context.subscriptions.push(updateNumberedListCmd);
     context.subscriptions.push(appendNumberedListCmd );
 
