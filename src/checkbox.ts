@@ -221,7 +221,7 @@ function updateSummaryForLine(doc: TextEditor, pos: Position, parentUpdate: bool
         let children = findChildren(doc.document, pos);
         if(children.length > 0)
         {
-            return updateItemInChildren(doc, pos, parentUpdate, children, 0);
+            return updateItemInChildren(doc, pos, false, children, 0);
         }
         return rv;
     });
@@ -257,19 +257,12 @@ function updateLine(doc: TextEditor, pos: Position, parentUpdate: boolean) : The
             newState = CheckState.Unchecked;
         }
     }
-    //let oldState = getCheckState(doc.document, pos);
-    //if(oldState != newState)
-    //{
-        return toggleCheckbox(doc, pos, newState, parentUpdate).then( 
+    return toggleCheckbox(doc, pos, newState, parentUpdate).then( 
         (res) => 
         {
             return updateSummaryForLine(doc, pos, parentUpdate);
-        });
-    //}
-    //else
-    //{
-    //    return updateSummaryForLine(doc, pos, parentUpdate);
-    //}
+        }
+    );
 }
 
 function updateSummary(doc: TextEditor, pos: Position, numChecked: number, numChildren: number ) : Thenable<boolean>
@@ -277,7 +270,7 @@ function updateSummary(doc: TextEditor, pos: Position, numChecked: number, numCh
     let summary = getSummary(doc.document, pos);
     if(!summary)
     {
-        return new Promise( (resolve, reject) => { resolve(false); });
+        return new Promise( (resolve, reject) => { return resolve(false); });
     }
     let line = doc.document.lineAt(pos).text;
    
@@ -468,19 +461,16 @@ export function toggleCheckboxCommand(doc: TextEditor)
         let pos = sel.end;
         rv = toggleCheckbox(doc, pos, null, true, false);
     }
-    
     if(rv)
     {
-        return rv.then( () => {
-            return recalculateAllCheckboxSummaries(doc, doc.selection.start);
+        rv.then( () => {
+            recalculateAllCheckboxSummaries(doc, doc.selection.start);
         });
     }
     else
     {
-        return recalculateAllCheckboxSummaries(doc, doc.selection.start);
+        recalculateAllCheckboxSummaries(doc, doc.selection.start);
     }
-    
-   return rv;
 }
 
 export function recalcCheckboxSummaryCommand(doc: TextEditor)
