@@ -161,6 +161,48 @@ export function findBeginningOfSection(document: vscode.TextDocument, pos: vscod
     return curPos;
 }
 
+export function findBeginningOfBlock(document: vscode.TextDocument, pos: vscode.Position) : vscode.Position {
+    const blockRegex = /^\*+ /;
+
+    let curLine = pos.line;
+    let curPos : vscode.Position;
+    let curLinePrefix;
+
+    if(curLine > 0)
+    {
+        do {
+            curLine--;
+            curPos = new vscode.Position(curLine, 0);
+        } while (curLine > 0 && !blockRegex.test(document.lineAt(curPos).text))
+        if(curLine > 0)
+        {
+            return curPos;
+        }
+    }
+    return pos;
+}
+
+export function findEndOfBlock(doc: vscode.TextDocument, pos: vscode.Position) : vscode.Position {
+    const blockRegex = /^\*+ /;
+
+    let curLine = pos.line;
+    let curPos : vscode.Position;
+    let curLinePrefix;
+
+    if((curLine+1) < doc.lineCount)
+    {
+        do {
+            curLine++;
+            curPos = new vscode.Position(curLine, 0);
+        } while (curLine < doc.lineCount && !blockRegex.test(doc.lineAt(curPos).text))
+        if(curLine < doc.lineCount)
+        {
+            return curPos;
+        }
+    }
+    return new vscode.Position(doc.lineCount-1,0);
+}
+
 export function findEndOfSection(document: vscode.TextDocument, pos: vscode.Position, levelSym: string = "") {
     if (pos.line === document.lineCount - 1) {
         return pos;

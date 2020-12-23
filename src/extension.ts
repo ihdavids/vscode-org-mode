@@ -13,6 +13,7 @@ import * as TimestampFunctions from './timestamp-functions';
 import * as checkbox from './checkbox';
 import * as list from './lists';
 import * as dwim from './dwim';
+import * as props from './properties';
 
 export function activate(context: vscode.ExtensionContext) {
     const insertHeadingRespectContentCmd = vscode.commands.registerTextEditorCommand('org.insertHeadingRespectContent', HeaderFunctions.insertHeadingRespectContent);
@@ -50,6 +51,10 @@ export function activate(context: vscode.ExtensionContext) {
     
     const addDwimCmd = vscode.commands.registerTextEditorCommand('org.addDoWhatIMean', dwim.addDoWhatIMean);
     const toggleDwimCmd = vscode.commands.registerTextEditorCommand('org.toggleDoWhatIMean', dwim.toggleDoWhatIMean);
+
+    const insertPropertyDrawerCmd = vscode.commands.registerTextEditorCommand('org.insertPropertyDrawer', props.insertPropertyDrawerCommand);
+
+    context.subscriptions.push(insertPropertyDrawerCmd);
 
     context.subscriptions.push(addDwimCmd);
     context.subscriptions.push(toggleDwimCmd);

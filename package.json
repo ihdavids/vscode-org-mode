@@ -135,6 +135,10 @@
             {
                 "command": "org.insertCheckbox",
                 "title": "Org: Insert Checkbox"
+            },
+            {
+                "command": "org.insertPropertyDrawer",
+                "title": "Org: Insert Property Drawer"
             }
         ],
         "languages": [
