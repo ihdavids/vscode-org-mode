@@ -317,6 +317,11 @@ export function moveToEndOfLine(editor: vscode.TextEditor, pos: vscode.Position)
     editor.selections = [new vscode.Selection(endOfLinePos, endOfLinePos)];
 }
 
+export function lineLen(doc: vscode.TextDocument, pos: vscode.Position) {
+    const line = getLine(doc, pos);
+    return line.length;
+}
+
 export function getKeywords() {
     const settings = vscode.workspace.getConfiguration("org");
     const todoKeywords = settings.get<string[]>("todoKeywords");

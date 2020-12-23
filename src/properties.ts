@@ -77,6 +77,72 @@ async function insertPropertyDrawerIfNotPresent(doc: TextEditor, drawer: string 
     });
 }
 
+async function findProperty(doc: TextEditor, drawer: string=":PROPERTIES:", key: string)
+{
+    let prop: OrgDrawer = findPropertyDrawer(doc, drawer);
+    if(prop)
+    {
+        for(let l = prop.region.start.line + 1; l < prop.region.end.line; ++l)
+        {
+            let line = doc.document.lineAt(l).text;
+            let m = line.match(/^\s*:([^:]):\s*(.*)+/);
+            if(m)
+            {
+                let name = m[1].trim();
+                if(name != "END" && name == key)
+                {
+                    let value = m[2].trim();
+                    return [l,name,value];                    
+                }
+            }
+        }
+    }
+    return null;
+}
+
+async function addProperty(doc: TextEditor, key: string, value: string)
+{
+    let prop : OrgDrawer = await insertPropertyDrawerIfNotPresent(doc);
+    if(prop)
+    {
+        return doc.edit( (edit) => {
+            let pos : Position = new Position(prop.region.start.line + 1, 0);
+            edit.insert(pos , ":" + key + ": " + value);
+            return pos;
+        });
+    }
+    return null;
+}
+
+async function updateProperty(doc: TextEditor, key: string, value: string)
+{
+    let prop = findProperty(doc, ":PROPERTIES:", key);
+    if(prop)
+    {
+        return doc.edit( (edit) => {
+            let pos: Position = new Position(prop[0],0);
+            edit.replace(new Range(pos, new Position(prop[0],utils.lineLen(doc.document,pos))), ":" + key + ": " + value);
+        });
+    }
+    else
+    {
+        return await addProperty(doc, key, value);
+    }
+}
+
+async function removeProperty(doc: TextEditor, key: string, value: string)
+{
+    let prop = findProperty(doc, ":PROPERTIES:", key);
+    if(prop)
+    {
+        return doc.edit( (edit) => {
+            let pos: Position = new Position(prop[0],0);
+            edit.replace(new Range(pos, new Position(prop[0] + 1,0)), "");
+        });
+    }
+    return null;
+}
+
 export function insertPropertyDrawerCommand(doc: TextEditor)
 {
     return insertPropertyDrawerIfNotPresent(doc);
