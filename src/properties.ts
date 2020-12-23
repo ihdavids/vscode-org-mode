@@ -4,13 +4,15 @@ import {Range, TextDocument, Position, TextEditor, TextEditorEdit, Selection} fr
 
 class OrgDrawer
 {
-    constructor(start: number, end: number, name: string)
+    constructor(start: number, end: number, name: string, indent: string)
     {
         this.name = name;
         this.region = new Range(new Position(start,0), new Position(end,0));
+        this.indent = indent;
     }
     region : Range;
     name   : string;
+    indent : string;
 };
 
 let sdcRe = /^\s*(SCHEDULED|DEADLINE|CLOSED)[:]/
@@ -27,6 +29,12 @@ function findPropertyDrawer(doc: TextEditor, drawer: string = ":PROPERTIES:", po
     let drawerRe = new RegExp(drawerReStr);
     let drawerEndRe = /^\s*:END:\s*$/;
     let haveProp = -1;
+    let m = doc.document.lineAt(start).text.match(/^(\s*\*+ )/);
+    let indent = "";
+    if(m)
+    {
+        indent = " ".repeat(m[1].length);
+    }
     for(let i = start.line; i <= end.line; ++i)
     {
         let line = doc.document.lineAt(i).text;
@@ -36,7 +44,7 @@ function findPropertyDrawer(doc: TextEditor, drawer: string = ":PROPERTIES:", po
         }
         else if(haveProp && drawerEndRe.test(line))
         {
-            return new OrgDrawer(haveProp, i, drawer);
+            return new OrgDrawer(haveProp, i, drawer, indent);
         }
     }
     return null;
@@ -55,6 +63,12 @@ async function insertPropertyDrawerIfNotPresent(doc: TextEditor, drawer: string 
     }
     let start: Position = utils.findBeginningOfBlock(doc.document, pos);
     let end: Position   = utils.findEndOfBlock(doc.document, start);
+    let m = doc.document.lineAt(start).text.match(/^(\s*\*+ )/);
+    let indent = "";
+    if(m)
+    {
+        indent = " ".repeat(m[1].length);
+    }
     let i = start.line + 1;
     for(; i < end.line; ++i)
     {
@@ -71,13 +85,13 @@ async function insertPropertyDrawerIfNotPresent(doc: TextEditor, drawer: string 
 
     return doc.edit( (edit) => {
         let p = new Position(i, 0);
-        edit.insert(p, drawer + "\n:END:\n");
+        edit.insert(p, indent + drawer + "\n" + indent + ":END:\n");
     }).then( () => {
-        return new OrgDrawer(i, i+1, drawer);
+        return new OrgDrawer(i, i+1, drawer, indent);
     });
 }
 
-async function findProperty(doc: TextEditor, drawer: string=":PROPERTIES:", key: string)
+async function findProperty(doc: TextEditor, drawer: string=":PROPERTIES:", key: string) : Promise<[number, string, string]>
 {
     let prop: OrgDrawer = findPropertyDrawer(doc, drawer);
     if(prop)
@@ -107,7 +121,7 @@ async function addProperty(doc: TextEditor, key: string, value: string)
     {
         return doc.edit( (edit) => {
             let pos : Position = new Position(prop.region.start.line + 1, 0);
-            edit.insert(pos , ":" + key + ": " + value);
+            edit.insert(pos , prop.indent + "  :" + key + ": " + value + "\n");
             return pos;
         });
     }
@@ -116,7 +130,7 @@ async function addProperty(doc: TextEditor, key: string, value: string)
 
 async function updateProperty(doc: TextEditor, key: string, value: string)
 {
-    let prop = findProperty(doc, ":PROPERTIES:", key);
+    let prop = await findProperty(doc, ":PROPERTIES:", key);
     if(prop)
     {
         return doc.edit( (edit) => {
@@ -132,7 +146,7 @@ async function updateProperty(doc: TextEditor, key: string, value: string)
 
 async function removeProperty(doc: TextEditor, key: string, value: string)
 {
-    let prop = findProperty(doc, ":PROPERTIES:", key);
+    let prop = await findProperty(doc, ":PROPERTIES:", key);
     if(prop)
     {
         return doc.edit( (edit) => {
@@ -141,6 +155,34 @@ async function removeProperty(doc: TextEditor, key: string, value: string)
         });
     }
     return null;
+}
+
+
+export async function insertPropertyCommand(doc: TextEditor, edit: TextEditorEdit, key: string, value: string)
+{
+    if(!key)
+    {
+        key = await vscode.window.showInputBox({
+            value: '',
+            placeHolder: 'NAME',
+        });
+    }
+    if(!value)
+    {
+        value = await vscode.window.showInputBox({
+            value: '',
+            placeHolder: 'VALUE',
+        });
+    }
+    if(!key || key.trim().length <= 0)
+    {
+        return;
+    }
+    if(!value || value.trim().length <= 0)
+    {
+        return;
+    }
+    return updateProperty(doc, key, value);
 }
 
 export function insertPropertyDrawerCommand(doc: TextEditor)

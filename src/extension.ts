@@ -53,8 +53,10 @@ export function activate(context: vscode.ExtensionContext) {
     const toggleDwimCmd = vscode.commands.registerTextEditorCommand('org.toggleDoWhatIMean', dwim.toggleDoWhatIMean);
 
     const insertPropertyDrawerCmd = vscode.commands.registerTextEditorCommand('org.insertPropertyDrawer', props.insertPropertyDrawerCommand);
+    const insertPropertyCmd = vscode.commands.registerTextEditorCommand('org.insertProperty', props.insertPropertyCommand);
 
     context.subscriptions.push(insertPropertyDrawerCmd);
+    context.subscriptions.push(insertPropertyCmd);
 
     context.subscriptions.push(addDwimCmd);
     context.subscriptions.push(toggleDwimCmd);
