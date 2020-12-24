@@ -139,6 +139,14 @@
             {
                 "command": "org.insertPropertyDrawer",
                 "title": "Org: Insert Property Drawer"
+            },
+            {
+                "command": "org.insertLogbookDrawer",
+                "title": "Org: Insert Logbook Drawer"
+            },
+            {
+                "command": "org.insertProperty",
+                "title": "Org: Insert Property"
             }
         ],
         "languages": [

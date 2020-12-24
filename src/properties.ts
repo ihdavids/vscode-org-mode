@@ -157,7 +157,6 @@ async function removeProperty(doc: TextEditor, key: string, value: string)
     return null;
 }
 
-
 export async function insertPropertyCommand(doc: TextEditor, edit: TextEditorEdit, key: string, value: string)
 {
     if(!key)
@@ -188,4 +187,9 @@ export async function insertPropertyCommand(doc: TextEditor, edit: TextEditorEdi
 export function insertPropertyDrawerCommand(doc: TextEditor)
 {
     return insertPropertyDrawerIfNotPresent(doc);
+}
+
+export function insertLogbookDrawerCommand(doc: TextEditor)
+{
+    return insertPropertyDrawerIfNotPresent(doc, ":LOGBOOK:");
 }
