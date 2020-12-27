@@ -14,6 +14,7 @@ import * as checkbox from './checkbox';
 import * as list from './lists';
 import * as dwim from './dwim';
 import * as props from './properties';
+import * as folding from './folding';
 
 export function activate(context: vscode.ExtensionContext) {
     const insertHeadingRespectContentCmd = vscode.commands.registerTextEditorCommand('org.insertHeadingRespectContent', HeaderFunctions.insertHeadingRespectContent);
@@ -95,6 +96,8 @@ export function activate(context: vscode.ExtensionContext) {
     const provider = new OrgFoldingAndOutlineProvider();
     vscode.languages.registerFoldingRangeProvider('org', provider);
     vscode.languages.registerDocumentSymbolProvider('org', provider);
+    vscode.workspace.onDidOpenTextDocument(folding.autoFold);
+    vscode.workspace.onDidSaveTextDocument(folding.autoFold);
 }
 
 // tslint:disable-next-line:no-empty

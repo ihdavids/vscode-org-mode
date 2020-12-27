@@ -8,14 +8,17 @@ import {
     Range,
     SymbolInformation,
     SymbolKind,
-    TextDocument
+    TextDocument,
+    TextEditor
 } from 'vscode';
 import * as utils from './utils';
+import * as vscode from 'vscode';
 
 // ChunkType value is used as SymbolKind for outline
 enum ChunkType {
     SECTION = SymbolKind.Constant,
-    BLOCK = SymbolKind.Number
+    BLOCK = SymbolKind.Number,
+    PROP = SymbolKind.Property
 }
 interface IChunk { type: ChunkType, title: string, level: number, startLine: number }
 
@@ -74,12 +77,24 @@ class OrgFoldingAndOutlineDocumentState {
         const count = document.lineCount;
         const stack: IChunk[] = [];
         let inBlock = false;
+        let inDrawer = false;
+        let m = null;
 
         for (let lineNumber = 0; lineNumber < count; lineNumber++) {
             const element = document.lineAt(lineNumber);
             const text = element.text;
 
-            if (inBlock) {
+            if(inDrawer) {
+                if(/^\s*:END:\s*$/.test(text))
+                {
+                    inDrawer = false;
+                    if (stack.length > 0 && stack[stack.length - 1].type === ChunkType.PROP) {
+                        const localTop = stack.pop();
+                        this.createSection(localTop, lineNumber);
+                    }
+                }
+            }
+            else if (inBlock) {
                 if (utils.isBlockEndLine(text)) {
                     inBlock = false;
                     if (stack.length > 0 && stack[stack.length - 1].type === ChunkType.BLOCK) {
@@ -91,6 +106,10 @@ class OrgFoldingAndOutlineDocumentState {
                 inBlock = true;
                 const title = this.extractBlockTitle(text);
                 stack.push({ type: ChunkType.BLOCK, title, level: Number.MAX_SAFE_INTEGER, startLine: lineNumber });
+            } else if (m = text.match(/^\s*:([a-zA-Z0-9]+):\s*$/)) {
+                inDrawer = true;
+                const title = m[1];
+                stack.push({ type: ChunkType.PROP, title, level: Number.MAX_SAFE_INTEGER, startLine: lineNumber });
             } else if (utils.isHeaderLine(text)) {
                 const currentLevel = utils.getStarPrefixCount(text);
 
@@ -115,7 +134,7 @@ class OrgFoldingAndOutlineDocumentState {
     }
 
     private createSection(chunk: IChunk, endLine) {
-        this.ranges.push(new FoldingRange(chunk.startLine, endLine));
+        this.ranges.push(new FoldingRange(chunk.startLine, endLine, chunk.type == ChunkType.PROP ? vscode.FoldingRangeKind.Comment : vscode.FoldingRangeKind.Region));
         this.symbols.push(new SymbolInformation(
             chunk.title,
             chunk.type.valueOf(),
@@ -134,3 +153,4 @@ class OrgFoldingAndOutlineDocumentState {
         return line.substr(titleStartAt);
     }
 }
+
