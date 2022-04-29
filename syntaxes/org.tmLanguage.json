@@ -3,7 +3,7 @@
     "name": "Org Markup",
     "patterns": [
         {
-            "name": "markup.heading.org",
+            "name": "markup.heading.org orgmode.headline",
             "begin": "^\\s*[*]{1}\\s+",
             "end": "$",
             "patterns": [
@@ -13,9 +13,14 @@
             ]
         },
         {
-            "name": "entity.name.type.org",
-            "begin": "^\\s*[*]{2}\\s+",
+            "name": "entity.name.type.org orgmode.headline2",
+            "begin": "^\\s*([*])[*]\\s+",
             "end": "$",
+            "beginCaptures": {
+                "1": {
+                        "name": "comment.line orgmode.preamble"
+                }
+            },
             "patterns": [
                 {
                     "include": "#header-matches"
@@ -23,9 +28,14 @@
             ]
         },
         {
-            "name": "entity.name.function.org",
-            "begin": "^\\s*[*]{3}\\s+",
+            "name": "entity.name.function.org orgmode.headline3",
+            "begin": "^\\s*([*]{2})[*]\\s+",
             "end": "$",
+            "beginCaptures": {
+                "1": {
+                        "name": "comment.line orgmode.preamble"
+                }
+            },
             "patterns": [
                 {
                     "include": "#header-matches"
@@ -33,9 +43,59 @@
             ]
         },
         {
-            "name": "entity.other.attribute-name.org",
-            "begin": "^\\s*[*]{4}\\s+",
+            "name": "entity.other.attribute-name.org orgmode.headline4",
+            "begin": "^\\s*([*]{3})[*]\\s+",
             "end": "$",
+            "beginCaptures": {
+                "1": {
+                        "name": "comment.line orgmode.preamble"
+                }
+            },
+            "patterns": [
+                {
+                    "include": "#header-matches"
+                }
+            ]
+        },
+        {
+            "name": "entity.name.section.org orgmode.headline5",
+            "begin": "^\\s*([*]{4})[*]\\s+",
+            "end": "$",
+            "beginCaptures": {
+                "1": {
+                        "name": "comment.line orgmode.preamble"
+                }
+            },
+            "patterns": [
+                {
+                    "include": "#header-matches"
+                }
+            ]
+        },
+        {
+            "name": "entity.name.type.org orgmode.headline6",
+            "begin": "^\\s*([*]{5})[*]\\s+",
+            "end": "$",
+            "beginCaptures": {
+                "1": {
+                        "name": "comment.line orgmode.preamble"
+                }
+            },
+            "patterns": [
+                {
+                    "include": "#header-matches"
+                }
+            ]
+        },
+        {
+            "name": "entity.name.filename.org orgmode.headline7",
+            "begin": "^\\s*([*]{6})[*]\\s+",
+            "end": "$",
+            "beginCaptures": {
+                "1": {
+                        "name": "comment.line orgmode.preamble"
+                }
+            },
             "patterns": [
                 {
                     "include": "#header-matches"
