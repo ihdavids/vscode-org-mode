@@ -28,6 +28,20 @@ export async function autoFold(doc: TextDocument)
     }
 }
 
+export async function tabHandler(doc: vscode.TextEditor)
+{
+    let line : string = doc.document.lineAt(doc.selection.active).text;
+    if (/^\s*:([a-zA-Z0-9]+):\s*$/.test(line))
+    {
+        await vscode.commands.executeCommand('editor.toggleFold');
+    }
+    else if(/^\s*[*]+ /.test(line))
+    {
+        await vscode.commands.executeCommand('editor.toggleFold');
+    }
+
+}
+
 export async function autoFoldChanged(doc: vscode.TextDocumentChangeEvent)
 {
     if(doc.document.languageId == 'org' && doc.document.isDirty)

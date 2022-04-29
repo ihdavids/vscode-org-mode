@@ -119,7 +119,11 @@ class OrgFoldingAndOutlineDocumentState {
                     this.createSection(localTop, lineNumber - 1);
                 }
 
-                const title = utils.getHeaderTitle(text);
+                let title = utils.getHeaderTitle(text);
+                if(!title)
+                {
+                    title = "<empty>";
+                }
                 stack.push({ type: ChunkType.SECTION, title, level: currentLevel, startLine: lineNumber });
             }
         }

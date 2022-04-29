@@ -56,7 +56,9 @@ export function activate(context: vscode.ExtensionContext) {
     const insertPropertyDrawerCmd = vscode.commands.registerTextEditorCommand('org.insertPropertyDrawer', props.insertPropertyDrawerCommand);
     const insertLogbookDrawerCmd = vscode.commands.registerTextEditorCommand('org.insertLogbookDrawer', props.insertLogbookDrawerCommand);
     const insertPropertyCmd = vscode.commands.registerTextEditorCommand('org.insertProperty', props.insertPropertyCommand);
+    const tablHandlerCmd = vscode.commands.registerTextEditorCommand('org.tabHandler', folding.tabHandler);
 
+    context.subscriptions.push(tablHandlerCmd);
     context.subscriptions.push(insertPropertyDrawerCmd);
     context.subscriptions.push(insertLogbookDrawerCmd);
     context.subscriptions.push(insertPropertyCmd);
