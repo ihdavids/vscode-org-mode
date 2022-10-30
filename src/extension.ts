@@ -18,7 +18,27 @@ import * as folding from './folding';
 import * as agenda from './agenda';
 import * as odb from './db';
 
+export class OrgExtension {
+    private static instance: OrgExtension;
+    context: vscode.ExtensionContext;    
+    constructor()
+    {
+    }
+
+    public static get(): OrgExtension
+    {
+        if (!OrgExtension.instance) {
+            OrgExtension.instance = new OrgExtension();
+        }
+        return OrgExtension.instance;
+    } 
+
+    public activate(context: vscode.ExtensionContext) {
+        this.context = context;
+    }
+} 
 export function activate(context: vscode.ExtensionContext) {
+    OrgExtension.get().activate(context);
     const insertHeadingRespectContentCmd = vscode.commands.registerTextEditorCommand('org.insertHeadingRespectContent', HeaderFunctions.insertHeadingRespectContent);
     const insertChildCmd = vscode.commands.registerTextEditorCommand('org.insertSubheading', HeaderFunctions.insertChild);
     const demoteLineCmd = vscode.commands.registerTextEditorCommand('org.doDemote', HeaderFunctions.demoteLine);

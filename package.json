@@ -343,7 +343,7 @@
         "mocha": "^6.0.1",
         "tslint": "^5.14.0",
         "tslint-config-prettier": "^1.18.0",
-        "typescript": "^2.9.2",
+        "typescript": "^3.9.10",
         "vscode": "^1.1.30",
         "vscode-coverage-test-runner": "^1.0.0"
     },
@@ -352,6 +352,7 @@
         "isomorphic-ws": "^5.0.0",
         "p-event": "^4.2.0",
         "rpc-websocket-client": "^1.1.4",
-        "rpc-websockets": "^7.5.0"
+        "rpc-websockets": "^7.5.0",
+        "ws": "^8.10.0"
     }
 }
