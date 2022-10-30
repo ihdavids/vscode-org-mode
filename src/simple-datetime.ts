@@ -1,6 +1,7 @@
 import * as datefns from 'date-fns';
 import * as vscode from 'vscode';
 import * as Utils from './utils';
+import {Sets} from './sets';
 
 const weekdayArray = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -43,7 +44,7 @@ export function buildDateString(datetime: ISimpleDate): string {
     const { year, month, day, weekday } = datetime;
 
     let dateString = `${year}-${month}-${day}`;
-    if (Utils.getLeftZero()) {
+    if (Sets.leftZero) {
         dateString = padDate(dateString);
     }
     if (weekday) {
@@ -58,7 +59,7 @@ export function buildDateTimeString(datetime: ISimpleDateTime): string {
 
     let dateString = `${year}-${month}-${day}`;
     let timeString = `${hours}:${minutes}`;
-    if (Utils.getLeftZero()) {
+    if (Sets.leftZero) {
         dateString = padDate(dateString);
         timeString = padTime(timeString);
     }
@@ -132,7 +133,7 @@ export function modifyDate(dateString: string, action: string): string {
 }
 
 export function getClockTotal(line) {
-    const separator = Utils.getClockTotalSeparator();
+    const separator = Sets.clockTotalSeparator;
 
     const regex = /\d{1,2}:\d{1,2}/g;
     const match = line.match(regex);
@@ -146,7 +147,7 @@ export function getClockTotal(line) {
     const minutes = clock / (60 * 1000) - (60 * hours);
 
     let clockString = `${hours}:${minutes}`;
-    if (Utils.getLeftZero()) {
+    if (Sets.leftZero) {
         clockString = padTime(clockString);
     }
 

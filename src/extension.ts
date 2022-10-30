@@ -15,6 +15,8 @@ import * as list from './lists';
 import * as dwim from './dwim';
 import * as props from './properties';
 import * as folding from './folding';
+import * as agenda from './agenda';
+import * as odb from './db';
 
 export function activate(context: vscode.ExtensionContext) {
     const insertHeadingRespectContentCmd = vscode.commands.registerTextEditorCommand('org.insertHeadingRespectContent', HeaderFunctions.insertHeadingRespectContent);
@@ -58,6 +60,11 @@ export function activate(context: vscode.ExtensionContext) {
     const insertPropertyCmd = vscode.commands.registerTextEditorCommand('org.insertProperty', props.insertPropertyCommand);
     const tablHandlerCmd = vscode.commands.registerTextEditorCommand('org.tabHandler', folding.tabHandler);
 
+    const showAgendaCmd = vscode.commands.registerTextEditorCommand('org.showAgenda', agenda.showAgenda);
+    const connectToOrgsCmd = vscode.commands.registerTextEditorCommand('org.connectToOrgs', odb.connectToOrgs);
+
+    context.subscriptions.push(showAgendaCmd);
+    context.subscriptions.push(connectToOrgsCmd);
     context.subscriptions.push(tablHandlerCmd);
     context.subscriptions.push(insertPropertyDrawerCmd);
     context.subscriptions.push(insertLogbookDrawerCmd);

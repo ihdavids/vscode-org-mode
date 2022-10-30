@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import * as Datetime from './simple-datetime';
 import * as Utils from './utils';
+import { Sets } from './sets';
 
 export function insertTimestamp(textEditor: vscode.TextEditor, edit: vscode.TextEditorEdit) {
     const document = Utils.getActiveTextEditorEdit();
@@ -29,7 +30,7 @@ export function clockOut(textEditor: vscode.TextEditor, edit: vscode.TextEditorE
     const cursorPos = Utils.getCursorPosition();
     const line = Utils.getLine(document, cursorPos);
 
-    const separator = Utils.getClockInOutSeparator();
+    const separator = Sets.clockInOutSeparator;
     const separatorIndex = line.indexOf(separator);
     if (separatorIndex !== -1) {
         const initPos = new vscode.Position(cursorPos.line, separatorIndex);
@@ -52,7 +53,7 @@ export function updateClock(textEditor: vscode.TextEditor, edit: vscode.TextEdit
         return;
     }
     
-    const separator = Utils.getClockTotalSeparator();
+    const separator = Sets.clockTotalSeparator;
     const separatorIndex = line.indexOf(separator);
     if (separatorIndex !== -1) {
         const initPos = new vscode.Position(cursorPos.line, separatorIndex);

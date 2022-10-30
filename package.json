@@ -23,11 +23,25 @@
         "Programming Languages"
     ],
     "activationEvents": [
-        "onLanguage:org"
+        "onLanguage:org",
+        "onCommand:org.showAgenda",
+        "onCommand:org.connectToOrgs"
     ],
     "main": "./out/src/extension",
     "contributes": {
         "commands": [
+            {
+                "command": "org.showAgenda",
+                "title": "Org: Show Agenda"
+            },
+            {
+                "command": "org.connectToOrgs",
+                "title": "Org: Connect To Orgs"
+            },
+            {
+                "command": "org.tabHandler",
+                "title": "Org: Tab Handler"
+            },
             {
                 "command": "org.addDoWhatIMean",
                 "title": "Org: Add DWIM"
@@ -305,6 +319,11 @@
                 "command": "org.toggleDoWhatIMean",
                 "key": "ctrl+o a t",
                 "when": "editorLangId == 'org'"
+            },
+            {
+                "command": "org.tabHandler",
+                "key": "tab",
+                "when": "editorLangId == 'org'"
             }
         ]
     },
@@ -329,6 +348,8 @@
         "vscode-coverage-test-runner": "^1.0.0"
     },
     "dependencies": {
-        "date-fns": "^1.28.3"
+        "date-fns": "^1.28.3",
+        "p-event": "^4.2.0",
+        "rpc-websockets": "^7.5.0"
     }
 }

@@ -322,31 +322,6 @@ export function lineLen(doc: vscode.TextDocument, pos: vscode.Position) {
     return line.length;
 }
 
-export function getKeywords() {
-    const settings = vscode.workspace.getConfiguration("org");
-    const todoKeywords = settings.get<string[]>("todoKeywords");
-    todoKeywords.push(""); // Since 'nothing' can be a TODO
-    return todoKeywords;
-}
-
-export function getLeftZero() {
-    const settings = vscode.workspace.getConfiguration("org");
-    const addLeftZero = settings.get<boolean>("addLeftZero");
-    return addLeftZero;
-}
-
-export function getClockInOutSeparator() {
-    const settings = vscode.workspace.getConfiguration("org");
-    const clockInOutSeparator = settings.get<string>("clockInOutSeparator");
-    return clockInOutSeparator;
-}
-
-export function getClockTotalSeparator() {
-    const settings = vscode.workspace.getConfiguration("org");
-    const clockTotalSeparator = settings.get<string>("clockTotalSeparator");
-    return clockTotalSeparator;
-}
-
 export function getUniq(arr: string[]): string[] {
     // Must also preserve order
     const map = {};

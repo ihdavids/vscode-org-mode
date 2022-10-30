@@ -1,8 +1,9 @@
 import { window, workspace } from 'vscode';
-import { getKeywords, getUniq } from './utils';
+import { getUniq } from './utils';
+import { Sets } from './sets';
 
 export default function (todoString: string, action: string) {
-    const todoKeywords = getUniq(getKeywords());
+    const todoKeywords = getUniq(Sets.keywords);
     let nextKeywordIdx = todoKeywords.indexOf(todoString);
     if (nextKeywordIdx < 0) {
         window.showErrorMessage(`Keyword '${todoString}' not found`);
