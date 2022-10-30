@@ -349,7 +349,9 @@
     },
     "dependencies": {
         "date-fns": "^1.28.3",
+        "isomorphic-ws": "^5.0.0",
         "p-event": "^4.2.0",
+        "rpc-websocket-client": "^1.1.4",
         "rpc-websockets": "^7.5.0"
     }
 }
