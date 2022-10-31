@@ -1,0 +1,341 @@
+
+.agd-location {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font-size: 100%;
+  font: inherit;
+  vertical-align: baseline;
+  font-family: 'Montserrat', sans-serif;
+}
+
+.agd-timeMarker {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  vertical-align: baseline;
+  position: absolute;
+  border: 0;
+  background-color: #F00;
+  border-style: dashed;
+  z-index: 2400;
+  height: 3px;
+  cursor: pointer;
+}
+
+.agd-dot {
+  position: absolute;
+  height: 25px;
+  width: 25px;
+  background-color: #f00;
+  border-radius: 50%;
+  z-index: 2400;
+  display: inline-block;
+}
+
+
+.agd-yesterday {
+  font-weight: 900;
+  border: 2px;
+  font-family: 'Font Awesome 5 Free';
+  width: 30px;
+  height: 30px;
+  border-color: #999;
+  border-style: solid;
+  border-width: 1px;
+}
+
+.agd-tomorrow {
+  font-weight: 900;
+  border: 2px;
+  font-family: 'Font Awesome 5 Free';
+  margin-right: 0.1rem;
+  width: 30px;
+  height: 30px;
+  border-color: #999;
+  border-style: solid;
+  border-width: 1px;
+}
+.agd-today {
+  font-weight: 900;
+  font-family: 'Font Awesome 5 Free';
+  margin-right: 0.1rem;
+  width: 30px;
+  height: 30px;
+  border-color: #999;
+  border-style: solid;
+  border-width: 1px;
+}
+
+
+.agd-container {
+  position: relative;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font-size: 100%;
+  font: inherit;
+  vertical-align: baseline;
+  font-family: 'Montserrat', sans-serif;
+
+  color: #D1D1D1;
+  height:720px;
+  width: 900px;
+  display: inline-flex;
+}
+
+.agd-timings {
+  text-align: right;
+  padding-right: 10px;
+  width: 100px;
+  height: 720px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background-color: white;
+  font-size: 0.5em;
+  box-sizing: border-box;
+  border-radius: 5px;
+}
+
+.agd-timings span {
+  font-size: 200%;
+  color: #696969;
+}
+
+
+.agd-days {
+  height: 720px;
+  width: 620px;
+  padding: 0px 10px;
+  background-color: #F0F0F0;
+  border-color: #AAAAAA;
+  border-style: solid;
+  border-width: 1px;
+  box-sizing: border-box;
+  border-radius: 5px;
+
+  background-image: linear-gradient(to bottom, #AAA 0px, transparent 1px);
+  background-size: 1px 60px;
+}
+
+.agd-event {
+  background-color: white;
+  border-style: solid;
+  border-width: 1px;
+  border-left-width: 5px;
+  border-color: #D1D1D1;
+  border-left-color: #57b986;
+  padding-left: 10px;
+  padding-top: 5px;
+  position: absolute;
+  font-size: 0.5em;
+  box-sizing: border-box;
+  border-radius: 5px;
+}
+
+.agd-event .agd-title {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font: inherit;
+  vertical-align: baseline;
+  font-family: 'Montserrat', sans-serif;
+  color: #57b986;
+  font-size: 200%;
+}
+
+.orgdiv 
+{
+  padding: 20px;
+}
+
+.org :is(h1, h2, h3, h4) 
+{
+  margin: 2.5rem 0 1.5rem 0;
+  line-height: 1.25; 
+}
+
+.org h2::before
+{
+  color: #696969;
+  content: "\f7b9";
+  font-family: 'Font Awesome 5 Free';
+  font-weight: 600;
+  font-size: .65em;
+}
+
+.org h3::before
+{
+  color: #696969;
+  content: "\f085";
+  font-family: 'Font Awesome 5 Free';
+  font-weight: 600;
+  font-size: .6em;
+}
+
+.org h4::before
+{
+  color: #696969;
+  content: "\f06d";
+  font-family: 'Font Awesome 5 Free';
+  font-weight: 600;
+  font-size: .55em;
+}
+
+
+.org .outline-2 
+{
+  padding-left: 0px;
+}
+
+.org .outline-text-2 
+{
+  padding-left: 10px;
+  color: black;
+}
+
+.org .outline-3 
+{
+  padding-left: 20px;
+}
+
+.org .outline-text-3 
+{
+  padding-left: 30px;
+  color: black;
+}
+
+.org .outline-4 
+{
+  padding-left: 40px;
+}
+
+.org .outline-text-4 
+{
+  padding-left: 50px;
+  color: black;
+}
+
+.org .outline-5
+{
+  padding-left: 60px;
+}
+
+.org .outline-text-5
+{
+  padding-left: 70px;
+  color: black;
+}
+
+.org .title {
+  font-size: 2.5em; }
+
+.org .subtitle {
+  font-weight: normal;
+  font-size: 0.75em;
+  color: #666; }
+
+.org :is(a) {
+  color: #fa6432;
+  text-decoration: none; }
+.org :is(a:hover, a:focus, a:active) {
+  text-decoration: underline; }
+
+.org :is(p) {
+  margin: 1em 0; }
+.org :is(p, code) {
+  padding: 0.05em 0.2em;
+  border: 1px none #ccc; }
+
+.org :is(ol ul) {
+  margin: 1em; }
+.org :is(ol li ol, ol li ul, ul li ol, ul li ul) {
+  margin: 0 2em; }
+.org :is(ol li p, ul li p) {
+  margin: 0; }
+
+.org :is(img) {
+  max-width: 100%;
+  display: block;
+  margin: 0 auto;
+  padding: 0.5em; }
+
+.org :is(blockquote) {
+  padding-left: 1em;
+  font-style: italic;
+  border-left: solid 1px #fa6432; }
+
+.org :is(table) {
+  font-family: monospace, monospace; /* https://github.com/necolas/normalize.css#extended-details-and-known-issues */
+  font-size: 1rem;
+  text-align: left;
+  caption-side: bottom;
+  margin-bottom: 2em; }
+.org :is(table) {
+  border: none; }
+.org :is(table thead, table tr) {
+  display: table;
+  table-layout: fixed;
+  width: 100%; }
+.org :is(table tr:nth-child(even)) {
+  background-color: #ccc; }
+.org :is(table tbody) {
+  display: block;
+  max-height: 70vh;
+  overflow-y: auto; }
+.org :is(table td, table th) {
+  padding: 0.25em; }
+
+.org :is(table, .highlight > pre, pre.example) {
+  max-height: 70vh;
+  margin: 1em 0;
+  padding: 1em;
+  overflow: auto;
+  font-family: monospace, monospace; /* https://github.com/necolas/normalize.css#extended-details-and-known-issues */
+  font-size: 0.85rem;
+  border: 1px solid rgba(250, 100, 50, 0.5); }
+
+.org :is(figure) {
+  margin: 1em 0;
+}
+
+.org :is(figcaption) {
+  font-family: monospace, monospace; /* https://github.com/necolas/normalize.css#extended-details-and-known-issues */
+  font-size: 0.75em;
+  text-align: center;
+  color: grey; }
+
+.org .footnote-definition sup {
+  float: left; }
+
+.org .footnote-definition .footnote-body {
+  margin: 1em 0;
+  padding: 0 1em;
+  border: 1px solid rgba(250, 100, 50, 0.3);
+  background-color: #ccc; }
+.org .footnote-definition .footnote-body p:only-child {
+  margin: 0.2em 0; }
+
+.org .align-left   { text-align: left;   }
+.org .align-center { text-align: center; }
+.org .align-right  { text-align: right;  }
+
+
+/*dl.org { font-family: monospace, monospace; }*/
+dl.org > dt { font-weight: bold; }
+dl.org > dd { margin: 1em; }
+
+.org .todo, .org .priority {
+  font-size: 0.8em;
+  color: red;
+}
+
+.org .tags {
+  font-size: 0.3em;
+  color: #999;
+}
+
+.org .timestamp {
+  padding: 0.05em 0.2em;
+  border: 1px none #ccc; }

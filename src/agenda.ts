@@ -10,21 +10,230 @@ const cats = {
   'Compiling Cat': 'https://media.giphy.com/media/mlvseq9yvZhba/giphy.gif'
 };
 
-function getWebviewContent(webview, cat: keyof typeof cats, agd) {
+class hnode {
+  name: string;
+  attribs: Record<string, string> = {}
+  style: Record<string, string> = {};
+  children: Array<hnode> = [];
+  innerHTML: string = null;
+
+  public constructor(nm: string) {
+    this.name = nm;
+  }
+
+  findById(id): hnode {
+    if (this.attribs.id === id) {
+      return this;
+    }
+    for (var n of this.children) {
+      var x = n.findById(id);
+      if (x) {
+        return x;
+      }
+    }
+    return null;
+  }
+
+  prepend(n) {
+    this.children.unshift(n);
+  }
+
+  append(n) {
+    this.children.push(n);
+  }
+
+  getChildren(): string {
+    let rv = "";
+    if (this.children.length > 0) {
+      for(var node of this.children) {
+        rv += node.render();
+      }
+      return rv;
+    }
+    if (this.innerHTML) {
+      return this.innerHTML;
+    }
+    return "";
+  }
+
+  set className(val: string) {
+    this.attribs['class'] = val;
+  }
+  set id(val: string) {
+    this.attribs['id'] = val;
+  }
+
+  getAttributes(): string {
+    let rv: string = "";
+    for (const [key, val] of Object.entries(this.attribs)) {
+      rv += ` ${key}='${val}'`
+    }
+    return rv;
+  }
+
+  getStyle(): string {
+    let rv: string = "";
+    if (Object.keys(this.style).length > 0) {
+      rv = " style='";
+        for (const [key, val] of Object.entries(this.style)) {
+          rv += `${key}:${val};`
+        }
+      rv += "'";
+    }
+    return rv;
+  }
+
+  render(): string {
+    return `<${this.name}${this.getAttributes()}${this.getStyle()}>${this.getChildren()}</${this.name}>`;
+  }
+}
+
+function createEvent(evt, height, top, left, units): hnode {
+  let node: hnode = new hnode('div');
+  node.className = "agd-event";
+  node.innerHTML = `<span class='agd-title'>${evt.headline}</span><br><span class='agd-location'> Sample Location </span>`;
+
+  // Customized CSS to position each event
+  //node.style.width = (containerWidth/units) + "px";
+  node.style.height = height + "px";
+  node.style.top = top + "px";
+  node.style.left = 100 + left + "px";
+
+  //node.style['border-left-color'] = '#f00';
+
+  //document.getElementById("events").appendChild(node);
+  return node;
+}
+
+let containerHeight = 720;
+let containerWidth = 600;
+let collisions = [];
+let width = [];
+let leftOffSet = [];
+let startHour = 9
+let endHour   = 21
+let minutesinDay = 60* (endHour - startHour)
+let timeFormat = 12
+
+function clamp(x) {
+  if (x < 0) {
+    return 0;
+  }
+  return x
+}
+
+var currentDay = new Date();
+
+
+function getInMinutes(d) {
+  let startMinutes = startHour * 60;
+  if (d) {
+    return (d.getHours() * 60 + d.getMinutes()) - startMinutes;
+  } else {
+    return 0;
+  }
+}
+
+function createTimeBlocks() {
+  let agd = new hnode('div');
+  agd.id = 'agenda';
+  agd.className = "agd-container"
+  var timings = new hnode('div');
+  timings.className = "agd-timings";
+  agd.prepend(timings);
+  
+  var days = new hnode('div');
+  days.className = "agd-days";
+  days.id = "events";
+
+  agd.append(days);
+
+  timings.innerHTML = '';
+  for (let i = startHour; i <= endHour; ++i) {
+
+    let node = new hnode('div');
+    let out = i
+    if (timeFormat == 12) {
+      var suffix = " AM"
+      if (i >= 12) {
+        suffix = " PM"
+      }
+      if (i > 12) {
+        out = i - 12
+      }
+      node.innerHTML = `<span>${out}:00</span>${suffix}` 
+    } else {
+      suffix = " Hrs"
+      node.innerHTML = `<span>${out}:00</span>${suffix}`
+    }
+    timings.append(node);
+
+    if (i != endHour) {
+      node = new hnode('div');
+
+      let out = i
+      if (timeFormat == 12) {
+        if (i > 12) {
+          out = i - 12
+        }
+        node.innerHTML = `${out}:30` 
+      } else {
+        node.innerHTML = `${out}:30`
+      }
+      timings.append(node);
+    }
+  }
+  return agd;
+}
+
+
+function getWebviewContent(webview, title: string, agd) {
     console.log(agd);
     //const myStyle = webview.asWebviewUri(vscode.Uri.joinPath(context.extensionUri, 'media', 'my-custom-style.css'));
-    const myStyle = webview.asWebviewUri(vscode.Uri.file(path.join(OrgExtension.get().context.extensionPath, 'media', 'day_agenda.css')));
+    const coreStyle = webview.asWebviewUri(vscode.Uri.file(path.join(OrgExtension.get().context.extensionPath, 'media', 'day_agenda.css')));
+    const dayStyle  = webview.asWebviewUri(vscode.Uri.file(path.join(OrgExtension.get().context.extensionPath, 'media', 'base_css.css')));
+    console.log(coreStyle);
+    let agendaItems: string = "";
+    let id = 0;
+    var time = createTimeBlocks();
+    var evts = time.findById('events');
+    for (var item of agd) {
+      let s = getInMinutes(item.start);
+      let e = getInMinutes(item.end);
+      let height = (e - s) / minutesinDay * containerHeight;
+      let top = s / minutesinDay * containerHeight; 
+      let units = width[id];
+      if (!units) {units = 1};
+      let left = (containerWidth / width[id]) * (leftOffSet[id] - 1) + 10;
+      if (!left || left < 0) {left = 10};
+      evts.append(createEvent(item,height,top,left,"px"));
+      id += 1;
+    }
+    agendaItems = time.render();
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cat Coding</title>
-    <link href="${myStyle}" rel="stylesheet" />  
+    <title>${title}</title>
+    <link href="${coreStyle}" rel="stylesheet" />  
+    <link href="${dayStyle}" rel="stylesheet" />  
 </head>
 <body>
-    <img src="${cats[cat]}" width="300" />
-    ${agd[0].Headline}
+
+<div id="content-wrapper" class="d-flex flex-column">
+  <div id="content">
+  <div class="container-fluid" id="agenda_section">
+    <br>
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 id="agendaTitle" class="h3 mb-0 text-gray-800">Agenda</h1>
+    </div>
+    <div class="row">
+    ${agendaItems}
+    </div>
+  </div>
+  </div>
+</div>
 </body>
 </html>`;
 }
@@ -33,8 +242,8 @@ function getWebviewContent(webview, cat: keyof typeof cats, agd) {
 export async function showAgenda(doc: vscode.TextEditor) {
 
       const panel = vscode.window.createWebviewPanel(
-        'catCoding',
-        'Cat Coding',
+        'agenda',
+        'Agenda',
         vscode.ViewColumn.One,
         {}
       );
@@ -42,9 +251,8 @@ export async function showAgenda(doc: vscode.TextEditor) {
       let iteration = 0;
       const updateWebview = async () => {
         let agd = await ODb.agenda();
-        const cat = iteration++ % 2 ? 'Compiling Cat' : 'Coding Cat';
-        panel.title = cat;
-        panel.webview.html = getWebviewContent(panel.webview, cat, agd);
+        panel.title = 'Agenda';
+        panel.webview.html = getWebviewContent(panel.webview, 'Agenda', agd);
       };
 
       // Set initial content
