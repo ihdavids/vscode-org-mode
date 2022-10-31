@@ -213,21 +213,24 @@ function updateItemInChildren(doc: TextEditor, pos: Position, parentUpdate: bool
 ;
 }
 
-function updateSummaryForLine(doc: TextEditor, pos: Position, parentUpdate: boolean) : Thenable<boolean>
+function updateSummaryForLine(doc: TextEditor, pos: Position, parentUpdate: boolean, childrenUpdate: boolean = false) : Thenable<boolean>
 {
     let [numChildren, numChecked] = recalcSummary(doc.document, pos);
     return updateSummary(doc, pos, numChecked, numChildren).then( (res2) => {
         let rv : Thenable<boolean> = new Promise<boolean>((resolve,reject) => { return resolve(true); });
-        let children = findChildren(doc.document, pos);
-        if(children.length > 0)
+        if( childrenUpdate )
         {
-            return updateItemInChildren(doc, pos, false, children, 0);
+            let children = findChildren(doc.document, pos);
+            if(children.length > 0)
+            {
+                return updateItemInChildren(doc, pos, false, children, 0);
+            }
         }
         return rv;
     });
 }
 
-function updateLine(doc: TextEditor, pos: Position, parentUpdate: boolean) : Thenable<boolean>
+function updateLine(doc: TextEditor, pos: Position, parentUpdate: boolean, childrenUpdate: boolean = false) : Thenable<boolean>
 {
     if(!isCheckbox(doc.document, pos) && !isCheckboxSummary(doc.document, pos))
     {
