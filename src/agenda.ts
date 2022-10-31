@@ -91,17 +91,15 @@ class hnode {
 function createEvent(evt, height, top, left, units): hnode {
   let node: hnode = new hnode('div');
   node.className = "agd-event";
-  node.innerHTML = `<span class='agd-title'>${evt.headline}</span><br><span class='agd-location'> Sample Location </span>`;
+  node.innerHTML = `<span class='agd-title'>${evt.Headline}</span><br><span class='agd-location'> Sample Location </span>`;
 
   // Customized CSS to position each event
-  //node.style.width = (containerWidth/units) + "px";
+  node.style.width = (containerWidth/units) + "px";
   node.style.height = height + "px";
   node.style.top = top + "px";
   node.style.left = 100 + left + "px";
 
   //node.style['border-left-color'] = '#f00';
-
-  //document.getElementById("events").appendChild(node);
   return node;
 }
 
@@ -128,11 +126,99 @@ var currentDay = new Date();
 function getInMinutes(d) {
   let startMinutes = startHour * 60;
   if (d) {
+    if (typeof d === 'string') {
+      d = new Date(d);
+    }
     return (d.getHours() * 60 + d.getMinutes()) - startMinutes;
   } else {
     return 0;
   }
 }
+
+function getCollisions (events) {
+
+  //resets storage
+  collisions = [];
+  if (events == null) {
+    return;
+  }
+
+  for (var i = 0; i < 24; i ++) {
+    var time = [];
+    for (var j = 0; j < events.length; j++) {
+      time.push(0);
+    }
+    collisions.push(time);
+  }
+
+  events.forEach((event, id) => {
+    let end = getInMinutes(event.Date.End);
+    let start = getInMinutes(event.Date.Start);
+    let order = 1;
+
+    while (start < end) {
+      var timeIndex = Math.floor(start/30);
+
+      while (order < events.length) {
+        if (collisions[timeIndex].indexOf(order) === -1) {
+          break;
+        }
+        order ++;
+      }
+
+      collisions[timeIndex][id] = order;
+      start = start + 30;
+    }
+
+    collisions[Math.floor((end-1)/30)][id] = order;
+  });
+};
+
+/*
+find width and horizontal position
+
+width - number of units to divide container width by
+horizontal position - pixel offset from left
+*/
+function getAttributes (events) {
+
+  //resets storage
+  width = [];
+  leftOffSet = [];
+
+  if (events == null) {
+    return;
+  }
+
+  for (var i = 0; i < events.length; i++) {
+    width.push(0);
+    leftOffSet.push(0);
+  }
+
+  collisions.forEach((period) => {
+
+    // number of events in that period
+    let count = period.reduce((a,b) => {
+      return b ? a + 1 : a;
+    })
+
+    if (count > 1) {
+      period.forEach((event, id) => {
+        // max number of events it is sharing a time period with determines width
+        if (period[id]) {
+          if (count > width[id]) {
+            width[id] = count;
+          }
+        }
+
+        if (period[id] && !leftOffSet[id]) {
+          leftOffSet[id] = period[id];
+        }
+      })
+    }
+  });
+};
+
 
 function createTimeBlocks() {
   let agd = new hnode('div');
@@ -195,18 +281,22 @@ function getWebviewContent(webview, title: string, agd) {
     console.log(coreStyle);
     let agendaItems: string = "";
     let id = 0;
+    getCollisions(agd);
+    getAttributes(agd);  
     var time = createTimeBlocks();
     var evts = time.findById('events');
     for (var item of agd) {
-      let s = getInMinutes(item.start);
-      let e = getInMinutes(item.end);
+      let s = getInMinutes(item.Date.Start);
+      let e = getInMinutes(item.Date.End);
       let height = (e - s) / minutesinDay * containerHeight;
       let top = s / minutesinDay * containerHeight; 
       let units = width[id];
       if (!units) {units = 1};
       let left = (containerWidth / width[id]) * (leftOffSet[id] - 1) + 10;
       if (!left || left < 0) {left = 10};
-      evts.append(createEvent(item,height,top,left,"px"));
+      if (top < containerHeight) {
+        evts.append(createEvent(item,height,top,left,1));
+      }
       id += 1;
     }
     agendaItems = time.render();
