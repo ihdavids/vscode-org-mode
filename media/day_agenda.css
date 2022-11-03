@@ -22,6 +22,19 @@
   height: 3px;
   cursor: pointer;
 }
+.agd-timeMarker-oob {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  vertical-align: baseline;
+  position: absolute;
+  border: 0;
+  background-color: #77f;
+  border-style: dotted;
+  z-index: 2400;
+  height: 3px;
+  cursor: pointer;
+}
 
 .agd-dot {
   position: absolute;
@@ -32,6 +45,16 @@
   z-index: 2400;
   display: inline-block;
 }
+.agd-dot-oob {
+  position: absolute;
+  height: 25px;
+  width: 25px;
+  background-color: #55f;
+  border-radius: 50%;
+  z-index: 2400;
+  display: inline-block;
+}
+
 
 
 .agd-yesterday {
@@ -92,9 +115,9 @@
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  /*
-  background-color: white;
-  */
+  
+  background-color: #111;
+  
   font-size: 0.5em;
   box-sizing: border-box;
   border-radius: 5px;
@@ -102,7 +125,7 @@
 
 .agd-timings span {
   font-size: 200%;
-  color: #696969;
+  color: #797979;
 }
 
 
@@ -122,7 +145,7 @@
 }
 
 .agd-event {
-  background-color: #f5f3f3;
+  background-color: #f0f0f0;
   border-style: solid;
   border-width: 1px;
   border-left-width: 5px;

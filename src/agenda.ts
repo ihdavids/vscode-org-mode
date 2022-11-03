@@ -42,6 +42,11 @@ class hnode {
     this.children.push(n);
   }
 
+  // alias for web compatibility
+  appendChild(n) {
+    this.append(n);
+  }
+
   getChildren(): string {
     let rv = "";
     if (this.children.length > 0) {
@@ -272,6 +277,34 @@ function createTimeBlocks() {
   return agd;
 }
 
+var createTimeMarker = (events: hnode, height, top, left, units, out_of_day) => {
+  let node = new hnode('div'); 
+  let dot  = new hnode('div');
+  if (!out_of_day) {
+    dot.className  = "agd-dot"
+    node.className = "agd-timeMarker";
+  } else {
+    dot.className  = "agd-dot-oob"
+    node.className = "agd-timeMarker-oob";
+  }
+
+  // Customized CSS to position each event
+  node.style.width  = (containerWidth/units) + "px";
+  node.style.height = height + "px";
+  node.style.top    = top + "px";
+  node.style.left   = left + "px";
+
+  let r = height*4;
+  dot.style.width  = r + "px";
+  dot.style.height = r + "px";
+  dot.style.top    = top - (r/2) + (height/2) + "px";
+  dot.style.left   = clamp(left - r/2) + "px";
+
+  events.appendChild(dot);
+  events.appendChild(node);
+}
+
+
 
 function getWebviewContent(webview, title: string, agd) {
     console.log(agd);
@@ -299,6 +332,19 @@ function getWebviewContent(webview, title: string, agd) {
       }
       id += 1;
     }
+    const now   = new Date();
+    let nowMins = getInMinutes(now);
+    let height = 2;
+    let top = nowMins / minutesinDay * containerHeight; 
+    let units = 1;
+    let left = 100; // this is the agd-timings style
+    let out_of_day = false;
+    if (top > containerHeight) {
+      top = containerHeight+2;
+      out_of_day = true;
+    }
+    createTimeMarker(evts,height, top, left, units, out_of_day);
+
     agendaItems = time.render();
   return `<!DOCTYPE html>
 <html lang="en">
