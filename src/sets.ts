@@ -23,7 +23,9 @@ export class Sets {
     }
     public static get keywords(): string[] {
         const todoKeywords = Sets.getProp<string[]>("todoKeywords");
-        todoKeywords.push(""); // Since 'nothing' can be a TODO
+        if (todoKeywords.indexOf("") === -1) {
+            todoKeywords.push(""); // Since 'nothing' can be a TODO
+        }
         return todoKeywords;
     }
     public static get leftZero(): boolean           { return Sets.getProp<boolean>("addLeftZero");           }
