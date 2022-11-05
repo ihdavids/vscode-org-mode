@@ -11,8 +11,10 @@ import { Sets } from './sets';
 import * as Util from './utils';
 
 // Any potential data labels should go here
-export const DATE = "DATE";
-export const TODO = "TODO";
+export const DATE  = "DATE";
+export const TODO  = "TODO";
+export const LIST  = "LIST";
+export const CHECK = "CHECKBOX";
 
 interface IContextData {
     dataLabel: string,
@@ -21,7 +23,7 @@ interface IContextData {
     range: Range
 }
 
-export default function getCursorContext(textEditor: TextEditor, edit: TextEditorEdit): IContextData {
+export default function getCursorContext(textEditor: TextEditor, edit: TextEditorEdit, includeLists: boolean = false): IContextData {
     const document = Util.getActiveTextEditorEdit();
     const cursorPos = Util.getCursorPosition();
     const curLine = Util.getLine(document, cursorPos);
@@ -45,6 +47,20 @@ export default function getCursorContext(textEditor: TextEditor, edit: TextEdito
     if (match) {
         // We've found our match
         return getTodoContext(match, cursorPos);
+    }
+
+    if (includeLists) {
+        const listRegexp = new RegExp(`^\\s*[0-9]+[.)]`);
+        match = listRegexp.exec(curLine);
+        if (match) {
+            return getListContext(match, cursorPos, LIST);
+        }
+
+        const chkRegexp = new RegExp(`^\\s*[+-] \\[[xX -]\\]`);
+        match = chkRegexp.exec(curLine);
+        if (match) {
+            return getListContext(match, cursorPos, CHECK);
+        }
     }
 
     return undefined;
@@ -86,5 +102,22 @@ function getTodoContext(match: RegExpExecArray, cursorPos: Position): IContextDa
         dataLabel: TODO,
         line,
         range
+    }
+}
+
+function getListContext(match: RegExpExecArray, cursorPos: Position, CTX: string): IContextData {
+    const line = cursorPos.line;
+
+    const startPos = new Position(line, match.index);
+    const endPos   = new Position(line, match.index + match[0].length);
+    const range    = new Range(startPos, endPos);
+    if (range.contains(cursorPos)) {
+        // We've found our match
+        return {
+            data: match[0],
+            dataLabel: CTX,
+            line,
+            range
+        }
     }
 }

@@ -277,7 +277,7 @@ function createTimeBlocks() {
   return agd;
 }
 
-var createTimeMarker = (events: hnode, height, top, left, units, out_of_day) => {
+function createTimeMarker (events: hnode, height, top, left, units, out_of_day) {
   let node = new hnode('div'); 
   let dot  = new hnode('div');
   if (!out_of_day) {
