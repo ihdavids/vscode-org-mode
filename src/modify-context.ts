@@ -8,7 +8,7 @@ export const DOWN = "DOWN";
 
 // If any new contexts are created (Such as TODO), switch for the dataLabel here
 function modifyContext(textEditor: vscode.TextEditor, edit: vscode.TextEditorEdit, action: string) {
-    const ctx = getCursorContext(textEditor, edit);
+    const ctx = getCursorContext(textEditor, edit, {});
 
     if (!ctx) {
         vscode.window.showErrorMessage("No context to modify");

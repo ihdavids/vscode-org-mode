@@ -4,6 +4,7 @@ import {
     Range,
     TextEditor,
     TextEditorEdit,
+    TextDocument,
     workspace
 } from "vscode";
 import * as Datetime from './simple-datetime';
@@ -15,15 +16,22 @@ export const DATE  = "DATE";
 export const TODO  = "TODO";
 export const LIST  = "LIST";
 export const CHECK = "CHECKBOX";
+export const NODE  = "NODE";
 
-interface IContextData {
+export interface IContextData {
     dataLabel: string,
     data: string,
     line: number,
     range: Range
+    info: number,
 }
 
-export default function getCursorContext(textEditor: TextEditor, edit: TextEditorEdit, includeLists: boolean = false): IContextData {
+export interface ContextOptions {
+    includeLists ?: boolean,
+    includeTodo  ?: boolean,
+}
+
+export default function getCursorContext(textEditor: TextEditor, edit: TextEditorEdit, { includeTodo = true, includeLists = false} ): IContextData {
     const document = Util.getActiveTextEditorEdit();
     const cursorPos = Util.getCursorPosition();
     const curLine = Util.getLine(document, cursorPos);
@@ -39,14 +47,16 @@ export default function getCursorContext(textEditor: TextEditor, edit: TextEdito
         }
     }
 
-    // Match for TODO (or absence)
-    const todoKeywords = Sets.keywords.join("|");
-    // const todoWords = "TODO|DONE";
-    const todoHeaderRegexp = new RegExp(`^(\\s*\\*+\\s+)(${todoKeywords})(?:\\b|\\[|$)`);
-    match = todoHeaderRegexp.exec(curLine);
-    if (match) {
-        // We've found our match
-        return getTodoContext(match, cursorPos);
+    if (includeTodo) {
+        // Match for TODO (or absence)
+        const todoKeywords = Sets.keywords.join("|");
+        // const todoWords = "TODO|DONE";
+        const todoHeaderRegexp = new RegExp(`^(\\s*\\*+\\s+)(${todoKeywords})(?:\\b|\\[|$)`);
+        match = todoHeaderRegexp.exec(curLine);
+        if (match) {
+            // We've found our match
+            return getTodoContext(match, cursorPos);
+        }
     }
 
     if (includeLists) {
@@ -63,7 +73,9 @@ export default function getCursorContext(textEditor: TextEditor, edit: TextEdito
         }
     }
 
-    return undefined;
+    return getNodeContext(cursorPos, document);
+
+    //return undefined;
 }
 
 function getTimestampContext(match: RegExpExecArray, cursorPos: Position): IContextData {
@@ -78,7 +90,8 @@ function getTimestampContext(match: RegExpExecArray, cursorPos: Position): ICont
             data: match[0],
             dataLabel: DATE,
             line,
-            range
+            range,
+            info: 0,
         }
     }
 
@@ -101,7 +114,8 @@ function getTodoContext(match: RegExpExecArray, cursorPos: Position): IContextDa
         data: todoWord,
         dataLabel: TODO,
         line,
-        range
+        range,
+        info: 0,
     }
 }
 
@@ -117,7 +131,54 @@ function getListContext(match: RegExpExecArray, cursorPos: Position, CTX: string
             data: match[0],
             dataLabel: CTX,
             line,
-            range
+            range,
+            info: 0
         }
     }
+}
+
+
+function getNodeContext(cursorPos: Position, document: TextDocument): IContextData {
+
+    const nodeStart = new RegExp(`^\\s*(\\*)+\\s+[a-zA-Z0-9]`);
+    let startLine: number = -1;
+    let endLine: number = document.lineCount-1;
+    let lineNum: number = cursorPos.line;
+    let numStars: number = 0;
+    let match;
+    let startText: string = "";
+    for (var i: number = lineNum; i >= 0; --i) {
+        const tempLine = Util.getLine(document, new Position(i, 0));
+        match = nodeStart.exec(tempLine);
+        if (match) {
+            startLine = i;
+            startText = tempLine;
+            numStars  = match[1].length;
+            break;
+        }
+    }
+    if (startLine != -1) {
+        let endLineTextLen: number = 0;
+        for (var i: number = (lineNum + 1); i < document.lineCount; ++i) {
+            const tempLine = Util.getLine(document, new Position(i, 0));
+            match = nodeStart.exec(tempLine);
+            if (match) {
+                endLine = i;
+                endLineTextLen = tempLine.length;
+                break;
+            }
+        }
+
+        const startPos = new Position(startLine, 0);
+        const endPos   = new Position(endLine, endLineTextLen);
+        const range    = new Range(startPos, endPos);
+        return {
+            data: startText,
+            dataLabel: NODE,
+            line: startLine,
+            range,
+            info: numStars  // number of stars
+        }
+    }
+    return undefined;
 }
