@@ -134,7 +134,8 @@ function getInMinutes(d) {
     if (typeof d === 'string') {
       d = new Date(d);
     }
-    return (d.getHours() * 60 + d.getMinutes()) - startMinutes;
+    let stime = (d.getHours() * 60 + d.getMinutes()) - startMinutes;
+    return stime;
   } else {
     return 0;
   }
@@ -156,14 +157,22 @@ function getCollisions (events) {
     collisions.push(time);
   }
 
+  let didClamp = false;
   events.forEach((event, id) => {
     let end = getInMinutes(event.Date.End);
     let start = getInMinutes(event.Date.Start);
+    // out of range
+    if (start < 0) {
+      start = 0;
+    }
     let order = 1;
 
     while (start < end) {
       var timeIndex = Math.floor(start/30);
-
+      if (timeIndex < 0) {
+        start = start + 30;
+        continue;
+      }
       while (order < events.length) {
         if (collisions[timeIndex].indexOf(order) === -1) {
           break;
@@ -321,6 +330,9 @@ function getWebviewContent(webview, title: string, agd) {
     for (var item of agd) {
       let s = getInMinutes(item.Date.Start);
       let e = getInMinutes(item.Date.End);
+      if (s < 0) {
+        s = 0;
+      }
       let height = (e - s) / minutesinDay * containerHeight;
       let top = s / minutesinDay * containerHeight; 
       let units = width[id];
