@@ -1,5 +1,9 @@
 import * as vscode from 'vscode';
 import * as Utils from './utils';
+import * as context from './cursor-context';
+import { Sets } from './sets';
+import { window, Disposable } from 'vscode';
+import {Range, TextDocument, Position, TextEditor, TextEditorEdit, Selection} from "vscode";
 
 export function insertHeadingRespectContent(textEditor: vscode.TextEditor, edit: vscode.TextEditorEdit) {
         const document = textEditor.document;
@@ -28,12 +32,24 @@ export function insertHeadingRespectContent(textEditor: vscode.TextEditor, edit:
 }
 
 export function insertChild(textEditor: vscode.TextEditor, edit: vscode.TextEditorEdit) {
-    const document = textEditor.document;
-    const cursorPos = Utils.getCursorPosition();
+    let   cursorPos = Utils.getCursorPosition();
+    const document  = textEditor.document;
+    const ctx = context.getNodeContext(cursorPos, document);
+    if (ctx != undefined) {
+        cursorPos = ctx.range.start;
+    }
     const curLine = Utils.getLine(textEditor.document, cursorPos);
-    const endOfLine = curLine.length;
+    let   endOfLine = curLine.length;
     const headerPrefix = Utils.getHeaderPrefix(curLine);
-    const insertPos = new vscode.Position(cursorPos.line, endOfLine);
+
+    let endPos = cursorPos;    
+    let insertPos = new vscode.Position(endPos.line, endOfLine);
+    if (ctx != undefined) {
+        endPos = ctx.range.end;
+        const tempLine = Utils.getLine(textEditor.document, endPos);
+        endOfLine = tempLine.length;
+        insertPos = new vscode.Position(endPos.line, endOfLine);
+    }
 
     if(headerPrefix) {
         edit.insert(insertPos, "\n" + headerPrefix.trim() + "* ");
@@ -63,5 +79,27 @@ export function promoteLine(textEditor: vscode.TextEditor, edit: vscode.TextEdit
     if(headerPrefix && headerPrefix !== "* ") {
         const deleteRange = new vscode.Range(insertPos, new vscode.Position(insertPos.line, 1));
         edit.delete(deleteRange);
+    }
+}
+
+async function selectTodo(): Promise<string | undefined> {
+    return window.showQuickPick(Sets.keywords);;
+}
+
+export async function chooseAndChangeTodo(ctx , doc: TextEditor, edit: vscode.TextEditorEdit) {
+    let newTodoString = await selectTodo();
+    if (newTodoString !== undefined) {
+        if (newTodoString === "") {
+            // Must remove extra space
+            const oldEnd   = ctx.range.end
+            const newEnd   = oldEnd.with({ character: oldEnd.character + 1 });
+            const oldRange = ctx.range;
+            ctx.range = oldRange.with({ end: newEnd });
+        }
+        doc.edit((editBuilder) => {
+            editBuilder.replace(ctx.range, newTodoString);
+            //editBuilder.insert(textEditor.selection.active, item.fsPath);
+        });
+
     }
 }

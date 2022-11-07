@@ -9,7 +9,7 @@ import { QuickPickItem } from 'vscode';
 import { workspace } from 'vscode';
 import {Range, TextDocument, Position, TextEditor, TextEditorEdit, Selection} from "vscode";
 import getCursorContext, { DATE, TODO, LIST, CHECK, NODE, IContextData } from './cursor-context';
-
+import * as header from './header-functions'
 
 export function addDoWhatIMean(doc: TextEditor, edit: vscode.TextEditorEdit) 
 {
@@ -63,30 +63,8 @@ export function toggleDoWhatIMean(doc: TextEditor, edit: vscode.TextEditorEdit)
 
     switch (ctx.dataLabel) {
         case DATE: break; // TODO
-        case TODO: chooseAndChangeTodo(ctx, doc, edit); break;
+        case TODO: header.chooseAndChangeTodo(ctx, doc, edit); break;
         case LIST:  break;
         case CHECK: checkbox.toggleCheckboxCommand(doc);
-    }
-}
-
-async function selectTodo(): Promise<string | undefined> {
-    return window.showQuickPick(Sets.keywords);;
-}
-
-async function chooseAndChangeTodo(ctx , doc: TextEditor, edit: vscode.TextEditorEdit) {
-    let newTodoString = await selectTodo();
-    if (newTodoString !== undefined) {
-        if (newTodoString === "") {
-            // Must remove extra space
-            const oldEnd   = ctx.range.end
-            const newEnd   = oldEnd.with({ character: oldEnd.character + 1 });
-            const oldRange = ctx.range;
-            ctx.range = oldRange.with({ end: newEnd });
-        }
-        doc.edit((editBuilder) => {
-            editBuilder.replace(ctx.range, newTodoString);
-            //editBuilder.insert(textEditor.selection.active, item.fsPath);
-        });
-
     }
 }

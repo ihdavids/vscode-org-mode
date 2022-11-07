@@ -138,7 +138,7 @@ function getListContext(match: RegExpExecArray, cursorPos: Position, CTX: string
 }
 
 
-function getNodeContext(cursorPos: Position, document: TextDocument): IContextData {
+export function getNodeContext(cursorPos: Position, document: TextDocument): IContextData {
 
     const nodeStart = new RegExp(`^\\s*(\\*)+\\s+[a-zA-Z0-9]`);
     let startLine: number = -1;
@@ -163,8 +163,9 @@ function getNodeContext(cursorPos: Position, document: TextDocument): IContextDa
             const tempLine = Util.getLine(document, new Position(i, 0));
             match = nodeStart.exec(tempLine);
             if (match) {
-                endLine = i;
-                endLineTextLen = tempLine.length;
+                endLine = i-1;
+                const tempLine2 = Util.getLine(document, new Position(i-1, 0));
+                endLineTextLen = tempLine2.length;
                 break;
             }
         }
