@@ -34,27 +34,54 @@ export function insertHeadingRespectContent(textEditor: vscode.TextEditor, edit:
 export function insertChild(textEditor: vscode.TextEditor, edit: vscode.TextEditorEdit) {
     let   cursorPos = Utils.getCursorPosition();
     const document  = textEditor.document;
+
+    // Get start and end of node
     const ctx = context.getNodeContext(cursorPos, document);
     if (ctx != undefined) {
         cursorPos = ctx.range.start;
     }
+
+    // Get the node headline so we know how many stars we have.
     const curLine = Utils.getLine(textEditor.document, cursorPos);
     let   endOfLine = curLine.length;
     const headerPrefix = Utils.getHeaderPrefix(curLine);
 
+    // Eat any extra blank lines at the end of the node
     let endPos = cursorPos;    
     let insertPos = new vscode.Position(endPos.line, endOfLine);
     if (ctx != undefined) {
         endPos = ctx.range.end;
-        const tempLine = Utils.getLine(textEditor.document, endPos);
-        endOfLine = tempLine.length;
+        // Lets try to eat any empty space we might have along the way
+        let eatingEmpties = 0;
+        for (var l = endPos.line; l > 0 && l > cursorPos.line; --l ) {
+            let tempPos = new vscode.Position(l, 0);
+            const tempLine = Utils.getLine(textEditor.document, tempPos);
+            if (tempLine === undefined || tempLine.trim().length == 0) {
+                endPos         = tempPos;
+                endOfLine      = 0;
+                eatingEmpties += 1;
+            } else {
+                if (eatingEmpties == 0) {
+                    endOfLine = tempLine.length;
+                }
+                break;
+            }
+
+        }
         insertPos = new vscode.Position(endPos.line, endOfLine);
     }
 
+    // We have a node
     if(headerPrefix) {
-        edit.insert(insertPos, "\n" + headerPrefix.trim() + "* ");
-        Utils.moveToEndOfLine(textEditor, new vscode.Position(insertPos.line, 0));
-        textEditor.revealRange(new vscode.Range(insertPos, insertPos));     // jump screen so cursor is in view
+        // jump screen so cursor is in view
+        textEditor.revealRange(new vscode.Range(insertPos, insertPos));
+        // Snippets and vim mode seem to be a problem. This is hella annoying!
+        // If we are appending to a line then we need to add a newline, otherwise we just insert on the line
+        if (endOfLine > 0) {
+            textEditor.insertSnippet(new vscode.SnippetString("\n" + headerPrefix.trim() + "* ${1}"), insertPos);
+        } else {
+            textEditor.insertSnippet(new vscode.SnippetString(headerPrefix.trim() + "* ${1}"), insertPos);
+        }
     }
 }
 
@@ -86,6 +113,7 @@ async function selectTodo(): Promise<string | undefined> {
     return window.showQuickPick(Sets.keywords);;
 }
 
+// Dynamic TODO Selection from a menu rather than cycling.
 export async function chooseAndChangeTodo(ctx , doc: TextEditor, edit: vscode.TextEditorEdit) {
     let newTodoString = await selectTodo();
     if (newTodoString !== undefined) {
