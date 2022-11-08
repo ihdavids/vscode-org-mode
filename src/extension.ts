@@ -16,6 +16,7 @@ import * as dwim from './dwim';
 import * as props from './properties';
 import * as folding from './folding';
 import * as agenda from './agenda';
+import * as daypage from './daypage';
 import * as odb from './db';
 
 export class OrgExtension {
@@ -83,6 +84,12 @@ export function activate(context: vscode.ExtensionContext) {
     const showAgendaCmd = vscode.commands.registerTextEditorCommand('org.showAgenda', agenda.showAgenda);
     const connectToOrgsCmd = vscode.commands.registerTextEditorCommand('org.connectToOrgs', odb.connectToOrgs);
 
+    const showDayPageCmd = vscode.commands.registerTextEditorCommand('org.showDayPageToday', daypage.showDayPageToday);
+    const prevDayPageCmd = vscode.commands.registerTextEditorCommand('org.prevDayPage', daypage.prevDayPage);
+    const nextDayPageCmd = vscode.commands.registerTextEditorCommand('org.nextDayPage', daypage.nextDayPage);
+    context.subscriptions.push(nextDayPageCmd);
+    context.subscriptions.push(prevDayPageCmd);
+    context.subscriptions.push(showDayPageCmd);
     context.subscriptions.push(showAgendaCmd);
     context.subscriptions.push(connectToOrgsCmd);
     context.subscriptions.push(tablHandlerCmd);

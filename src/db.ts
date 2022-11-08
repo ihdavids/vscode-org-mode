@@ -20,27 +20,66 @@ export class ODb
         // instantiate Client and connect to an RPC server
         console.log("CONNECTING TO: ", Sets.orgsConnection);
 
+    }
+
+    public async connect(): Promise<unknown> {
         this.ws = new RpcWebSocketClient();
-        this.ws.connect(Sets.orgsConnection);
+        let onConnect = this.ws.connect(Sets.orgsConnection);
 
         this.ws.onOpen(function(x) {
             console.log("Connection established on Org DB...")
         })
+        return onConnect;
     }
 
-    public static get(): ODb
+    public static async get(): Promise<ODb>
     {
         if (!ODb.instance) {
             ODb.instance = new ODb();
+            await ODb.instance.connect();
         }
         return ODb.instance;
     } 
 
     public static async agenda() {
-        const now = new Date();
-	    let qry: string = `!IsProject() && !IsArchived() && IsTodo() && OnDate("${now.getFullYear()} ${pad2(now.getDate())} ${pad2(now.getMonth()+1)}")`;
-        let result = await ODb.get().ws.call("Db.QueryTodosExp",[{ "Query": qry}])
-        return result;
+        try {
+            const now = new Date();
+	        let qry: string = `!IsProject() && !IsArchived() && IsTodo() && OnDate("${now.getFullYear()} ${pad2(now.getDate())} ${pad2(now.getMonth()+1)}")`;
+            let db     = await ODb.get();
+            let result = await db.ws.call("Db.QueryTodosExp",[{ "Query": qry}])
+            return result;
+        } catch(e) {
+            vscode.window.showErrorMessage("AGENDA: Cannot contact orgs database, please ensure DB is present");
+            return null;
+        }
+    }
+
+    public static async daypage() {
+        try {
+            const now = new Date();
+	        let qry: string = `${now.getFullYear()}-${pad2(now.getDate())}-${pad2(now.getMonth()+1)}`;
+            let db     = await ODb.get();
+            let result = await db.ws.call("Db.CreateDayPage",[qry])
+            return result;
+        } catch(e) {
+            vscode.window.showErrorMessage("DAYPAGE: Cannot contact orgs database, please ensure DB is present");
+            return null;
+        }
+    }
+
+    public static async getdaypage(tm: Date = null) {
+        try {
+            if(tm == null) {
+                tm = new Date();
+            }
+	        let qry: string = `${tm.getFullYear()}-${pad2(tm.getDate())}-${pad2(tm.getMonth()+1)}`;
+            let db     = await ODb.get();
+            let result = await db.ws.call("Db.GetDayPageAt",[qry])
+            return result;
+        } catch(e) {
+            vscode.window.showErrorMessage("DAYPAGE: Cannot contact orgs database, please ensure DB is present");
+            return null;
+        }
     }
 
 };

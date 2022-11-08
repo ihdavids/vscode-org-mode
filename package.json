@@ -25,11 +25,24 @@
     "activationEvents": [
         "onLanguage:org",
         "onCommand:org.showAgenda",
-        "onCommand:org.connectToOrgs"
+        "onCommand:org.connectToOrgs",
+        "onCommand:org.showDayPageToday"
     ],
     "main": "./out/src/extension",
     "contributes": {
         "commands": [
+            {
+                "command": "org.prevDayPage",
+                "title": "Org: Prev Day Page"
+            },
+            {
+                "command": "org.nextDayPage",
+                "title": "Org: Next Day Page"
+            },
+            {
+                "command": "org.showDayPageToday",
+                "title": "Org: Today Day Page"
+            },
             {
                 "command": "org.showAgenda",
                 "title": "Org: Show Agenda"
