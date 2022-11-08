@@ -335,7 +335,7 @@
             },
             {
                 "command": "org.tabHandler",
-                "key": "tab",
+                "key": "ctrl+tab",
                 "when": "editorLangId == 'org'"
             }
         ]

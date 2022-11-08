@@ -46,6 +46,6 @@ export async function autoFoldChanged(doc: vscode.TextDocumentChangeEvent)
 {
     if(doc.document.languageId == 'org' && doc.document.isDirty)
     {
-        await autoFold(doc.document);
+        autoFold(doc.document);
     }
 }

@@ -130,7 +130,7 @@ class OrgFoldingAndOutlineDocumentState {
 
         let top: IChunk;
         while ((top = stack.pop()) != null) {
-            if(top.startLine > (count-1))
+            if(top.startLine < (count-1))
             {
                 this.createSection(top, count - 1);
             }
