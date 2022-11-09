@@ -1,4 +1,4 @@
-* TODO Things I want [3/39]
+* TODO Things I want [3/38]
 	- [ ] Named Objects [0%]
 		- [ ] Works with babel
 		- [ ] Identifies tables and other things
@@ -73,15 +73,12 @@
 		- [ ] custom_id links work
 		- [ ] Write a page about personal wikis
 		- [ ] Link aliases, find a way of making that work well. How about doing this like dynamic blocks? Simplify the resolver?
-	- [ ] Formatting [0/8]
-		- [ ] Basic syntax highlighting
+	- [-] Formatting [1/5]
+		- [x] Basic syntax highlighting
 		- [ ] Priority blocks
 		- [ ] Smarter heading blocks
-		- [ ] Fix priority highlighting.
 		- [ ] Property drawers vs tags.
-		- [ ] Strings?
-		- [ ] Finish the babel work.
-		- [ ] Htmlify
+		- [ ] Stars highlight properly (theme creator)
 	- [ ] Tables [0/5]
 		- [ ] Basic table editing (Table Edit?)
 		- [ ] Syntax highlighting of tables
@@ -145,4 +142,23 @@
 	- [ ] Presentation mode from a file.
 	- [ ] Column view (Is this possible in sublime?)
 	- [ ] Effort Estimate
-	- [ ] Vintageous bindings
+    - [ ] Vintageous bindings
+
+
+* Tables
+  - [ ] Investigate Text Tables
+  - [ ] Edit CSV
+  - [ ] CSV to Table 
+  - [ ] Decorators
+        [[https://github.com/SeungukShin/org-code/blob/master/src/decoration.ts][Decorators]] 
+
+* Day Page
+  - [ ] Jump to today
+  - [ ] Prev and Next
+  - [ ] Calendar of day pages
+        [[https://github.com/SeungukShin/org-code/blob/master/src/calendar.ts][Calendar]] 
+
+* To Fix
+  - [ ] Tab Handler - Stopps snippet expansion!
+  - [ ] Empty star formatting
+  - [ ] VsOrg Style Bullets?

@@ -1,0 +1,34 @@
+#+TITLE: Orgs Database
+
+* What is Orgs
+  - Org Extended (Sublime plugin) implemented cross org mode file features using an in editor database.
+    That proved to be quite limiting. It mean that I would often have multiple editors open at a time that had
+    cross file state loaded and the editors consumed more memory than I intended. Instead, with vscode I am
+    planning to externalize the database and simply use a websocket based connection for communicating with the DB.
+
+    This offers some unique capabilities:
+
+    1. Only one DB loaded in memory at once.
+    2. Command line tools, browser based tools and editors can all use the same DB.
+    3. The DB can be developed independently of the editor extension.
+    4. The DB can be shared with other tools that may want org mode capabilities.
+    5. The DB can also act as a means of synchronizing your org files externally with other systems.
+       - Trello, todoist, google calendar, ics files, etc.
+
+* Setting up Orgs
+    Orgs is required if you would like to have agenda facilities. To set it up you must first pull and build orgs.
+    Once you have done that you must tell vscode how to launch orgs and how to connect with it.
+
+* What is Orgs Used For?
+** Internal Uses
+   - Table evaluation
+   - Agenda features
+   - Tag listing
+   - Jump To
+   - Capture storage
+   - Refiling
+   - Backlinks / roam like capabilities.
+
+** External Uses
+   - Export / Import
+   - Sync
