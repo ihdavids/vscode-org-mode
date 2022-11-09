@@ -132,6 +132,9 @@ function getInMinutes(d) {
   let startMinutes = startHour * 60;
   if (d) {
     if (typeof d === 'string') {
+      if (d === "0001-01-01T00:00:00Z") {
+        return 0;
+      }
       d = new Date(d);
     }
     let stime = (d.getHours() * 60 + d.getMinutes()) - startMinutes;
@@ -161,16 +164,19 @@ function getCollisions (events) {
   events.forEach((event, id) => {
     let end = getInMinutes(event.Date.End);
     let start = getInMinutes(event.Date.Start);
+    if (end == 0) {
+      end = start + 60;
+    }
     // out of range
     if (start < 0) {
       start = 0;
     }
     let order = 1;
-
-    while (start < end) {
-      var timeIndex = Math.floor(start/30);
+    let cur = start;
+    while (cur <= end) {
+      var timeIndex = Math.floor(cur/30);
       if (timeIndex < 0) {
-        start = start + 30;
+        cur = cur + 30;
         continue;
       }
       while (order < events.length) {
@@ -179,12 +185,21 @@ function getCollisions (events) {
         }
         order ++;
       }
-
-      collisions[timeIndex][id] = order;
-      start = start + 30;
+      cur += 30;
     }
 
-    collisions[Math.floor((end-1)/30)][id] = order;
+    cur = start;
+    while (cur <= end) {
+      var timeIndex = Math.floor(cur/30);
+      if (timeIndex < 0) {
+        cur = cur + 30;
+        continue;
+      }
+      collisions[timeIndex][id] = order;
+      cur += 30;
+    }
+
+    //collisions[Math.floor((end-1)/30)][id] = order;
   });
 };
 
@@ -208,7 +223,7 @@ function getAttributes (events) {
     width.push(0);
     leftOffSet.push(0);
   }
-
+  // collisions has a [timeframe][eventid] list 
   collisions.forEach((period) => {
 
     // number of events in that period
@@ -217,6 +232,7 @@ function getAttributes (events) {
     })
 
     if (count > 1) {
+
       period.forEach((event, id) => {
         // max number of events it is sharing a time period with determines width
         if (period[id]) {
@@ -340,7 +356,7 @@ function getWebviewContent(webview, title: string, agd) {
       let left = (containerWidth / width[id]) * (leftOffSet[id] - 1) + 10;
       if (!left || left < 0) {left = 10};
       if (top < containerHeight) {
-        evts.append(createEvent(item,height,top,left,1));
+        evts.append(createEvent(item,height,top,left,units));
       }
       id += 1;
     }
