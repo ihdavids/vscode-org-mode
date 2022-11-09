@@ -7,7 +7,12 @@ import {Range, TextDocument, Position, TextEditor, TextEditorEdit, Selection} fr
 
 export function insertHeadingRespectContent(textEditor: vscode.TextEditor, edit: vscode.TextEditorEdit) {
         const document = textEditor.document;
-        const cursorPos = Utils.getCursorPosition();
+        let cursorPos = Utils.getCursorPosition();
+        // Search up for heading, assume we only care about node context.
+        const ctx = context.getNodeContext(cursorPos, document);
+        if (ctx != undefined) {
+            cursorPos = ctx.range.start;
+        }
         const curLine = Utils.getLine(document, cursorPos);
         const endOfLine = curLine.length;
         let insertPos = new vscode.Position(cursorPos.line, endOfLine);
@@ -23,6 +28,7 @@ export function insertHeadingRespectContent(textEditor: vscode.TextEditor, edit:
             sibling = parentHeader;
             insertPos = Utils.findEndOfContent(document, cursorPos, Utils.getPrefix(curLine));
         }
+        insertPos = Utils.eatEmptyLines(textEditor, insertPos, cursorPos, insertPos.character);
 
         if(sibling) {
             edit.insert(insertPos, "\n" + sibling + " ");
@@ -30,6 +36,8 @@ export function insertHeadingRespectContent(textEditor: vscode.TextEditor, edit:
             textEditor.revealRange(new vscode.Range(new vscode.Position(insertPos.line, 0), insertPos));     // jump screen so cursor is in view
         }
 }
+
+    
 
 export function insertChild(textEditor: vscode.TextEditor, edit: vscode.TextEditorEdit) {
     let   cursorPos = Utils.getCursorPosition();
@@ -52,23 +60,7 @@ export function insertChild(textEditor: vscode.TextEditor, edit: vscode.TextEdit
     if (ctx != undefined) {
         endPos = ctx.range.end;
         // Lets try to eat any empty space we might have along the way
-        let eatingEmpties = 0;
-        for (var l = endPos.line; l > 0 && l > cursorPos.line; --l ) {
-            let tempPos = new vscode.Position(l, 0);
-            const tempLine = Utils.getLine(textEditor.document, tempPos);
-            if (tempLine === undefined || tempLine.trim().length == 0) {
-                endPos         = tempPos;
-                endOfLine      = 0;
-                eatingEmpties += 1;
-            } else {
-                if (eatingEmpties == 0) {
-                    endOfLine = tempLine.length;
-                }
-                break;
-            }
-
-        }
-        insertPos = new vscode.Position(endPos.line, endOfLine);
+        insertPos = Utils.eatEmptyLines(textEditor, endPos, cursorPos, endOfLine);
     }
 
     // We have a node

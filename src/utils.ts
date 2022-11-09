@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import {Position, TextEditor} from "vscode";
 
 export function getCursorPosition() {
     const curEditor = vscode.window.activeTextEditor;
@@ -14,6 +15,27 @@ export function getLine(document: vscode.TextDocument, lineNum: vscode.Position)
     return document.lineAt(lineNum).text;
 }
 
+
+export function eatEmptyLines(textEditor: vscode.TextEditor, pos: Position, startPos: Position, endOfLine: number = 0) {
+    let eatingEmpties = 0;
+    let endPos        = pos;
+    for (var l = pos.line; l > 0 && l > startPos.line; --l ) {
+            let tempPos    = new vscode.Position(l, 0);
+            const tempLine = getLine(textEditor.document, tempPos);
+            if (tempLine === undefined || tempLine.trim().length == 0) {
+                endPos         = tempPos;
+                endOfLine      = 0;
+                eatingEmpties += 1;
+            } else {
+                if (eatingEmpties == 0) {
+                    endOfLine = tempLine.length;
+                }
+                break;
+            }
+
+    }
+    return new vscode.Position(endPos.line, endOfLine);
+}
 export function getHeaderPrefix(line: string) {
     const prefix = line.match(/^\*+\s/);
     if (prefix) {
