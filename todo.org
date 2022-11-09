@@ -40,9 +40,9 @@
 		- [ ] #+ARCHIVE tags
 		- [ ] Global archive option
 	- [x] Numbered Lists
-	- [ ] Editing [0/14]
-		- [ ] Todo cycling
-		- [ ] Todo menu
+	- [-] Editing [2/14]
+		- [x] Todo cycling
+		- [x] Todo menu
 		- [ ] Priority menu
 		- [ ] Insert heading (child and sibling)
 		- [ ] Insertion flow with dwim style insertion (new headings, new checkboxes etc)
@@ -152,13 +152,31 @@
   - [ ] Decorators
         [[https://github.com/SeungukShin/org-code/blob/master/src/decoration.ts][Decorators]] 
 
-* Day Page
-  - [ ] Jump to today
-  - [ ] Prev and Next
+* Day Page [2/3]
+  - [x] Jump to today
+  - [x] Prev and Next
   - [ ] Calendar of day pages
         [[https://github.com/SeungukShin/org-code/blob/master/src/calendar.ts][Calendar]] 
 
-* To Fix
-  - [ ] Tab Handler - Stopps snippet expansion!
+* Formatting
   - [ ] Empty star formatting
   - [ ] VsOrg Style Bullets?
+
+* DONE Stuff that has been completed
+  - [x] Tab Handler - Stops snippet expansion!
+        This was the global tab handler. Have a problem,
+		if I replace the global tab handler I have no way to fall back
+		on the default key binding at the moment. Is there a way to make that happen??? 
+		Miss the sublime text scope based bindings, asked for that as a feature and was told 
+		no, they aren't useful.
+
+* TODO Tonight
+  - [ ] Agenda remove location bit
+  - [ ] Agenda make time frame configurable
+  - [ ] Agenda color based on tags?
+  - [ ] Agenda color based on properties?
+  - [ ] Agenda random coloring
+  - [ ] Better Agenda font?
+  - [ ] Agenda font size based on length of title?
+  - [ ] Agenda click goes to event? Should click be configurable? Go to gcal or property?
+  - [ ] Hovers for properties? (Zoom)
