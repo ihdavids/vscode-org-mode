@@ -3,6 +3,7 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import {ODb} from "./db"
 import {OrgExtension} from "./extension"
+import { Script } from 'vm';
 
 
 const cats = {
@@ -16,6 +17,7 @@ class hnode {
   style: Record<string, string> = {};
   children: Array<hnode> = [];
   innerHTML: string = null;
+  innerText: string = null;
 
   public constructor(nm: string) {
     this.name = nm;
@@ -58,6 +60,9 @@ class hnode {
     if (this.innerHTML) {
       return this.innerHTML;
     }
+    if (this.innerText) {
+      return this.innerText;
+    }
     return "";
   }
 
@@ -93,16 +98,35 @@ class hnode {
   }
 }
 
+function toTimeStr(hrs: number): string {
+  let lmins = (hrs % 1 * 60)
+  let rstr = `${Math.floor(hrs)}`
+  if (lmins > 0) {
+    rstr = `${rstr}:${String(lmins).padStart(2,'0')}`
+  }
+  return rstr;
+}
+
 function createEvent(evt, height, top, left, units): hnode {
   let node: hnode = new hnode('div');
   let timeStart = getInMinutes(evt.Date.Start)/60 + startHour;
   let timeEnd   = getInMinutes(evt.Date.End)/60 + startHour;
-  if (timeEnd == 0) {
-    timeEnd = timeStart + 1;
+  if (timeEnd <= timeStart) {
+    timeEnd = timeStart + .5;
   }
-  let timeStr = `${timeStart} - ${timeEnd}`
+
+  let timeStr = `${toTimeStr(timeStart)} - ${toTimeStr(timeEnd)}`
+  let filename = evt.Filename.replaceAll("\\","/");
+  console.log(filename);
+  let linenum  = evt.LineNum;
   node.className = "agd-event";
-  node.innerHTML = `<span class='agd-title'>${evt.Headline}</span><br><span class='agd-location'> ${timeStr} </span>`;
+  node.attribs['onclick'] = `itemClicked(\"${filename}\",${linenum})`;
+  // border-left-color: #57b986;
+  if (evt.Headline.length > 40) {
+    node.innerHTML = `<span class='agd-title' style='font-size:95%;'>${evt.Headline}</span><br><span class='agd-location'> ${timeStr} </span>`;
+  } else {
+    node.innerHTML = `<span class='agd-title'>${evt.Headline}</span><br><span class='agd-location'> ${timeStr} </span>`;
+  }
 
   // Customized CSS to position each event
   node.style.width = (containerWidth/units) + "px";
@@ -346,7 +370,14 @@ function getWebviewContent(webview, title: string, agd) {
     let agendaItems: string = "";
     let id = 0;
     getCollisions(agd);
-    getAttributes(agd);  
+    getAttributes(agd);
+    let scr = new hnode('script');
+    scr.innerText = `
+        const vscode = acquireVsCodeApi(); 
+        function itemClicked(jumpTo, lineNo){
+            vscode.postMessage({command: "open", text: jumpTo, line: lineNo});
+        }`;
+    let scrStr = scr.render();
     var time = createTimeBlocks();
     var evts = time.findById('events');
     for (var item of agd) {
@@ -390,7 +421,7 @@ function getWebviewContent(webview, title: string, agd) {
     <link href="${dayStyle}" rel="stylesheet" />  
 </head>
 <body>
-
+${scrStr}
 <div id="content-wrapper" class="d-flex flex-column">
   <div id="content">
   <div class="container-fluid" id="agenda_section">
@@ -415,7 +446,7 @@ export async function showAgenda(doc: vscode.TextEditor) {
         'agenda',
         'Agenda',
         vscode.ViewColumn.One,
-        {}
+        {enableScripts: true}
       );
 
       let iteration = 0;
@@ -427,9 +458,24 @@ export async function showAgenda(doc: vscode.TextEditor) {
 
       // Set initial content
       updateWebview();
-
+    // handle recieving messages from the webview
+    panel.webview.onDidReceiveMessage(message => {
+      switch(message.command) {
+        case 'open': vscode.window.showErrorMessage(message.text);
+            var openPath = vscode.Uri.file(message.text);
+            console.log(openPath);
+            vscode.workspace.openTextDocument(openPath).then(textDoc => {
+                vscode.window.showTextDocument(textDoc).then( doc => {
+                  let line = message.line;
+                  doc.revealRange(new vscode.Range(new vscode.Position(line,0), new vscode.Position(line,0)));
+                });
+            });
+        return;
+      }
+    }, undefined, undefined); 
+  
       // And schedule updates to the content every second
-      const interval = setInterval(updateWebview, 1000);
+      const interval = setInterval(updateWebview, 1000*30);
 
       panel.onDidDispose(
         () => {
