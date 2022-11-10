@@ -95,8 +95,14 @@ class hnode {
 
 function createEvent(evt, height, top, left, units): hnode {
   let node: hnode = new hnode('div');
+  let timeStart = getInMinutes(evt.Date.Start)/60 + startHour;
+  let timeEnd   = getInMinutes(evt.Date.End)/60 + startHour;
+  if (timeEnd == 0) {
+    timeEnd = timeStart + 1;
+  }
+  let timeStr = `${timeStart} - ${timeEnd}`
   node.className = "agd-event";
-  node.innerHTML = `<span class='agd-title'>${evt.Headline}</span><br><span class='agd-location'> Sample Location </span>`;
+  node.innerHTML = `<span class='agd-title'>${evt.Headline}</span><br><span class='agd-location'> ${timeStr} </span>`;
 
   // Customized CSS to position each event
   node.style.width = (containerWidth/units) + "px";
