@@ -171,12 +171,13 @@
 		no, they aren't useful.
 
 * TODO Tonight
-  - [ ] Agenda remove location bit
+  - [x] Agenda remove location bit
   - [ ] Agenda make time frame configurable
   - [ ] Agenda color based on tags?
   - [ ] Agenda color based on properties?
   - [ ] Agenda random coloring
   - [ ] Better Agenda font?
-  - [ ] Agenda font size based on length of title?
-  - [ ] Agenda click goes to event? Should click be configurable? Go to gcal or property?
+  - [x] Agenda font size based on length of title?
+  - [x] Agenda click goes to event? Should click be configurable? Go to gcal or property?
+        - [ ] Other actions?
   - [ ] Hovers for properties? (Zoom)
