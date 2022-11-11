@@ -32,6 +32,10 @@
     "contributes": {
         "commands": [
             {
+                "command": "org.calendar",
+                "title": "Org: Calendar"
+            },
+            {
                 "command": "org.prevDayPage",
                 "title": "Org: Prev Day Page"
             },
@@ -188,14 +192,28 @@
                     ".org"
                 ],
                 "configuration": "./org.configuration.json"
-            }
+            },
+			{
+				"id": "calendar",
+				"extensions": [
+					".calendar"
+				],
+				"aliases": [
+					"Calendar"
+				]
+			}
         ],
         "grammars": [
             {
                 "language": "org",
                 "scopeName": "source.org",
                 "path": "./syntaxes/org.tmLanguage.json"
-            }
+            },
+			{
+				"language": "calendar",
+				"scopeName": "source.calendar",
+				"path": "./syntaxes/calendar.tmLanguage.json"
+			}
         ],
         "configuration": {
             "type": "object",
@@ -337,7 +355,37 @@
                 "command": "org.tabHandler",
                 "key": "ctrl+tab",
                 "when": "editorLangId == 'org'"
-            }
+            },
+			{
+				"command": "workbench.action.closeActiveEditor",
+				"key": "escape",
+				"when": "editorTextFocus && editorLangId == 'calendar'"
+			},
+			{
+				"command": "org.calendar.prevDate",
+				"key": "left",
+				"when": "editorTextFocus && editorLangId == 'calendar'"
+			},
+			{
+				"command": "org.calendar.nextDate",
+				"key": "right",
+				"when": "editorTextFocus && editorLangId == 'calendar'"
+			},
+			{
+				"command": "org.calendar.prevWeek",
+				"key": "up",
+				"when": "editorTextFocus && editorLangId == 'calendar'"
+			},
+			{
+				"command": "org.calendar.nextWeek",
+				"key": "down",
+				"when": "editorTextFocus && editorLangId == 'calendar'"
+			},
+			{
+				"command": "org.calendar.setDate",
+				"key": "enter",
+				"when": "editorTextFocus && editorLangId == 'calendar'"
+			}
         ]
     },
     "scripts": {

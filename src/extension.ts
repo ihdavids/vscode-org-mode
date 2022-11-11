@@ -18,10 +18,23 @@ import * as folding from './folding';
 import * as agenda from './agenda';
 import * as daypage from './daypage';
 import * as odb from './db';
-
+import * as Util from './utils';
+import * as CC from './cursor-context';
+import { Calendar } from './calendar';
+enum CalendarMode {
+	none = 'none',
+	schedule = 'SCHEDULED',
+	deadline = 'DEADLINE'
+}
 export class OrgExtension {
     private static instance: OrgExtension;
+
     context: vscode.ExtensionContext;    
+    calendar: Calendar;
+
+    private calendarMode: CalendarMode;
+    private calendarEditor;
+    private calendarHead;
     constructor()
     {
     }
@@ -36,8 +49,89 @@ export class OrgExtension {
 
     public activate(context: vscode.ExtensionContext) {
         this.context = context;
+		this.calendar = new Calendar(context);
+	    context.subscriptions.push(vscode.commands.registerCommand('org.calendar.setDate', async () => OrgExtension.get().setDate()));
+		this.calendarMode = CalendarMode.none;
     }
+
+    async openCalendar(mode: CalendarMode): Promise<void> {
+		this.calendarEditor = vscode.window.activeTextEditor;
+		if (!this.calendarEditor) {
+			return Promise.resolve();
+		}
+		const position = this.calendarEditor.selection.active;
+
+        const document = Util.getActiveTextEditorEdit();
+        const cursorPos = Util.getCursorPosition();
+        const curLine = Util.getLine(document, cursorPos);
+		this.calendarHead = CC.getNodeContext(position, document);
+		if (!this.calendarHead) {
+			return Promise.resolve();
+		}
+		this.calendarMode = mode;
+		await this.calendar.openCalendar();
+		return Promise.resolve();
+	}
+
+	async setDate(): Promise<void> {
+		const date = this.calendar.getDate();
+		await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
+		if (!this.calendarEditor || !this.calendarHead || this.calendarMode == CalendarMode.none) {
+			return Promise.resolve();
+		}
+		const editor = vscode.window.activeTextEditor;
+		if (editor !== this.calendarEditor) {
+			return Promise.resolve();
+		}
+		let line = this.calendarHead.line + 1;
+		let column = 0;
+		let length = 0;
+		//if (this.calendarHead.scheduleColumn < 0 && this.calendarHead.deadlineColumn < 0) {
+			// new line
+			await editor.edit((editBuilder) => {
+				editBuilder.insert(new vscode.Position(line, 0), '\n');
+			});
+            /*
+		} else {
+			// remove previous date
+			if (this.calendarMode == CalendarMode.schedule && this.calendarHead.scheduleColumn >= 0) {
+				column = this.calendarHead.scheduleColumn;
+				length = this.calendarHead.schedule.length;
+			} else if (this.calendarMode == CalendarMode.deadline && this.calendarHead.deadlineColumn >= 0) {
+				column = this.calendarHead.deadlineColumn;
+				length = this.calendarHead.deadline.length;
+			}
+			if (length > 0) {
+				await editor.edit((editBuilder) => {
+					editBuilder.delete(new vscode.Range(line, column, line, column + length));
+				});
+			}
+			// remove white space
+			const dateLine = editor.document.lineAt(line);
+			const regex = /(^\s+|\s+$)/g;
+			let match;
+			let range: vscode.Range | undefined;
+			let whiteSpace: vscode.Range[] = [];
+			while (match = regex.exec(dateLine.text)) {
+				whiteSpace.push(new vscode.Range(line, match.index, line, match.index + match[0].length));
+			}
+			while (range = whiteSpace.pop()) {
+				await editor.edit((editBuilder) => {
+					editBuilder.delete(range!);
+				});
+			}
+		}
+        */
+		// insert new date
+		const space = (editor.document.lineAt(line).text.length > 0) ? ' ' : '';
+		const text = this.calendarMode + ': <' + date.toISOString().slice(0, 10) + ' ' + date.toLocaleString('en-US', { weekday: 'short' }) + '>' + space;
+		await editor.edit((editBuilder) => {
+			editBuilder.insert(new vscode.Position(line, 0), text);
+		});
+		return Promise.resolve();
+	}    
 } 
+
 export function activate(context: vscode.ExtensionContext) {
     OrgExtension.get().activate(context);
     const insertHeadingRespectContentCmd = vscode.commands.registerTextEditorCommand('org.insertHeadingRespectContent', HeaderFunctions.insertHeadingRespectContent);
@@ -87,6 +181,7 @@ export function activate(context: vscode.ExtensionContext) {
     const showDayPageCmd = vscode.commands.registerTextEditorCommand('org.showDayPageToday', daypage.showDayPageToday);
     const prevDayPageCmd = vscode.commands.registerTextEditorCommand('org.prevDayPage', daypage.prevDayPage);
     const nextDayPageCmd = vscode.commands.registerTextEditorCommand('org.nextDayPage', daypage.nextDayPage);
+	context.subscriptions.push(vscode.commands.registerCommand('org.calendar', async (mode: CalendarMode = CalendarMode.none) => OrgExtension.get().openCalendar(mode)));
     context.subscriptions.push(nextDayPageCmd);
     context.subscriptions.push(prevDayPageCmd);
     context.subscriptions.push(showDayPageCmd);

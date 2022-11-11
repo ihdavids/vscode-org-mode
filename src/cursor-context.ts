@@ -26,25 +26,40 @@ export interface IContextData {
     info: number,
 }
 
+export interface INodeData extends IContextData{
+    scheduled: IContextData;
+    deadline: IContextData;
+    timestamp: IContextData;
+}
+
 export interface ContextOptions {
     includeLists ?: boolean,
     includeTodo  ?: boolean,
 }
 
-export default function getCursorContext(textEditor: TextEditor, edit: TextEditorEdit, { includeTodo = true, includeLists = false} ): IContextData {
-    const document = Util.getActiveTextEditorEdit();
-    const cursorPos = Util.getCursorPosition();
-    const curLine = Util.getLine(document, cursorPos);
-
-    // Match for timestamp
-    const timestampRegexp = /[<\[]\s*\d{4}-\d{1,2}-\d{1,2}(?: \w{3})?\s*[>\]]/g;
+const chkRegexp       = new RegExp(`^\\s*[+-] \\[[xX -]\\]`);
+const listRegexp      = new RegExp(`^\\s*[0-9]+[.)]`);
+const timestampRegexp = /[<\[]\s*\d{4}-\d{1,2}-\d{1,2}(?: \w{3})?\s*[>\]]/g;
+export function parseTimestampContext(cursorPos, curLine) {
     let match;
-
     while ((match = timestampRegexp.exec(curLine)) != null) {
         const timestampContext = getTimestampContext(match, cursorPos);
         if (timestampContext) {
             return timestampContext;
         }
+    }
+}
+
+export function getSubNodeCursorContext(textEditor: TextEditor, edit: TextEditorEdit, { includeTodo = true, includeLists = false} ): IContextData {
+    const document = Util.getActiveTextEditorEdit();
+    const cursorPos = Util.getCursorPosition();
+    const curLine = Util.getLine(document, cursorPos);
+
+    // Match for timestamp
+    let match;
+    let ctx = parseTimestampContext(cursorPos, curLine);
+    if (ctx) {
+        return ctx;
     }
 
     if (includeTodo) {
@@ -60,21 +75,27 @@ export default function getCursorContext(textEditor: TextEditor, edit: TextEdito
     }
 
     if (includeLists) {
-        const listRegexp = new RegExp(`^\\s*[0-9]+[.)]`);
         match = listRegexp.exec(curLine);
         if (match) {
             return getListContext(match, cursorPos, LIST);
         }
 
-        const chkRegexp = new RegExp(`^\\s*[+-] \\[[xX -]\\]`);
         match = chkRegexp.exec(curLine);
         if (match) {
             return getListContext(match, cursorPos, CHECK);
         }
     }
 
-    return getNodeContext(cursorPos, document);
+}
 
+export default function getCursorContext(textEditor: TextEditor, edit: TextEditorEdit, { includeTodo = true, includeLists = false} ): IContextData {
+    let ctx = getSubNodeCursorContext(textEditor, edit, {includeTodo: includeTodo, includeLists: includeLists});
+    if (!ctx) {
+        const document = Util.getActiveTextEditorEdit();
+        const cursorPos = Util.getCursorPosition();
+        return getNodeContext(cursorPos, document);
+    }
+    return ctx;
     //return undefined;
 }
 
@@ -138,8 +159,11 @@ function getListContext(match: RegExpExecArray, cursorPos: Position, CTX: string
 }
 
 
-export function getNodeContext(cursorPos: Position, document: TextDocument): IContextData {
+export function getNodeContext(cursorPos: Position, document: TextDocument): INodeData {
 
+    let scheduled = null;
+    let deadline  = null;
+    let timestamp = null;
     const nodeStart = new RegExp(`^\\s*(\\*)+\\s+[a-zA-Z0-9]`);
     let startLine: number = -1;
     let endLine: number = document.lineCount-1;
@@ -148,7 +172,11 @@ export function getNodeContext(cursorPos: Position, document: TextDocument): ICo
     let match;
     let startText: string = "";
     for (var i: number = lineNum; i >= 0; --i) {
-        const tempLine = Util.getLine(document, new Position(i, 0));
+        const tpos = new Position(i, 0);
+        const tempLine = Util.getLine(document, tpos);
+        if (!timestamp){
+            timestamp = parseTimestampContext(tempLine, tpos);
+        }
         match = nodeStart.exec(tempLine);
         if (match) {
             startLine = i;
@@ -160,7 +188,11 @@ export function getNodeContext(cursorPos: Position, document: TextDocument): ICo
     if (startLine != -1) {
         let endLineTextLen: number = 0;
         for (var i: number = (lineNum + 1); i < document.lineCount; ++i) {
-            const tempLine = Util.getLine(document, new Position(i, 0));
+            const tpos = new Position(i, 0);
+            const tempLine = Util.getLine(document, tpos);
+            if (!timestamp){
+                timestamp = parseTimestampContext(tempLine, tpos);
+            }
             match = nodeStart.exec(tempLine);
             if (match) {
                 endLine = i-1;
@@ -178,7 +210,10 @@ export function getNodeContext(cursorPos: Position, document: TextDocument): ICo
             dataLabel: NODE,
             line: startLine,
             range,
-            info: numStars  // number of stars
+            info: numStars,  // number of stars
+            scheduled,
+            deadline,
+            timestamp
         }
     }
     return undefined;
