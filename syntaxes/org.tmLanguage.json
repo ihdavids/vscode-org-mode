@@ -1938,7 +1938,7 @@
         "datetime": {
             "patterns": [
                 {
-                    "name": "variable.org",
+                    "name": "variable.datetime.org",
                     "match": "\\d{4}-\\d{1,2}-\\d{1,2}(?:\\s*\\w{3})?\\s*(\\d{2}\\:\\d{2}(-\\d{2}\\:\\d{2})?)?\\s*([+]*\\d[wdmy])?"
                 }
             ]
@@ -1946,8 +1946,12 @@
         "timestamp": {
             "patterns": [
                 {
-                    "name": "variable.org",
-                    "match": "\\[\\d{4}-\\d{1,2}-\\d{1,2}(?: \\w{3})?\\]"
+                    "name": "variable.timestamp.org",
+                    "match": "([<\\[])\\d{4}-\\d{1,2}-\\d{1,2}(?: \\w{3})?([>\\]])",
+                    "captures": {
+                        "1": { "name": "punctuation.definition.string.begin.org" },
+                        "2": { "name": "punctuation.definition.string.end.org" }
+                    }
                 }
             ]
         },
