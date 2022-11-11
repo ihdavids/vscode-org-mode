@@ -37,7 +37,7 @@ export default function getCursorContext(textEditor: TextEditor, edit: TextEdito
     const curLine = Util.getLine(document, cursorPos);
 
     // Match for timestamp
-    const timestampRegexp = /\[\d{4}-\d{1,2}-\d{1,2}(?: \w{3})?\]/g;
+    const timestampRegexp = /[<\[]\s*\d{4}-\d{1,2}-\d{1,2}(?: \w{3})?\s*[>\]]/g;
     let match;
 
     while ((match = timestampRegexp.exec(curLine)) != null) {

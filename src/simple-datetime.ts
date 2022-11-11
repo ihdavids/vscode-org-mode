@@ -10,6 +10,7 @@ export interface ISimpleDate {
     month: number;
     day: number;
     weekday: string;
+    active: boolean;
 }
 
 export interface ISimpleDateTime extends ISimpleDate {
@@ -18,12 +19,13 @@ export interface ISimpleDateTime extends ISimpleDate {
 }
 
 export function parseDate(dateString: string): ISimpleDate {
-    const dateRegExp = /(\d{4})-(\d{1,2})-(\d{1,2})/;
+    const dateRegExp = /([<\[])?\s*(\d{4})-(\d{1,2})-(\d{1,2})/;
     const dateResult = dateRegExp.exec(dateString);
 
-    const year = dateResult ? parseInt(dateResult[1], 10) : undefined;
-    const month = dateResult ? parseInt(dateResult[2], 10) : undefined;
-    const day = dateResult ? parseInt(dateResult[3], 10) : undefined;
+    const year = dateResult ? parseInt(dateResult[2], 10) : undefined;
+    const month = dateResult ? parseInt(dateResult[3], 10) : undefined;
+    const day = dateResult ? parseInt(dateResult[4], 10) : undefined;
+    let active: boolean = dateResult ? dateResult[1] === '<' : false;
 
 
     const weekdayRegExp = /[A-Za-z]{3}/;
@@ -32,8 +34,7 @@ export function parseDate(dateString: string): ISimpleDate {
     if (weekdayResult) {
         weekday = weekdayResult[0];
     }
-
-    return { year, month, day, weekday };
+    return { year, month, day, weekday, active };
 };
 
 export function isValidSimpleDate(datetime: ISimpleDate): boolean {
@@ -51,7 +52,11 @@ export function buildDateString(datetime: ISimpleDate): string {
         dateString = `${dateString} ${weekday}`;
     }
 
-    return `[${dateString}]`
+    if (datetime.active) {
+        return `<${dateString}>`
+    } else {
+        return `[${dateString}]`
+    }
 };
 
 export function buildDateTimeString(datetime: ISimpleDateTime): string {
@@ -67,8 +72,11 @@ export function buildDateTimeString(datetime: ISimpleDateTime): string {
         dateString = `${dateString} ${weekday}`;
     }
 
-
-    return `[${dateString} ${timeString}]`
+    if (datetime.active) {
+        return `<${dateString} ${timeString}>`
+    } else {
+        return `[${dateString} ${timeString}]`
+    }
 };
 
 function padDate(str: string): string {
@@ -87,7 +95,7 @@ function padTime(str: string): string {
     return str;
 }
 
-export function dateToSimpleDate(dateObject: Date): ISimpleDate {
+export function dateToSimpleDate(dateObject: Date, active: boolean = false): ISimpleDate {
     const year = dateObject.getFullYear();
     const month = dateObject.getMonth() + 1; // Why, Javascript, why!?
     const day = dateObject.getDate();
@@ -98,7 +106,8 @@ export function dateToSimpleDate(dateObject: Date): ISimpleDate {
         day,
         month,
         weekday,
-        year
+        year,
+        active
     }
 }
 
@@ -125,6 +134,7 @@ export function modifyDate(dateString: string, action: string): string {
     const dateObject = (action === "UP") ? datefns.addDays(initialDateObject, 1): datefns.addDays(initialDateObject, -1);
 
     const newDate = dateToSimpleDate(dateObject);
+    newDate.active = oldDate.active;
     if (!oldDate.weekday) {
         newDate.weekday = undefined;
     }
