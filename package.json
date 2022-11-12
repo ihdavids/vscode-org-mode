@@ -32,8 +32,8 @@
     "contributes": {
         "commands": [
             {
-                "command": "org.calendar",
-                "title": "Org: Calendar"
+                "command": "org.schedule",
+                "title": "Org: Schedule"
             },
             {
                 "command": "org.prevDayPage",
