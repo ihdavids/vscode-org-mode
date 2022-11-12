@@ -10,6 +10,7 @@ import {
 import * as Datetime from './simple-datetime';
 import { Sets } from './sets';
 import * as Util from './utils';
+import { Script } from "vm";
 
 // Any potential data labels should go here
 export const DATE  = "DATE";
@@ -17,6 +18,9 @@ export const TODO  = "TODO";
 export const LIST  = "LIST";
 export const CHECK = "CHECKBOX";
 export const NODE  = "NODE";
+export const SCHEDULED = "SCHEDULED";
+export const DEADLINE = "DEADLINE";
+export const CLOSED   = "CLOSED";
 
 export interface IContextData {
     dataLabel: string,
@@ -28,7 +32,8 @@ export interface IContextData {
 
 export interface INodeData extends IContextData{
     scheduled: IContextData;
-    deadline: IContextData;
+    deadline:  IContextData;
+    closed:    IContextData;
     timestamp: IContextData;
 }
 
@@ -40,7 +45,8 @@ export interface ContextOptions {
 const chkRegexp       = new RegExp(`^\\s*[+-] \\[[xX -]\\]`);
 const listRegexp      = new RegExp(`^\\s*[0-9]+[.)]`);
 const timestampRegexp = /[<\[]\s*\d{4}-\d{1,2}-\d{1,2}(?: \w{3})?\s*[>\]]/g;
-export function parseTimestampContext(cursorPos, curLine) {
+const scheduleRegexp = /(CLOSED|SCHEDULED|DEADLINE)[:]?\s*([<\[])(\s*\d{4}-\d{1,2}-\d{1,2})(?: \w{3})?\s*[>\]]/g;
+export function parseTimestampContext(cursorPos: Position, curLine: string) {
     let match;
     while ((match = timestampRegexp.exec(curLine)) != null) {
         const timestampContext = getTimestampContext(match, cursorPos);
@@ -61,6 +67,9 @@ export function getSubNodeCursorContext(textEditor: TextEditor, edit: TextEditor
     if (ctx) {
         return ctx;
     }
+
+    ctx = parseScheduledContext(cursorPos, curLine);
+    if (ctx){ return ctx; }
 
     if (includeTodo) {
         // Match for TODO (or absence)
@@ -119,6 +128,30 @@ function getTimestampContext(match: RegExpExecArray, cursorPos: Position): ICont
     // Should return undefined if no match contains the cursor
 }
 
+export function parseScheduledContext(cursorPos: Position, curLine: string) {
+    let match;
+    while ((match = scheduleRegexp.exec(curLine)) != null) {
+
+        const line = cursorPos.line;
+
+        const startPos = new Position(line, match.index);
+        const endPos = new Position(line, match.index + match[0].length);
+        const range = new Range(startPos, endPos);
+        if (range.contains(cursorPos)) {
+            const lbl = match[1];
+            // We've found our match
+            return {
+                data: match[3] + match[4],
+                dataLabel: lbl,
+                line,
+                range,
+                info: match[2],
+            }
+        }
+    }
+    return null;
+}
+
 function getTodoContext(match: RegExpExecArray, cursorPos: Position): IContextData {
     const line = cursorPos.line;
 
@@ -163,6 +196,7 @@ export function getNodeContext(cursorPos: Position, document: TextDocument): INo
 
     let scheduled = null;
     let deadline  = null;
+    let closed    = null;
     let timestamp = null;
     const nodeStart = new RegExp(`^\\s*(\\*)+\\s+[a-zA-Z0-9]`);
     let startLine: number = -1;
@@ -175,7 +209,17 @@ export function getNodeContext(cursorPos: Position, document: TextDocument): INo
         const tpos = new Position(i, 0);
         const tempLine = Util.getLine(document, tpos);
         if (!timestamp){
-            timestamp = parseTimestampContext(tempLine, tpos);
+            timestamp = parseTimestampContext(tpos, tempLine);
+        }
+        if (!scheduled || !deadline){
+            let ctx = parseScheduledContext(tpos, tempLine);
+            if (ctx && ctx.dataLabel === SCHEDULED) {
+                scheduled = ctx;
+            } else if (ctx && ctx.dataLabel === DEADLINE) {
+                deadline = ctx;
+            } else if(ctx && ctx.dataLabel === CLOSED) {
+                closed = ctx;
+            }
         }
         match = nodeStart.exec(tempLine);
         if (match) {
@@ -191,7 +235,17 @@ export function getNodeContext(cursorPos: Position, document: TextDocument): INo
             const tpos = new Position(i, 0);
             const tempLine = Util.getLine(document, tpos);
             if (!timestamp){
-                timestamp = parseTimestampContext(tempLine, tpos);
+                timestamp = parseTimestampContext(tpos, tempLine);
+            } 
+            if (!scheduled || !deadline){
+                let ctx = parseScheduledContext(tpos, tempLine);
+                if (ctx && ctx.dataLabel === SCHEDULED) {
+                    scheduled = ctx;
+                } else if (ctx && ctx.dataLabel === DEADLINE) {
+                    deadline = ctx;
+                } else if(ctx && ctx.dataLabel === CLOSED) {
+                    closed = ctx;
+                }
             }
             match = nodeStart.exec(tempLine);
             if (match) {
@@ -213,7 +267,8 @@ export function getNodeContext(cursorPos: Position, document: TextDocument): INo
             info: numStars,  // number of stars
             scheduled,
             deadline,
-            timestamp
+            timestamp,
+            closed
         }
     }
     return undefined;
