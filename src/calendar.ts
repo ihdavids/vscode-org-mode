@@ -226,10 +226,10 @@ export class Calendar implements vscode.TextDocumentContentProvider {
 	async openCalendar() {
 		const doc = await vscode.workspace.openTextDocument(this.uri);
 		await vscode.window.showTextDocument(doc);
-		await vscode.commands.executeCommand('workbench.action.splitEditorDown');
-		await vscode.commands.executeCommand('workbench.action.previousEditor');
-		await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
-		await vscode.commands.executeCommand('workbench.action.previousEditor');
+		//await vscode.commands.executeCommand('workbench.action.splitEditorDown');
+		//await vscode.commands.executeCommand('workbench.action.previousEditor');
+		//await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
+		//await vscode.commands.executeCommand('workbench.action.previousEditor');
 		//await vscode.commands.executeCommand('vscode.setEditorLayout', { orientation: 1, groups: [{ size: 0.8 }, { size: 0.2 }] });
 		this.editor = vscode.window.activeTextEditor;
 		this.showCurrDate();
