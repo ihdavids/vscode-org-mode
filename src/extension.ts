@@ -70,6 +70,13 @@ export class OrgExtension {
 		}
 		this.calendarMode = mode;
 		await this.calendar.openCalendar();
+        //vscode.window.showInputBox();
+        let box = vscode.window.createInputBox();
+        box.onDidChangeValue((strLine: string) => {
+            console.log(strLine);
+        })
+        box.show();
+        
 		return Promise.resolve();
 	}
 

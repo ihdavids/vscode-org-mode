@@ -17,7 +17,7 @@
     },
     "icon": "images/logo.png",
     "engines": {
-        "vscode": "^1.23.0"
+        "vscode": "^1.62.0"
     },
     "categories": [
         "Programming Languages"
@@ -405,7 +405,7 @@
         "tslint": "^5.14.0",
         "tslint-config-prettier": "^1.18.0",
         "typescript": "^3.9.10",
-        "vscode": "^1.1.30",
+        "vscode": "^1.1.x",
         "vscode-coverage-test-runner": "^1.0.0"
     },
     "dependencies": {
