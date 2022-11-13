@@ -364,12 +364,12 @@
 			{
 				"command": "org.calendar.prevDate",
 				"key": "left",
-				"when": "editorTextFocus && editorLangId == 'calendar'"
+				"when": "hasOrgCalFocus"
 			},
 			{
 				"command": "org.calendar.nextDate",
-				"key": "right",
-				"when": "editorTextFocus && editorLangId == 'calendar'"
+				"key": "ctrl+.",
+				"when": "hasOrgCalFocus"
 			},
 			{
 				"command": "org.calendar.prevWeek",

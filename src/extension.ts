@@ -55,10 +55,10 @@ export class OrgExtension {
 		this.calendarMode = CalendarMode.none;
     }
 
-    async openCalendar(mode: CalendarMode): Promise<void> {
+    async openCalendar(mode: CalendarMode): Promise<string> {
 		this.calendarEditor = vscode.window.activeTextEditor;
 		if (!this.calendarEditor) {
-			return Promise.resolve();
+			return Promise.resolve(null);
 		}
 		const position = this.calendarEditor.selection.active;
 
@@ -67,19 +67,46 @@ export class OrgExtension {
         const curLine = Util.getLine(document, cursorPos);
 		this.calendarHead = CC.getNodeContext(position, document);
 		if (!this.calendarHead) {
-			return Promise.resolve();
+			return Promise.resolve(null);
 		}
 		this.calendarMode = mode;
+        await vscode.commands.executeCommand('setContext', 'hasOrgCalFocus', true);
 		await this.calendar.openCalendar();
         //vscode.window.showInputBox();
         let box = vscode.window.createInputBox();
         box.onDidChangeValue((strLine: string) => {
             console.log(strLine);
         })
-        box.show();
+        box.ignoreFocusOut = true;
         
-		return Promise.resolve();
+        const curDate = this.calendar.getDate();
+        box.value = curDate.toISOString().slice(0, 10);
+        const promise = new Promise<string>((resolve, reject) =>{
+        box.onDidAccept(() => {
+            console.log("DID ACCEPT");
+            box.hide();
+        })
+        box.onDidHide(() => {
+            vscode.commands.executeCommand('setContext', 'hasOrgCalFocus', false);
+            const calVal = box.value;
+            console.log("CAL VAL: ", calVal);
+		    vscode.commands.executeCommand('workbench.action.closeActiveEditor');
+            resolve(calVal);
+        });
+        box.show();
+        });
+        const calVal = await promise;
+        console.log("Post Promise:",calVal);
+        return Promise.resolve(calVal);
+        
+		//return Promise.resolve(calVal);
 	}
+
+    async doItNow(): Promise<void> {
+        let x = await this.openCalendar(CalendarMode.timestamp);
+        console.log("XXXX: ", x);
+        return Promise.resolve();
+    }
 
 	async setDate(): Promise<void> {
 		const date = this.calendar.getDate();
@@ -163,6 +190,8 @@ export class OrgExtension {
 
 export function activate(context: vscode.ExtensionContext) {
     OrgExtension.get().activate(context);
+
+    vscode.commands.executeCommand('setContext', 'hasMyFocus', false);
     const insertHeadingRespectContentCmd = vscode.commands.registerTextEditorCommand('org.insertHeadingRespectContent', HeaderFunctions.insertHeadingRespectContent);
     const insertChildCmd = vscode.commands.registerTextEditorCommand('org.insertSubheading', HeaderFunctions.insertChild);
     const demoteLineCmd = vscode.commands.registerTextEditorCommand('org.doDemote', HeaderFunctions.demoteLine);
@@ -210,7 +239,8 @@ export function activate(context: vscode.ExtensionContext) {
     const showDayPageCmd = vscode.commands.registerTextEditorCommand('org.showDayPageToday', daypage.showDayPageToday);
     const prevDayPageCmd = vscode.commands.registerTextEditorCommand('org.prevDayPage', daypage.prevDayPage);
     const nextDayPageCmd = vscode.commands.registerTextEditorCommand('org.nextDayPage', daypage.nextDayPage);
-	context.subscriptions.push(vscode.commands.registerCommand('org.schedule', async (mode: CalendarMode = CalendarMode.timestamp) => OrgExtension.get().openCalendar(mode)));
+	//context.subscriptions.push(vscode.commands.registerCommand('org.schedule', async (mode: CalendarMode = CalendarMode.timestamp) => OrgExtension.get().openCalendar(mode)));
+	context.subscriptions.push(vscode.commands.registerCommand('org.schedule', async (mode: CalendarMode = CalendarMode.timestamp) => OrgExtension.get().doItNow()));
     context.subscriptions.push(nextDayPageCmd);
     context.subscriptions.push(prevDayPageCmd);
     context.subscriptions.push(showDayPageCmd);
