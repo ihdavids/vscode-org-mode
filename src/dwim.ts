@@ -13,7 +13,6 @@ import * as header from './header-functions'
 
 export function addDoWhatIMean(doc: TextEditor, edit: vscode.TextEditorEdit) 
 {
-    console.log("HERE");
     //let pos : Position = doc.selection.active;
     //let line : string  = doc.document.lineAt(pos).text;
     let ctx = getCursorContext(doc,edit, {includeTodo: false, includeLists: true});
@@ -22,7 +21,6 @@ export function addDoWhatIMean(doc: TextEditor, edit: vscode.TextEditorEdit)
         return;
     }
 
-    console.log("HERE 2: " + ctx.dataLabel);
     switch (ctx.dataLabel) {
         case DATE: break; // TODO
         case TODO: break; // TODO
