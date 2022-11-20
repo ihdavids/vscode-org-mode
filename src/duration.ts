@@ -25,8 +25,62 @@
 // duration, i.e., a duration that doesn't depend on user's settings,
 // through optional arguments. 
 
-const RE_DURATION_PARSER       = new RegExp(`\s*((?P<years>[0-9.]+)y)?\s*((?P<days>[0-9.]+)d)?\s*((?P<hours>[0-9.]+)h)?\s*((?P<mins>[0-9.]+)min)?\s*((?P<thours>[0-9]+)[:](?P<tmins>[0-9]+)([:](?P<tsecs>[0-9]+))?)?`);
-class OrgDuration {
+import { print } from "util";
+
+const RE_DURATION_PARSER       = new RegExp(`\s*((?<years>[0-9.]+)y)?\s*((?<days>[0-9.]+)d)?\s*((?<hours>[0-9.]+)h)?\s*((?<mins>[0-9.]+)min)?\s*((?<thours>[0-9]+)[:](?<tmins>[0-9]+)([:](?<tsecs>[0-9]+))?)?`);
+
+
+declare global { interface DateConstructor {
+    diff(a: Date, b: Date): OrgDuration;
+    dayDiff(a: Date, b: Date): number;
+    hourDiff(a: Date, b: Date): number;
+    minDiff(a: Date, b: Date): number;
+}}
+Date.minDiff = function(a,b) {
+    var ms = a.getTime() - b.getTime(); 
+    return ms / (1000.0 * 60.0);     // Diference in mins
+};
+Date.diff = function(a,b) {
+    return new OrgDuration(Date.minDiff(a,b));
+};
+Date.dayDiff = function(a,b) {
+    var ms = a.getTime() - b.getTime(); 
+    return ms / (1000 * 3600 * 24); // Diference in Days
+};
+Date.hourDiff = function(a,b) {
+    var ms = a.getTime() - b.getTime(); 
+    return ms / (1000 * 3600);      // Diference in Hours
+};
+// Extend Date with time modifiers
+declare global{ interface Date {
+    addHours(h: number): Date;
+    addDays(d: number):  Date;
+    addMins(m: number): Date;   
+    addDuration(d: OrgDuration): Date;
+    isToday(): boolean;
+}}
+Date.prototype.addDays = function(d) {
+    this.setTime(this.getTime() + (d*24*60*60*1000));
+    return this;
+};
+Date.prototype.addHours = function(h) {
+    this.setTime(this.getTime() + (h*60*60*1000));
+    return this;
+};
+Date.prototype.addMins = function(m) {
+    this.setTime(this.getTime() + (m*60*1000));
+    return this;
+};
+Date.prototype.addDuration = function(d) {
+    this.setTime(this.getTime() + (d.mins*60*1000));
+    return this;
+};
+Date.prototype.isToday = function (): boolean{
+    let today = new Date();
+    return this.isSameDate(today);
+ };
+
+export class OrgDuration {
     mins: number;
     public constructor(minutes: number) {
         this.mins = minutes;
@@ -36,21 +90,21 @@ class OrgDuration {
        let r = "";
        const y = Math.floor(this.mins / 525600.0);
        if(y > 0 ) {
-            r += y.toString() + "y ";
+            r += y.toString() + "y";
        }
        const days = this.mins % 525600.0;
        const d    = Math.floor(days/1440.0);
        if(d > 0) {
-            r += d.toString() + "d ";
+            r += d.toString() + "d";
        }
        const hours = days % 1440.0;
        const h = Math.floor(hours / 60.0);
        if(h > 0) {
-            r += h.toString() + "h ";
+            r += h.toString() + "h";
        }
        const mins = Math.floor(hours % 60.0)
        if(mins > 0) {
-            r += mins.toString() + "mins"
+            r += mins.toString() + "min";
        }
        return r.trim();
     }
@@ -184,140 +238,3 @@ class OrgDuration {
     }
     
 }
-
-// =================================================================
-// Date Extensions
-
-// Static methods
-interface DateConstructor {
-    diff(a: Date, b: Date): OrgDuration;
-    dayDiff(a: Date, b: Date): number;
-    hourDiff(a: Date, b: Date): number;
-    minDiff(a: Date, b: Date): number;
-}
-Date.minDiff = function(a,b) {
-    var ms = a.getTime() - b.getTime(); 
-    return ms / (1000.0 * 60.0);     // Diference in mins
-}
-Date.diff = function(a,b) {
-    return new OrgDuration(Date.minDiff(a,b));
-}
-Date.dayDiff = function(a,b) {
-    var ms = a.getTime() - b.getTime(); 
-    return ms / (1000 * 3600 * 24); // Diference in Days
-}
-Date.hourDiff = function(a,b) {
-    var ms = a.getTime() - b.getTime(); 
-    return ms / (1000 * 3600);      // Diference in Hours
-}
-// Extend Date with time modifiers
-interface Date {
-    addHours(h: number): Date;
-    addDays(d: number):  Date;
-    addMins(m: number):  Date;   
-    addDuration(d: OrgDuration): Date;
-}
-Date.prototype.addDays = function(d) {
-    this.setTime(this.getTime() + (d*24*60*60*1000));
-    return this;
-}
-Date.prototype.addHours = function(h) {
-    this.setTime(this.getTime() + (h*60*60*1000));
-    return this;
-}
-Date.prototype.addMins = function(m) {
-    this.setTime(this.getTime() + (m*60*1000));
-    return this;
-}
-Date.prototype.addDuration = function(d) {
-    this.setTime(this.getTime() + (d.mins*60*1000));
-    return this;
-}
-/*
-    def __sub__(self,o):
-        if(isinstance(o,int)):
-            d = OrgDuration.ParseInt(o)
-            mins = self.mins - d.mins
-            d.mins = abs(mins)
-            return d
-        if(isinstance(o,float)):
-            d = OrgDuration.ParseFloat(o)
-            mins = self.mins - d.mins
-            d.mins = abs(mins)
-            return d
-        if(isinstance(o,OrgDuration)):
-            d = OrgDuration.ParseInt(1)
-            d.mins = abs(self.mins - o.mins)
-            return d
-        return self 
-    
-    def __add__(self,o):
-        if(isinstance(o,int)):
-            d = OrgDuration.ParseInt(o)
-            mins = self.mins + d.mins
-            d.mins = mins
-            return d
-        if(isinstance(o,float)):
-            d = OrgDuration.ParseFloat(o)
-            mins = self.mins + d.mins
-            d.mins = mins
-            return d
-        if(isinstance(o,OrgDuration)):
-            d = OrgDuration.ParseInt(1)
-            d.mins = self.mins + o.mins
-            return d
-        return self 
-
-
-/*
-    
-    @staticmethod
-    def ParseMonthOffset(txt: str):
-        if(len(txt) < 3):
-            return None
-        change = ["january","febuary","march","april","may","june","july","august","september","october","november","december"]
-        tokens = txt.split(' ')
-        monthOffset = 0
-        dayOffset   = 0
-
-        month = datetime.datetime.now().month
-        day   = datetime.datetime.now().day
-        for token in tokens:
-            tk = token.lower()
-            monthCheck = [idx for idx, element in enumerate(change) if element.startswith(tk)]
-            if(len(monthCheck) > 0):
-               monthOffset = (monthCheck[0] + 1) 
-            if tk.isnumeric():
-                dayOffset = int(tk)
-        if(monthOffset == 0 and dayOffset == 0):
-            return None
-        if(dayOffset == 0):
-            dayOffset = day
-        dt = datetime.datetime.now().replace(month=monthOffset,day=dayOffset)
-        offset = dt - datetime.datetime.now()
-        mtot = 0.0
-        if((offset.total_seconds() / 60.0) != 0):
-            mtot += offset.total_seconds() / 60.0
-            return OrgDuration(mtot)
-        return None
-
-
-
-// ================================================================================
-class OrgTestDurationCommand(sublime_plugin.TextCommand):
-    def run(self, edit, onDone=None):
-        d = OrgDuration.Parse("2y3d5h6min")
-        print(str(d))
-        d = OrgDuration.Parse("1y")
-        print(str(d))
-        d = OrgDuration.Parse("2d")
-        print(str(d))
-        d = OrgDuration.Parse("3h")
-        print(str(d))
-        d = OrgDuration.Parse("4min")
-        print(str(d))
-        d = OrgDuration.Parse("1d 3:44")
-        print(str(d))
-        d = OrgDuration.Parse("1d 4:55:55")
-        print(str(d))
-        */
