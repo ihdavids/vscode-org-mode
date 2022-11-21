@@ -3,13 +3,7 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import {ODb} from "./db"
 import {OrgExtension} from "./extension"
-import { Script } from 'vm';
-
-
-const cats = {
-  'Coding Cat': 'https://media.giphy.com/media/JIX9t2j0ZTN9S/giphy.gif',
-  'Compiling Cat': 'https://media.giphy.com/media/mlvseq9yvZhba/giphy.gif'
-};
+//import { Script } from 'vm';
 
 class hnode {
   name: string;

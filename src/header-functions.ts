@@ -39,7 +39,7 @@ export function insertHeadingRespectContent(textEditor: vscode.TextEditor, edit:
 
     
 
-export function insertChild(textEditor: vscode.TextEditor, edit: vscode.TextEditorEdit) {
+export async function insertChild(textEditor: vscode.TextEditor, edit: vscode.TextEditorEdit) {
     let   cursorPos = Utils.getCursorPosition();
     const document  = textEditor.document;
 
@@ -70,10 +70,13 @@ export function insertChild(textEditor: vscode.TextEditor, edit: vscode.TextEdit
         // Snippets and vim mode seem to be a problem. This is hella annoying!
         // If we are appending to a line then we need to add a newline, otherwise we just insert on the line
         if (endOfLine > 0) {
-            textEditor.insertSnippet(new vscode.SnippetString("\n" + headerPrefix.trim() + "* ${1}"), insertPos);
+            edit.insert(insertPos, "\n" + headerPrefix.trim() + "* ");
+            //await textEditor.insertSnippet(new vscode.SnippetString("\n" + headerPrefix.trim() + "* ${1}"), insertPos);
         } else {
-            textEditor.insertSnippet(new vscode.SnippetString(headerPrefix.trim() + "* ${1}"), insertPos);
+             edit.insert(insertPos, headerPrefix.trim() + "* ");
+           //await textEditor.insertSnippet(new vscode.SnippetString(headerPrefix.trim() + "* ${1}"), insertPos);
         }
+        Utils.moveToEndOfLine(textEditor, new vscode.Position(insertPos.line, 0));
     }
 }
 

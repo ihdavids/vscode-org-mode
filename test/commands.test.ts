@@ -19,6 +19,13 @@ function move(editor: vscode.TextEditor, line: number, col: number) {
     editor.selection = new vscode.Selection(pos, pos);
 }
 
+async function insert(editor: vscode.TextEditor, text: string) {
+    await editor.edit((edit) => {
+        let pos = editor.selection.active;
+        edit.insert(pos, text);
+    });
+}
+
 function select(editor: vscode.TextEditor, range: vscode.Range) {
     editor.selection = new vscode.Selection(range.start, range.end);
 }
@@ -132,16 +139,20 @@ suite('Commands', () => {
     });
 
     test('InsertSubheading', async () => {
-        const initial = `* Header
+        const initial = 
+`* Header
 * Header2`;
-        const expected = `* Header\n` +
-            `** \n` +
-            `*** \n` +
-            `* Header2`;
+        const expected = 
+`* Header
+** A
+*** B
+* Header2`;
 
-        await inTextEditor({ language: 'org', content: initial }, async (_, document) => {
+        await inTextEditor({ language: 'org', content: initial }, async (ed, document) => {
             await vscode.commands.executeCommand('org.insertSubheading');
+            await insert(ed,"A");
             await vscode.commands.executeCommand('org.insertSubheading');
+            await insert(ed,"B");
             assert.equal(document.getText(), expected);
         });
     });
@@ -213,7 +224,7 @@ suite('Commands', () => {
         const dayOfWeek = weekdayArray[now.getDay()];
 
         const initial = '';
-        const expected = `<${datePart} ${dayOfWeek}>`;
+        const expected = `[${datePart} ${dayOfWeek}]`;
 
         await inTextEditor({ language: 'org', content: initial }, async (_, document) => {
             await vscode.commands.executeCommand('org.timestamp');
