@@ -241,6 +241,23 @@ suite('Commands', () => {
             '** Header again\n' +
             '    And some more content here';
 
+        const expected1 = '* Header\n' +
+            '** Header 2\n' +
+            '    Some content goes here\n' +
+            '*** Header 3\n' +
+            '    Some more content that goes here\n' +
+            '** Header again\n' +
+            '    And some more content here\n' +
+            '* ';
+        const expected2 = '* Header\n' +
+            '** Header 2\n' +
+            '    Some content goes here\n' +
+            '*** Header 3\n' +
+            '    Some more content that goes here\n' +
+            '** \n' +
+            '** Header again\n' +
+            '    And some more content here\n' +
+            '* ';
         const expected = '* Header\n' +
             '** Header 2\n' +
             '    Some content goes here\n' +
@@ -256,10 +273,12 @@ suite('Commands', () => {
             // Invoke while standing on 'Header'
             await vscode.commands.executeCommand('org.insertHeadingRespectContent');
 
+            assert.equal(document.getText(), expected1);
             // Invoke while standing on 'Header 2'
             move(editor, 1, 0);
             await vscode.commands.executeCommand('org.insertHeadingRespectContent');
 
+            assert.equal(document.getText(), expected2);
             // Invoke while standing on content of 'Header 2' section
             move(editor, 2, 0);
             await vscode.commands.executeCommand('org.insertHeadingRespectContent');

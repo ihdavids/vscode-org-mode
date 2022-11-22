@@ -226,7 +226,7 @@ export function findEndOfBlock(doc: vscode.TextDocument, pos: vscode.Position) :
 }
 
 export function findEndOfSection(document: vscode.TextDocument, pos: vscode.Position, levelSym: string = "") {
-    if (pos.line === document.lineCount - 1) {
+    if (pos.line >= document.lineCount - 1) {
         return pos;
     }
     const sectionRegex = getSectionRegex(levelSym);
@@ -239,7 +239,7 @@ export function findEndOfSection(document: vscode.TextDocument, pos: vscode.Posi
         curLine++;
         curPos = new vscode.Position(curLine, 0);
         curLinePrefix = getPrefix(getLine(document, curPos));
-    } while (curLine < document.lineCount - 1 && inSubsection(curLinePrefix, sectionRegex))
+    } while (curLine < (document.lineCount - 1) && inSubsection(curLinePrefix, sectionRegex))
 
     curPos = new vscode.Position(curPos.line - 1, getLine(document, new vscode.Position(curPos.line - 1, 0)).length + 1);
 
@@ -260,16 +260,23 @@ export function findEndOfContent(document: vscode.TextDocument, pos: vscode.Posi
     let curLine = pos.line;
     let curPos;
     let curLinePrefix;
+    let inSub;
 
     do {
         curLine++;
         curPos = new vscode.Position(curLine, 0);
         curLinePrefix = getPrefix(getLine(document, curPos));
-    } while (curLine < document.lineCount - 1 && inSubsection(curLinePrefix, sectionRegex))
+        inSub = inSubsection(curLinePrefix, sectionRegex);
+    } while (curLine < (document.lineCount-1) && inSub)
 
 
-    return (curLine !== document.lineCount - 1) ? new vscode.Position(curPos.line - 1, getLine(document, new vscode.Position(curPos.line - 1, 0)).length + 1) :
-        new vscode.Position(curPos.line, getLine(document, new vscode.Position(curPos.line, 0)).length + 1);
+    let rv = null;
+    if (curLine < document.lineCount-1 || !inSub) {
+        rv = new vscode.Position(curPos.line - 1, getLine(document, new vscode.Position(curPos.line - 1, 0)).length + 1);
+    } else {
+        rv = new vscode.Position(curPos.line, getLine(document, new vscode.Position(curPos.line, 0)).length + 1);
+    }
+    return rv;
 
 }
 
