@@ -11,6 +11,42 @@ suite("Duration Tests", () => {
         const result = val.toString();
         assert.equal(result, expected);
     });
+    test("Year Duration", async () => {
+        const expected = '1y';
+        const val   = dur.OrgDuration.parse(expected);
+        const result = val.toString();
+        assert.equal(result, expected);
+    });
+    test("Day Duration", async () => {
+        const expected = '2d';
+        const val   = dur.OrgDuration.parse(expected);
+        const result = val.toString();
+        assert.equal(result, expected);
+    });
+    test("Hour Duration", async () => {
+        const expected = '3h';
+        const val   = dur.OrgDuration.parse(expected);
+        const result = val.toString();
+        assert.equal(result, expected);
+    });
+    test("Min Duration", async () => {
+        const expected = '4min';
+        const val   = dur.OrgDuration.parse(expected);
+        const result = val.toString();
+        assert.equal(result, expected);
+    });
+    test("Time Duration", async () => {
+        const expected = '1d 3:44';
+        const val   = dur.OrgDuration.parse(expected);
+        const result = val.toString();
+        assert.equal(result, expected);
+    });
+    test("Sec Time Duration", async () => {
+        const expected = '1d 4:12:43';
+        const val   = dur.OrgDuration.parse(expected);
+        const result = val.toString();
+        assert.equal(result, expected);
+    });
 });
 /*
 // ================================================================================
