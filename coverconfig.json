@@ -1,9 +1,10 @@
 {
-    "enabled": true,
+    "enabled": false,
     "relativeSourcePath": "../src",
     "relativeCoverageDir": "../../coverage",
     "ignorePatterns": [
-        "**/node_modules/**"
+        "**/node_modules/**",
+        "agenda"
     ],
     "includePid": false,
     "reports": [
