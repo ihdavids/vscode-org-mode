@@ -101,7 +101,7 @@ export class CalendarState {
     }
 }
 
-export class Calendar2 {
+export class Calendar2 implements vscode.TextDocumentContentProvider {
     private page: Page;
 	//private config: Config;
 	private numberMonth: number;
@@ -111,12 +111,16 @@ export class Calendar2 {
 	private date: Date;
 	private calendars: string[][];
 	private text: string;
+    private uri: vscode.Uri;
 
 	private editor: vscode.TextEditor | undefined;
     public effector: CalendarEffector;
 
 	private _onDidChange = new vscode.EventEmitter<vscode.Uri>();
-	onDidChange?: vscode.Event<vscode.Uri> | undefined;
+
+	public get onDidChange() {
+		return this._onDidChange.event;
+    }
 
     private readonly _onDone = new Signal<Calendar2, CalendarState>();
 
@@ -141,6 +145,10 @@ export class Calendar2 {
 	    context.subscriptions.push(vscode.commands.registerCommand('org.calendar.prevWeek', () => this.goDate(-7)));
 	    context.subscriptions.push(vscode.commands.registerCommand('org.calendar.nextWeek', () => this.goDate(7)));
 	    context.subscriptions.push(vscode.commands.registerCommand('org.calendar.setDate', async () => this.onEnterHandler()));
+
+		this.uri = vscode.Uri.parse('Calendar:Calendar.calendar');
+        context.subscriptions.push(vscode.workspace.registerTextDocumentContentProvider('Calendar', this));
+
 		//this.config = Config.getInstance();
 		this.numberMonth = 3;//this.config.get('number.of.month');
 		this.cursorType = vscode.window.createTextEditorDecorationType({
@@ -155,7 +163,6 @@ export class Calendar2 {
 		this.date = new Date();
 		this.calendars = [];
 		this.text = '';
-		this.onDidChange = this._onDidChange.event;
 		vscode.window.onDidChangeTextEditorSelection((e: vscode.TextEditorSelectionChangeEvent) => {
 			const editor = vscode.window.activeTextEditor;
 			if (!editor || editor.document.languageId !== 'calendar') {
@@ -299,10 +306,14 @@ export class Calendar2 {
 		this.text = this.getCalendars(date, count);
 	}
 
-	provideTextDocumentContent(uri: vscode.Uri, token: vscode.CancellationToken): vscode.ProviderResult<string> {
+
+    provideTextDocumentContent(uri: vscode.Uri): string | Thenable<string> {
+	//provideTextDocumentContent(uri: vscode.Uri, token: vscode.CancellationToken): vscode.ProviderResult<string> {
 		if (this.text.length == 0) {
 			this.genCalendars(new Date(), this.numberMonth);
-		}
+		} else {
+            this.regenCalendars(false);
+        }
 		return this.text;
 	}
 
@@ -371,7 +382,7 @@ export class Calendar2 {
 
 	async openCalendarPage() {
         this.page = new Page();
-        await this.page.create({ language: 'calendar', content: 'Agenda\n' });
+        await this.page.create(this.uri);
         await this.page.show();
         this.regenCalendars();
 		await this.redraw();
@@ -443,11 +454,7 @@ export class Calendar2 {
 
 
 	async redraw() {
-        await this.page.edit( async (edit) => {
-            this.page.setReadonly(false);
-            await edit.replace(this.page.contentMinusFirstLine, this.text);
-            this.page.setReadonly(true);
-        });      
+        this._onDidChange.fire(this.uri);
 	}
 
 	getDate(): Date {

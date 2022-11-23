@@ -30,14 +30,21 @@ function anyGlobMatches(globs: ReadonlyPath, document: vscode.TextDocument) {
 export class Page {
     doc:    vscode.TextDocument;
     editor: vscode.TextEditor;
+    uri:    vscode.Uri | undefined;
 
     public constructor() {
         this.doc    = null;
         this.editor = null;
     }
 
-    async create(options: TestEditorOptions = { language: 'org', content: '' }) {
-        this.doc = await vscode.workspace.openTextDocument(options);
+    async create(options: TestEditorOptions | vscode.Uri = { language: 'org', content: '' }) {
+        if (options instanceof vscode.Uri) {
+            this.uri = options;
+            this.doc = await vscode.workspace.openTextDocument(this.uri);
+        } else {
+            this.uri = undefined;
+            this.doc = await vscode.workspace.openTextDocument(options);
+        }
     }
 
     async show() {
