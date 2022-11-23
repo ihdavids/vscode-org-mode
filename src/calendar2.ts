@@ -30,7 +30,6 @@ export class CalendarEffector {
 
     constructor(mode: CalendarMode) {
         this.editor = vscode.window.activeTextEditor;
-        console.log("DOC: ", this.editor.document.fileName);
 		if (!this.editor) {
 			return;
 		}
@@ -440,7 +439,6 @@ export class Calendar2 implements vscode.TextDocumentContentProvider {
         const promise = new Promise<[Date|undefined,boolean]>((resolve, reject) =>{
         let accept = false;
         box.onDidAccept(() => {
-            console.log("DID ACCEPT");
             accept = true;
             box.hide();
         })
@@ -450,14 +448,12 @@ export class Calendar2 implements vscode.TextDocumentContentProvider {
             if (accept) {
                 calVal = this.date;    
             }
-            console.log("CAL VAL: ", calVal);
             await this.page.close();
             resolve([calVal, accept]);
         });
         box.show();
         });
         const [calVal, ok] = await promise;
-        console.log("Post Promise:",calVal, ok);
 
         const state = new CalendarState(this, ok);
         return Promise.resolve(state);

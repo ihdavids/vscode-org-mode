@@ -235,9 +235,7 @@ export function getNodeContext(cursorPos: Position, document: TextDocument): INo
             const tpos = new Position(i, 0);
             const tempLine = Util.getLine(document, tpos);
             if (!timestamp){
-                console.log("CHECKING TIMESTAMP: ", tempLine);
                 timestamp = parseTimestampContext(tpos, tempLine);
-                console.log("   TS: ", timestamp);
             } 
             if (!scheduled || !deadline){
                 let ctx = parseScheduledContext(tpos, tempLine);
