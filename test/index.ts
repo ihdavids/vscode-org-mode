@@ -20,3 +20,6 @@ testRunner.configure({
 });
 
 module.exports = testRunner;
+
+import * as vscode from "vscode";
+vscode.commands.executeCommand('workbench.action.closeAllEditors');
