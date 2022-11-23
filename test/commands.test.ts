@@ -220,7 +220,13 @@ suite('Commands', () => {
     test('Timestamp', async () => {
         // TODO: Need to find a way to somehow mock Date
         const now = new Date();
-        const datePart = now.toISOString().slice(0, 10);
+
+        // This fails when the date wraps over due to timezone fun.
+        // So remove the timezone from the equation.
+        //const datePart = now.toString().slice(0, 10);
+
+        var tzoffset = (new Date()).getTimezoneOffset() * 60000; //offset in milliseconds
+        var datePart = (new Date(Date.now() - tzoffset)).toISOString().slice(0, 10);
         const dayOfWeek = weekdayArray[now.getDay()];
 
         const initial = '';
