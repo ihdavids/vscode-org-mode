@@ -24,6 +24,7 @@ export class Calendar implements vscode.TextDocumentContentProvider {
 	    context.subscriptions.push(vscode.commands.registerCommand('org.calendar.nextDate', () => this.goDate(1)));
 	    context.subscriptions.push(vscode.commands.registerCommand('org.calendar.prevWeek', () => this.goDate(-7)));
 	    context.subscriptions.push(vscode.commands.registerCommand('org.calendar.nextWeek', () => this.goDate(7)));
+		this.uri = vscode.Uri.parse('Calendar:Calendar.calendar');
         context.subscriptions.push(vscode.workspace.registerTextDocumentContentProvider('Calendar', this));
 		//this.config = Config.getInstance();
 		this.numberMonth = 3;//this.config.get('number.of.month');
@@ -35,7 +36,6 @@ export class Calendar implements vscode.TextDocumentContentProvider {
 				'backgroundColor': 'rgba(255, 0, 0, 1.0)'
 			}
 		});
-		this.uri = vscode.Uri.parse('Calendar:Calendar.calendar');
 		this.baseDate = new Date();
 		this.date = new Date();
 		this.calendars = [];
@@ -149,7 +149,17 @@ export class Calendar implements vscode.TextDocumentContentProvider {
 
 		const prevMonth = Math.trunc(this.numberMonth / 2);
 		for (i = 0; i < this.numberMonth; i++) {
-			const date = new Date(year, month - prevMonth + i, 1);
+			let cyear = year;
+			let cmonth = month - prevMonth + i;
+			if (cmonth < 0) {
+				cyear = year - 1;
+				cmonth = 12 + cmonth;
+			}
+			if (cmonth >= 12) {
+				cyear = year + 1;
+				cmonth = cmonth - 12;
+			}
+			const date = new Date(cyear, cmonth, 1);
 			const calendar = this.getCalendar(date);
 			if (calendar.length > maxLine) {
 				maxLine = calendar.length;
@@ -185,7 +195,9 @@ export class Calendar implements vscode.TextDocumentContentProvider {
 		const year = date.getFullYear();
 		let i;
 		for (i = 0; i < this.calendars.length; i++) {
-			if (this.calendars[i][0].includes(date.toLocaleString('en-US', { month: 'long' }) + ' ' + year.toString())) {
+			let mname = date.toLocaleString('en-US', { month: 'long' });
+			let idx   = mname + ' ' + year.toString();
+			if (this.calendars[i][0].includes(idx)) {
 				return i;
 			}
 		}
@@ -232,6 +244,7 @@ export class Calendar implements vscode.TextDocumentContentProvider {
 		//await vscode.commands.executeCommand('workbench.action.previousEditor');
 		//await vscode.commands.executeCommand('vscode.setEditorLayout', { orientation: 1, groups: [{ size: 0.8 }, { size: 0.2 }] });
 		this.editor = vscode.window.activeTextEditor;
+		await this.redraw();
 		this.showCurrDate();
 	}
 
@@ -244,7 +257,29 @@ export class Calendar implements vscode.TextDocumentContentProvider {
 			this._onDidChange.fire(this.uri);
 			await new Promise(resolve => setTimeout(resolve, 10));
 		}
+		await this.redraw();
 		this.showCurrDate();
+	}
+
+	async setDate(dt: Date) {
+		this.date = dt;
+		if (this.findMonth(this.date) < 0) {
+			this.baseDate = dt;
+			const year = this.baseDate.getFullYear();
+			const month = this.date.getMonth();
+			this.genCalendars(new Date(year, month, 1), this.numberMonth);
+			this._onDidChange.fire(this.uri);
+			await new Promise(resolve => setTimeout(resolve, 10));
+		}
+		//await this.redraw();
+		this.showCurrDate();
+	}
+
+	async redraw() {
+    	return this.editor.edit( async (edit) => {
+			//await edit.insert(new vscode.Position(0,0), "ASKFJASLFKJASLFKJASFLDKJALSFKJALKSFJDASLKJFSAKLJF\nlkajsflkasjflksajflskdfj\n");
+            await edit.replace(new vscode.Range(new vscode.Position(0,0), new vscode.Position(this.editor.document.lineCount,0)), this.text);
+        });      
 	}
 
 	getDate(): Date {
