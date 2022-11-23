@@ -32,8 +32,16 @@
     "contributes": {
         "commands": [
             {
-                "command": "org.schedule",
-                "title": "Org: Schedule"
+                "command": "org.scheduleNode",
+                "title": "Org: Schedule Todo"
+            },
+            {
+                "command": "org.deadlineNode",
+                "title": "Org: Deadline Todo"
+            },
+            {
+                "command": "org.timestampNode",
+                "title": "Org: Timestamp Todo"
             },
             {
                 "command": "org.prevDayPage",

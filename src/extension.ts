@@ -44,13 +44,11 @@ export class OrgExtension {
 		this.calendar = new Calendar2(context);
     }
 
-    async doItNow(): Promise<void> {
-        let x = await this.calendar.openCalendarEditor(CalendarMode.timestamp);
-        console.log("XXXX: ", x);
+    async timestamp(mode: CalendarMode): Promise<void> {
+        let x = await this.calendar.openCalendarEditor(mode);
         await x.writeToEditor();
         return Promise.resolve();
     }
-
 } 
 
 export function activate(context: vscode.ExtensionContext) {
@@ -104,8 +102,9 @@ export function activate(context: vscode.ExtensionContext) {
     const showDayPageCmd = vscode.commands.registerTextEditorCommand('org.showDayPageToday', daypage.showDayPageToday);
     const prevDayPageCmd = vscode.commands.registerTextEditorCommand('org.prevDayPage', daypage.prevDayPage);
     const nextDayPageCmd = vscode.commands.registerTextEditorCommand('org.nextDayPage', daypage.nextDayPage);
-	//context.subscriptions.push(vscode.commands.registerCommand('org.schedule', async (mode: CalendarMode = CalendarMode.timestamp) => OrgExtension.get().openCalendar(mode)));
-	context.subscriptions.push(vscode.commands.registerCommand('org.schedule', async (mode: CalendarMode = CalendarMode.timestamp) => OrgExtension.get().doItNow()));
+	context.subscriptions.push(vscode.commands.registerCommand('org.scheduleNode',  async () => OrgExtension.get().timestamp(CalendarMode.schedule)));
+	context.subscriptions.push(vscode.commands.registerCommand('org.deadlineNode',  async () => OrgExtension.get().timestamp(CalendarMode.deadline)));
+	context.subscriptions.push(vscode.commands.registerCommand('org.timestampNode', async () => OrgExtension.get().timestamp(CalendarMode.timestamp)));
     context.subscriptions.push(nextDayPageCmd);
     context.subscriptions.push(prevDayPageCmd);
     context.subscriptions.push(showDayPageCmd);
