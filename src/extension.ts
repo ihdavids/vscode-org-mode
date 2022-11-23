@@ -20,7 +20,9 @@ import * as daypage from './daypage';
 import * as odb from './db';
 import * as Util from './utils';
 import * as CC from './cursor-context';
-import { Calendar } from './calendar';
+import { Calendar2 } from './calendar2';
+import { OrgDuration } from './duration';
+import './duration';
 enum CalendarMode {
 	none = 'none',
     timestamp = "",
@@ -31,7 +33,7 @@ export class OrgExtension {
     private static instance: OrgExtension;
 
     context: vscode.ExtensionContext;    
-    calendar: Calendar;
+    calendar: Calendar2;
 
     private calendarMode: CalendarMode;
     private calendarEditor;
@@ -50,7 +52,7 @@ export class OrgExtension {
 
     public activate(context: vscode.ExtensionContext) {
         this.context = context;
-		this.calendar = new Calendar(context);
+		this.calendar = new Calendar2(context);
 	    context.subscriptions.push(vscode.commands.registerCommand('org.calendar.setDate', async () => OrgExtension.get().setDate()));
 		this.calendarMode = CalendarMode.none;
     }
@@ -75,6 +77,12 @@ export class OrgExtension {
         //vscode.window.showInputBox();
         let box = vscode.window.createInputBox();
         box.onDidChangeValue((strLine: string) => {
+            let dt = OrgDuration.parse(strLine);
+            if(dt && dt.mins > 0) {
+                console.log("HAVE DURATION",dt.toString());
+                let cdate: Date = new Date();
+                this.calendar.setDate(cdate.addDuration(dt));
+            }
             console.log(strLine);
         })
         box.ignoreFocusOut = true;
