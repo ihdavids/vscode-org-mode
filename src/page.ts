@@ -5,6 +5,26 @@ import * as assert from 'assert';
 interface TestEditorOptions {
     language?: string;
     content?: string;
+    scheme?: string;
+}
+
+type ReadonlyPath = { [path: string]: boolean | null | 'toggle' } | undefined;
+const key = 'files.readonlyPath';
+
+function setReadOnly(doc: vscode.TextDocument, value: boolean | null | 'toggle' = 'toggle') {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    const noGlobs = { '/settings/folder': true, '**/settings.json': true };
+    if (anyGlobMatches(noGlobs, doc)) { return; } // IGNORE WHEN EDITING settings.json
+    const path = doc.fileName;
+    const pathValue: ReadonlyPath = {}; 
+    pathValue[path] = value;
+    vscode.workspace.getConfiguration().update(key, pathValue, true); // false: WORKSPACE, true: GLOBAL
+    const basename = path.split(/\/|\\/).reverse()[0];
+    //vscode.window.showInformationMessage(`readonlyPath: { "${basename}": ${value} }`);
+}
+
+function anyGlobMatches(globs: ReadonlyPath, document: vscode.TextDocument) {
+    return !!(globs && Object.keys(globs).find(glob => (globs[glob] === true) && (vscode.languages.match({ pattern: glob }, document) !== 0)));
 }
 
 export class Page {
@@ -53,12 +73,37 @@ export class Page {
         this.editor.setDecorations(decorationType, rangesOrOptions);
     }
 
+    async close() {
+        await vscode.window.showTextDocument(this.doc.uri, {preview: true, preserveFocus: false});
+        await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
+    }
+
+    setReadonly(val: boolean) {
+        setReadOnly(this.doc, val);
+    }
+
     get allContentRange() {
-        return new vscode.Range(new vscode.Position(0,0), new vscode.Position(this.doc.lineCount,0));
+        if (this.doc.lineCount > 0) {
+            return new vscode.Range(new vscode.Position(0,0), new vscode.Position(this.doc.lineCount,0));
+        } else {
+            return new vscode.Range(new vscode.Position(0,0), new vscode.Position(0,0));
+        }
+    }
+
+    get contentMinusFirstLine() {
+        if (this.doc.lineCount > 0) {
+            return new vscode.Range(new vscode.Position(1,0), new vscode.Position(this.doc.lineCount,0));
+        } else {
+            return this.allContentRange;
+        }
     }
 
     get ok() {
         return this.editor;
+    }
+
+    save() {
+        this.doc.save();
     }
 
 }

@@ -3,6 +3,103 @@ import { parse } from 'path';
 import * as vscode from 'vscode';
 //import { Config } from './config';
 import { Page } from "./page";
+import { Signal } from "./signal";
+import * as Util from './utils';
+import * as CC from './cursor-context';
+import { OrgDuration } from './duration';
+import './duration';
+
+export enum CalendarMode {
+	none = 'none',
+    timestamp = "",
+	schedule = 'SCHEDULED: ',
+	deadline = 'DEADLINE: '
+}
+
+export class CalendarEffector {
+    public editor: vscode.TextEditor;
+    public pos: vscode.Position;
+    public document: vscode.TextDocument;
+    public line: string;
+    public node: CC.INodeData;
+    public mode: CalendarMode;
+
+    get ok() {
+        return this.editor && this.node;
+    }
+
+    constructor(mode: CalendarMode) {
+        this.editor = vscode.window.activeTextEditor;
+		if (!this.editor) {
+			return;
+		}
+		this.pos      = this.editor.selection.active;
+
+        this.document = Util.getActiveTextEditorEdit();
+        this.line     = Util.getLine(this.document, this.pos);
+		this.node     = CC.getNodeContext(this.pos, this.document);
+		if (!this.node) {
+            return;
+		}
+		this.mode = mode;
+    }
+}
+
+export class CalendarState {
+    public effector:  CalendarEffector;
+    public date:      Date;
+    public ok:        boolean;
+    constructor(cal: Calendar2, ok: boolean) {
+        this.effector  = cal.effector;
+        this.ok        = ok;
+        this.date      = cal.getDate();
+    }
+
+    public async writeToEditor() {
+        if (!this.ok) {
+            return;
+        }
+        console.log("GET DATE: ", this.date);
+        if (!this.effector.ok) {
+            console.log("EFFECTOR NOT SETUP ABORT!");
+            return;
+        }
+		let line = this.effector.node.line + 1;
+		let column = 0;
+		let length = 0;
+        let didDelete = false;
+        if (this.effector.node.scheduled && this.effector.mode === CalendarMode.schedule) {
+			await this.effector.editor.edit((editBuilder) => {
+				editBuilder.delete(this.effector.node.scheduled.range);
+			});
+            didDelete = true;
+        }
+        if (this.effector.node.timestamp && this.effector.mode === CalendarMode.timestamp) {
+			await this.effector.editor.edit((editBuilder) => {
+				editBuilder.delete(this.effector.node.timestamp.range);
+			});
+            didDelete = true;
+        }
+        if (this.effector.node.deadline && this.effector.mode === CalendarMode.deadline) {
+			await this.effector.editor.edit((editBuilder) => {
+				editBuilder.delete(this.effector.node.deadline.range);
+			});
+            didDelete = true;
+        }
+        // Insert newline if required.
+        if (!didDelete) {
+			await this.effector.editor.edit((editBuilder) => {
+				editBuilder.insert(new vscode.Position(line, 0), '\n');
+			});
+        }
+		// insert new date
+		const space = (this.effector.document.lineAt(line).text.length > 0) ? ' ' : '';
+		const text = this.effector.mode + '<' + this.date.toISOString().slice(0, 10) + ' ' + this.date.toLocaleString('en-US', { weekday: 'short' }) + '>' + space;
+		await this.effector.editor.edit((editBuilder) => {
+			editBuilder.insert(new vscode.Position(line, 0), text);
+		});
+    }
+}
 
 export class Calendar2 {
     private page: Page;
@@ -16,9 +113,26 @@ export class Calendar2 {
 	private text: string;
 
 	private editor: vscode.TextEditor | undefined;
+    public effector: CalendarEffector;
 
 	private _onDidChange = new vscode.EventEmitter<vscode.Uri>();
 	onDidChange?: vscode.Event<vscode.Uri> | undefined;
+
+    private readonly _onDone = new Signal<Calendar2, CalendarState>();
+
+    onEnterHandler() {
+        const state = new CalendarState(this, true);
+        this._onDone.trigger(this, state);
+    }
+
+    onEscapeHandler() {
+        const state = new CalendarState(this, false);
+        this._onDone.trigger(this, state);
+    }
+
+    get onDone() {
+        return this._onDone;
+    }
 
 	constructor(context: vscode.ExtensionContext) {
 
@@ -26,6 +140,7 @@ export class Calendar2 {
 	    context.subscriptions.push(vscode.commands.registerCommand('org.calendar.nextDate', () => this.goDate(1)));
 	    context.subscriptions.push(vscode.commands.registerCommand('org.calendar.prevWeek', () => this.goDate(-7)));
 	    context.subscriptions.push(vscode.commands.registerCommand('org.calendar.nextWeek', () => this.goDate(7)));
+	    context.subscriptions.push(vscode.commands.registerCommand('org.calendar.setDate', async () => this.onEnterHandler()));
 		//this.config = Config.getInstance();
 		this.numberMonth = 3;//this.config.get('number.of.month');
 		this.cursorType = vscode.window.createTextEditorDecorationType({
@@ -243,18 +358,20 @@ export class Calendar2 {
 		}
 	}
 
-    regenCalendars() {
+    regenCalendars(resetBaseDate: boolean = true) {
 		if (this.calendars === null || this.calendars.length <= 0 || this.findMonth(this.date) < 0) {
-			this.baseDate = this.date;
+            if (resetBaseDate) {
+			    this.baseDate = this.date;
+            }
 			const year    = this.baseDate.getFullYear();
 			const month   = this.date.getMonth();
 			this.genCalendars(new Date(year, month, 1), this.numberMonth);
         }
     }
 
-	async openCalendar() {
+	async openCalendarPage() {
         this.page = new Page();
-        await this.page.create({ language: 'calendar', content: '' });
+        await this.page.create({ language: 'calendar', content: 'Agenda\n' });
         await this.page.show();
         this.regenCalendars();
 		await this.redraw();
@@ -263,35 +380,73 @@ export class Calendar2 {
 
 	async goDate(date: number) {
 		this.date = new Date(this.date.getTime() + date * 24 * 60 * 60 * 1000);
-		if (this.findMonth(this.date) < 0) {
-			const year = this.baseDate.getFullYear();
-			const month = (date > 0) ? this.baseDate.getMonth() + 1 : this.baseDate.getMonth() - 1;
-			this.genCalendars(new Date(year, month, 1), this.numberMonth);
-			//this._onDidChange.fire(this.uri);
-			await new Promise(resolve => setTimeout(resolve, 10));
-		}
+        this.regenCalendars(false);
 		await this.redraw();
 		this.showCurrDate();
 	}
 
 	async setDate(dt: Date) {
 		this.date = dt;
-		if (this.findMonth(this.date) < 0) {
-			this.baseDate = dt;
-			const year = this.baseDate.getFullYear();
-			const month = this.date.getMonth();
-			this.genCalendars(new Date(year, month, 1), this.numberMonth);
-			//this._onDidChange.fire(this.uri);
-			await new Promise(resolve => setTimeout(resolve, 10));
-		}
+        this.regenCalendars();
 		await this.redraw();
 		this.showCurrDate();
 	}
 
+
+    async openCalendarEditor(mode: CalendarMode): Promise<CalendarState> {
+        // Capture state before opening calendar so we can return it!
+        this.effector = new CalendarEffector(mode);
+        // Set context so keybindings will work now.
+        await vscode.commands.executeCommand('setContext', 'hasOrgCalFocus', true);
+        // Open up the page with the calendar on it!
+		await this.openCalendarPage();
+        //vscode.window.showInputBox();
+        let box = vscode.window.createInputBox();
+        box.onDidChangeValue((strLine: string) => {
+            let dt = OrgDuration.parse(strLine);
+            if(dt && dt.mins > 0) {
+                console.log("HAVE DURATION",dt.toString());
+                let cdate: Date = new Date();
+                this.setDate(cdate.addDuration(dt));
+            }
+            console.log(strLine);
+        })
+        box.ignoreFocusOut = true;
+        
+        const curDate = this.getDate();
+        box.value = curDate.toISOString().slice(0, 10);
+        const promise = new Promise<[Date|undefined,boolean]>((resolve, reject) =>{
+        let accept = false;
+        box.onDidAccept(() => {
+            console.log("DID ACCEPT");
+            accept = true;
+            box.hide();
+        })
+        box.onDidHide(async () => {
+            await vscode.commands.executeCommand('setContext', 'hasOrgCalFocus', false);
+            let calVal: Date | undefined = undefined;
+            if (accept) {
+                calVal = this.date;    
+            }
+            console.log("CAL VAL: ", calVal);
+            await this.page.close();
+            resolve([calVal, accept]);
+        });
+        box.show();
+        });
+        const [calVal, ok] = await promise;
+        console.log("Post Promise:",calVal, ok);
+
+        const state = new CalendarState(this, ok);
+        return Promise.resolve(state);
+	}
+
+
 	async redraw() {
         await this.page.edit( async (edit) => {
-			//await edit.insert(new vscode.Position(0,0), "ASKFJASLFKJASLFKJASFLDKJALSFKJALKSFJDASLKJFSAKLJF\nlkajsflkasjflksajflskdfj\n");
-            await edit.replace(this.page.allContentRange, this.text);
+            this.page.setReadonly(false);
+            await edit.replace(this.page.contentMinusFirstLine, this.text);
+            this.page.setReadonly(true);
         });      
 	}
 

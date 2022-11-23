@@ -20,24 +20,13 @@ import * as daypage from './daypage';
 import * as odb from './db';
 import * as Util from './utils';
 import * as CC from './cursor-context';
-import { Calendar2 } from './calendar2';
-import { OrgDuration } from './duration';
-import './duration';
-enum CalendarMode {
-	none = 'none',
-    timestamp = "",
-	schedule = 'SCHEDULED: ',
-	deadline = 'DEADLINE: '
-}
+import { Calendar2, CalendarMode } from './calendar2';
 export class OrgExtension {
     private static instance: OrgExtension;
 
     context: vscode.ExtensionContext;    
     calendar: Calendar2;
 
-    private calendarMode: CalendarMode;
-    private calendarEditor;
-    private calendarHead: CC.INodeData;
     constructor()
     {
     }
@@ -53,147 +42,15 @@ export class OrgExtension {
     public activate(context: vscode.ExtensionContext) {
         this.context = context;
 		this.calendar = new Calendar2(context);
-	    context.subscriptions.push(vscode.commands.registerCommand('org.calendar.setDate', async () => OrgExtension.get().setDate()));
-		this.calendarMode = CalendarMode.none;
     }
 
-    async openCalendar(mode: CalendarMode): Promise<string> {
-		this.calendarEditor = vscode.window.activeTextEditor;
-		if (!this.calendarEditor) {
-			return Promise.resolve(null);
-		}
-		const position = this.calendarEditor.selection.active;
-
-        const document = Util.getActiveTextEditorEdit();
-        const cursorPos = Util.getCursorPosition();
-        const curLine = Util.getLine(document, cursorPos);
-		this.calendarHead = CC.getNodeContext(position, document);
-		if (!this.calendarHead) {
-			return Promise.resolve(null);
-		}
-		this.calendarMode = mode;
-        await vscode.commands.executeCommand('setContext', 'hasOrgCalFocus', true);
-		await this.calendar.openCalendar();
-        //vscode.window.showInputBox();
-        let box = vscode.window.createInputBox();
-        box.onDidChangeValue((strLine: string) => {
-            let dt = OrgDuration.parse(strLine);
-            if(dt && dt.mins > 0) {
-                console.log("HAVE DURATION",dt.toString());
-                let cdate: Date = new Date();
-                this.calendar.setDate(cdate.addDuration(dt));
-            }
-            console.log(strLine);
-        })
-        box.ignoreFocusOut = true;
-        
-        const curDate = this.calendar.getDate();
-        box.value = curDate.toISOString().slice(0, 10);
-        const promise = new Promise<string>((resolve, reject) =>{
-        box.onDidAccept(() => {
-            console.log("DID ACCEPT");
-            box.hide();
-        })
-        box.onDidHide(() => {
-            vscode.commands.executeCommand('setContext', 'hasOrgCalFocus', false);
-            const calVal = box.value;
-            console.log("CAL VAL: ", calVal);
-		    vscode.commands.executeCommand('workbench.action.closeActiveEditor');
-            resolve(calVal);
-        });
-        box.show();
-        });
-        const calVal = await promise;
-        console.log("Post Promise:",calVal);
-        return Promise.resolve(calVal);
-        
-		//return Promise.resolve(calVal);
-	}
-
     async doItNow(): Promise<void> {
-        let x = await this.openCalendar(CalendarMode.timestamp);
+        let x = await this.calendar.openCalendarEditor(CalendarMode.timestamp);
         console.log("XXXX: ", x);
+        await x.writeToEditor();
         return Promise.resolve();
     }
 
-	async setDate(): Promise<void> {
-		const date = this.calendar.getDate();
-        console.log("GET DATE: ", date);
-		await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
-		if (!this.calendarEditor || !this.calendarHead || this.calendarMode == CalendarMode.none) {
-			return Promise.resolve();
-		}
-		const editor = vscode.window.activeTextEditor;
-		let line = this.calendarHead.line + 1;
-
-		let column = 0;
-		let length = 0;
-        let didDelete = false;
-        if (this.calendarHead.scheduled && this.calendarMode === CalendarMode.schedule) {
-			await editor.edit((editBuilder) => {
-				editBuilder.delete(this.calendarHead.scheduled.range);
-			});
-            didDelete = true;
-
-        }
-        if (this.calendarHead.timestamp && this.calendarMode === CalendarMode.timestamp) {
-			await editor.edit((editBuilder) => {
-				editBuilder.delete(this.calendarHead.timestamp.range);
-			});
-            didDelete = true;
-
-        }
-        if (this.calendarHead.deadline && this.calendarMode === CalendarMode.deadline) {
-			await editor.edit((editBuilder) => {
-				editBuilder.delete(this.calendarHead.deadline.range);
-			});
-            didDelete = true;
-        }
-        // Insert newline if required.
-        if (!didDelete) {
-			await editor.edit((editBuilder) => {
-				editBuilder.insert(new vscode.Position(line, 0), '\n');
-			});
-        }
-            /*
-		} else {
-			// remove previous date
-			if (this.calendarMode == CalendarMode.schedule && this.calendarHead.scheduleColumn >= 0) {
-				column = this.calendarHead.scheduleColumn;
-				length = this.calendarHead.schedule.length;
-			} else if (this.calendarMode == CalendarMode.deadline && this.calendarHead.deadlineColumn >= 0) {
-				column = this.calendarHead.deadlineColumn;
-				length = this.calendarHead.deadline.length;
-			}
-			if (length > 0) {
-				await editor.edit((editBuilder) => {
-					editBuilder.delete(new vscode.Range(line, column, line, column + length));
-				});
-			}
-			// remove white space
-			const dateLine = editor.document.lineAt(line);
-			const regex = /(^\s+|\s+$)/g;
-			let match;
-			let range: vscode.Range | undefined;
-			let whiteSpace: vscode.Range[] = [];
-			while (match = regex.exec(dateLine.text)) {
-				whiteSpace.push(new vscode.Range(line, match.index, line, match.index + match[0].length));
-			}
-			while (range = whiteSpace.pop()) {
-				await editor.edit((editBuilder) => {
-					editBuilder.delete(range!);
-				});
-			}
-		}
-        */
-		// insert new date
-		const space = (editor.document.lineAt(line).text.length > 0) ? ' ' : '';
-		const text = this.calendarMode + '<' + date.toISOString().slice(0, 10) + ' ' + date.toLocaleString('en-US', { weekday: 'short' }) + '>' + space;
-		await editor.edit((editBuilder) => {
-			editBuilder.insert(new vscode.Position(line, 0), text);
-		});
-		return Promise.resolve();
-	}    
 } 
 
 export function activate(context: vscode.ExtensionContext) {

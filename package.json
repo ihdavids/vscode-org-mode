@@ -374,17 +374,17 @@
 			{
 				"command": "org.calendar.prevWeek",
 				"key": "<",
-				"when": "editorTextFocus && editorLangId == 'calendar'"
+				"when": "hasOrgCalFocus"
 			},
 			{
 				"command": "org.calendar.nextWeek",
 				"key": ">",
-				"when": "editorTextFocus && editorLangId == 'calendar'"
+				"when": "hasOrgCalFocus"
 			},
 			{
 				"command": "org.calendar.setDate",
 				"key": "enter",
-				"when": "editorTextFocus && editorLangId == 'calendar'"
+				"when": "hasOrgCalFocus"
 			}
         ]
     },
