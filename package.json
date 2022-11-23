@@ -363,22 +363,22 @@
 			},
 			{
 				"command": "org.calendar.prevDate",
-				"key": "left",
+				"key": ",",
 				"when": "hasOrgCalFocus"
 			},
 			{
 				"command": "org.calendar.nextDate",
-				"key": "ctrl+.",
+				"key": ".",
 				"when": "hasOrgCalFocus"
 			},
 			{
 				"command": "org.calendar.prevWeek",
-				"key": "up",
+				"key": "<",
 				"when": "editorTextFocus && editorLangId == 'calendar'"
 			},
 			{
 				"command": "org.calendar.nextWeek",
-				"key": "down",
+				"key": ">",
 				"when": "editorTextFocus && editorLangId == 'calendar'"
 			},
 			{
