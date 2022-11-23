@@ -26,7 +26,7 @@ export function addDoWhatIMean(doc: TextEditor, edit: vscode.TextEditorEdit)
         case TODO: break; // TODO
         case NODE: insertNewNode(ctx, doc, edit); break;
         case LIST:  list.appendNumberedListCommand(doc); break;
-        case CHECK: checkbox.insertCheckboxCommand(doc); break;
+        case CHECK: checkbox.insertCheckboxCommand(doc, edit); break;
     }
 }
 
@@ -63,6 +63,6 @@ export function toggleDoWhatIMean(doc: TextEditor, edit: vscode.TextEditorEdit)
         case DATE: break; // TODO
         case TODO: header.chooseAndChangeTodo(ctx, doc, edit); break;
         case LIST:  break;
-        case CHECK: checkbox.toggleCheckboxCommand(doc);
+        case CHECK: checkbox.toggleCheckboxCommand(doc, edit);
     }
 }

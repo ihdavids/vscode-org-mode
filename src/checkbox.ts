@@ -230,7 +230,7 @@ function updateSummaryForLine(doc: TextEditor, pos: Position, parentUpdate: bool
     });
 }
 
-function updateLine(doc: TextEditor, pos: Position, parentUpdate: boolean, childrenUpdate: boolean = false) : Thenable<boolean>
+function updateLine(doc: TextEditor, pos: Position, parentUpdate: boolean, childrenUpdate: boolean = false,  edit:vscode.TextEditorEdit = null) : Thenable<boolean>
 {
     if(!isCheckbox(doc.document, pos) && !isCheckboxSummary(doc.document, pos))
     {
@@ -310,7 +310,7 @@ function processChildren(doc: TextEditor, pos: Position, children: Position[], c
     return rv;
 }
 
-function toggleCheckbox(doc: TextEditor, pos: Position, checked : CheckState, recurseUp : boolean = false, recurseDown: boolean = false) : Thenable<boolean>
+function toggleCheckbox(doc: TextEditor, pos: Position, checked : CheckState, recurseUp : boolean = false, recurseDown: boolean = false, edit: vscode.TextEditorEdit = null) : Thenable<boolean>
 {
     let checkbox = getCheckbox(doc.document, pos);
     if(!checkbox)
@@ -387,16 +387,16 @@ function findAllSummaries(doc: TextDocument)
     return sums;
 }
 
-function recalculateCheckboxSummary(doc: TextEditor, pos: Position, parentUpdate: boolean = true)
+function recalculateCheckboxSummary(doc: TextEditor, pos: Position, parentUpdate: boolean = true,  edit:vscode.TextEditorEdit = null)
 {
-    return updateLine(doc, pos, parentUpdate);
+    return updateLine(doc, pos, parentUpdate, false, edit);
 }
 
-function recurseAndCheckSummaries(doc: TextEditor, pos: Position, i : number, sums: Position[])
+function recurseAndCheckSummaries(doc: TextEditor, pos: Position, i : number, sums: Position[], edit:vscode.TextEditorEdit = null)
 {
     if( i < sums.length )
     {
-        return recalculateCheckboxSummary(doc, sums[i], false).then(
+        return recalculateCheckboxSummary(doc, sums[i], false, edit).then(
             () => {
                 if( (i+1) < sums.length )
                 {
@@ -407,15 +407,15 @@ function recurseAndCheckSummaries(doc: TextEditor, pos: Position, i : number, su
     }
 }
 
-function recalculateAllCheckboxSummaries(doc: TextEditor, pos: Position)
+async function recalculateAllCheckboxSummaries(doc: TextEditor, pos: Position, edit:vscode.TextEditorEdit = null)
 {
     let sums = findAllSummaries(doc.document);
     sums = sums.reverse();
-    return recurseAndCheckSummaries(doc, pos, 0, sums);
+    return recurseAndCheckSummaries(doc, pos, 0, sums, edit);
 }
 
 let clineInfoRe = /^(\s*)([-+0-9](\.)?)?.*$/;
-export function insertCheckboxCommand(doc: TextEditor)
+export function insertCheckboxCommand(doc: TextEditor, edit: vscode.TextEditorEdit)
 {
     let row = doc.selection.start.line;
     let line = doc.document.lineAt(row).text;
@@ -426,33 +426,28 @@ export function insertCheckboxCommand(doc: TextEditor)
     {
         indent = indent + start + " [ ] ";
     }
-    doc.edit((edit) => {
-        let pos = new Position(row,line.length);
-        edit.insert(pos, "\n" + indent);
-    });
+    let pos = new Position(row,line.length);
+    edit.insert(pos, "\n" + indent);
     row = row + 1;
-    let pos = new Position(row, 0);
+    pos = new Position(row, 0);
     doc.selection = new Selection(pos, pos);
 }
 
 let cbslineInfoRe = /^(\s*)(.*)\[\s*[0-9]*\/[0-9]\s*\]\s*$/;
-export function insertCheckboxSummaryCommand(doc: TextEditor)
+export async function insertCheckboxSummaryCommand(doc: TextEditor, edit: vscode.TextEditorEdit)
 {
     let row = doc.selection.start.line;
     let line = doc.document.lineAt(row).text;
     let m = cbslineInfoRe.exec(line);
     if(!m)
     {
-        doc.edit((edit) => {
-            let pos = new Position(row,line.length);
-            edit.insert(pos, " [/] ");
-        }).then( () => { 
-            recalculateAllCheckboxSummaries(doc, new Position(row, 0))
-        });
+        let pos = new Position(row,line.length);
+        await edit.insert(pos, " [/] ");
+        await recalculateAllCheckboxSummaries(doc, new Position(row, 0), edit);
     }
 }
 
-export function toggleCheckboxCommand(doc: TextEditor)
+export function toggleCheckboxCommand(doc: TextEditor, edit: vscode.TextEditorEdit)
 {
     let rv = null;
     for(let sel of doc.selections)
@@ -462,7 +457,7 @@ export function toggleCheckboxCommand(doc: TextEditor)
             continue;            
         }
         let pos = sel.end;
-        rv = toggleCheckbox(doc, pos, null, true, false);
+        rv = toggleCheckbox(doc, pos, null, true, false, edit);
     }
     if(rv)
     {
@@ -476,19 +471,19 @@ export function toggleCheckboxCommand(doc: TextEditor)
     }
 }
 
-export function recalcCheckboxSummaryCommand(doc: TextEditor)
+export function recalcCheckboxSummaryCommand(doc: TextEditor, edit: vscode.TextEditorEdit)
 {
     for(let sel of doc.selections)
     {
         if(!isCheckboxSummary(doc.document, sel.end))
         {
-            updateLine(doc,sel.end, true);
+            updateLine(doc,sel.end, true, false, edit);
         }
     }
 }
 
-export function recalcAllCheckboxSummariesCommand(doc: TextEditor)
+export function recalcAllCheckboxSummariesCommand(doc: TextEditor, edit: vscode.TextEditorEdit)
 {
-    recalculateAllCheckboxSummaries(doc, new Position(0,0));
+    recalculateAllCheckboxSummaries(doc, new Position(0,0), edit);
 }
 
