@@ -44,8 +44,8 @@ export interface ContextOptions {
 
 const chkRegexp       = new RegExp(`^\\s*[+-] \\[[xX -]\\]`);
 const listRegexp      = new RegExp(`^\\s*[0-9]+[.)]`);
-const timestampRegexp = /[<\[]\s*\d{4}-\d{1,2}-\d{1,2}(?: \w{3})?\s*[>\]]/g;
-const scheduleRegexp = /(CLOSED|SCHEDULED|DEADLINE)[:]?\s*([<\[])(\s*\d{4}-\d{1,2}-\d{1,2})(?: \w{3})?\s*[>\]]/g;
+const timestampRegexp = /\s*[<\[]\s*\d{4}-\d{1,2}-\d{1,2}\s*(?:\w{3})?\s*[>\]]/g;
+const scheduleRegexp = /\s*(CLOSED|SCHEDULED|DEADLINE)[:]?\s*([<\[])(\s*\d{4}-\d{1,2}-\d{1,2})(?: \w{3})?\s*[>\]]/g;
 export function parseTimestampContext(cursorPos: Position, curLine: string) {
     let match;
     while ((match = timestampRegexp.exec(curLine)) != null) {
@@ -198,7 +198,7 @@ export function getNodeContext(cursorPos: Position, document: TextDocument): INo
     let deadline  = null;
     let closed    = null;
     let timestamp = null;
-    const nodeStart = new RegExp(`^\\s*(\\*)+\\s+[a-zA-Z0-9]`);
+    const nodeStart = new RegExp(`^\\s*(?<stars>\\*+)\\s+[a-zA-Z0-9]`);
     let startLine: number = -1;
     let endLine: number = document.lineCount-1;
     let lineNum: number = cursorPos.line;
@@ -225,7 +225,7 @@ export function getNodeContext(cursorPos: Position, document: TextDocument): INo
         if (match) {
             startLine = i;
             startText = tempLine;
-            numStars  = match[1].length;
+            numStars  = match.groups.stars.length;
             break;
         }
     }
@@ -235,7 +235,9 @@ export function getNodeContext(cursorPos: Position, document: TextDocument): INo
             const tpos = new Position(i, 0);
             const tempLine = Util.getLine(document, tpos);
             if (!timestamp){
+                console.log("CHECKING TIMESTAMP: ", tempLine);
                 timestamp = parseTimestampContext(tpos, tempLine);
+                console.log("   TS: ", timestamp);
             } 
             if (!scheduled || !deadline){
                 let ctx = parseScheduledContext(tpos, tempLine);

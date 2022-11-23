@@ -30,6 +30,7 @@ export class CalendarEffector {
 
     constructor(mode: CalendarMode) {
         this.editor = vscode.window.activeTextEditor;
+        console.log("DOC: ", this.editor.document.fileName);
 		if (!this.editor) {
 			return;
 		}
@@ -56,14 +57,16 @@ export class CalendarState {
     }
 
     public async writeToEditor() {
+        // This is annoying, I would rather use the editor we got from the effector
+        // but it seems it got closed?
         if (!this.ok) {
             return;
         }
-        console.log("GET DATE: ", this.date);
         if (!this.effector.ok) {
-            console.log("EFFECTOR NOT SETUP ABORT!");
+            // console.log("EFFECTOR NOT SETUP ABORT!");
             return;
         }
+        this.effector.editor = vscode.window.activeTextEditor;
 		let line = this.effector.node.line + 1;
 		let column = 0;
 		let length = 0;
@@ -86,17 +89,25 @@ export class CalendarState {
 			});
             didDelete = true;
         }
+        let idt = 0;
+        let numStars = this.effector.node.info;
+        idt = numStars + 1;
+        let prefix = "";
         // Insert newline if required.
         if (!didDelete) {
 			await this.effector.editor.edit((editBuilder) => {
-				editBuilder.insert(new vscode.Position(line, 0), '\n');
+                let indent = " ".repeat(idt);
+				editBuilder.insert(new vscode.Position(line, 0), indent + '\n');
 			});
+        } else {
+            prefix = " ".repeat(idt);
+            idt = 0;
         }
 		// insert new date
 		const space = (this.effector.document.lineAt(line).text.length > 0) ? ' ' : '';
-		const text = this.effector.mode + '<' + this.date.toISOString().slice(0, 10) + ' ' + this.date.toLocaleString('en-US', { weekday: 'short' }) + '>' + space;
+		const text = prefix + this.effector.mode + '<' + this.date.toISOString().slice(0, 10) + ' ' + this.date.toLocaleString('en-US', { weekday: 'short' }) + '>' + space;
 		await this.effector.editor.edit((editBuilder) => {
-			editBuilder.insert(new vscode.Position(line, 0), text);
+			editBuilder.insert(new vscode.Position(line, idt), text);
 		});
     }
 }
