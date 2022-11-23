@@ -36,34 +36,17 @@ suite("Duration Tests", () => {
         assert.equal(result, expected);
     });
     test("Time Duration", async () => {
-        const expected = '1d 3:44';
-        const val   = dur.OrgDuration.parse(expected);
+        const input    = '1d 3:44';
+        const expected = '1d3h44min';
+        const val   = dur.OrgDuration.parse(input);
         const result = val.toString();
         assert.equal(result, expected);
     });
     test("Sec Time Duration", async () => {
-        const expected = '1d 4:12:43';
-        const val   = dur.OrgDuration.parse(expected);
+        const input    = '1d 4:12:43';
+        const expected = '1d4h12min';
+        const val   = dur.OrgDuration.parse(input);
         const result = val.toString();
         assert.equal(result, expected);
     });
 });
-/*
-// ================================================================================
-class OrgTestDurationCommand(sublime_plugin.TextCommand):
-    def run(self, edit, onDone=None):
-        d = OrgDuration.Parse("2y3d5h6min")
-        print(str(d))
-        d = OrgDuration.Parse("1y")
-        print(str(d))
-        d = OrgDuration.Parse("2d")
-        print(str(d))
-        d = OrgDuration.Parse("3h")
-        print(str(d))
-        d = OrgDuration.Parse("4min")
-        print(str(d))
-        d = OrgDuration.Parse("1d 3:44")
-        print(str(d))
-        d = OrgDuration.Parse("1d 4:55:55")
-        print(str(d))
-        */

@@ -27,8 +27,7 @@
 
 import { print } from "util";
 
-const RE_DURATION_PARSER       = new RegExp(`\s*((?<years>[0-9.]+)y)?\s*((?<days>[0-9.]+)d)?\s*((?<hours>[0-9.]+)h)?\s*((?<mins>[0-9.]+)min)?\s*((?<thours>[0-9]+)[:](?<tmins>[0-9]+)([:](?<tsecs>[0-9]+))?)?`);
-
+const RE_DURATION_PARSER       = new RegExp(`\\s*((?<years>[0-9.]+)y)?\\s*((?<days>[0-9.]+)d)?\\s*((?<hours>[0-9.]+)h)?\\s*((?<mins>[0-9.]+)min)?\\s*((?<thours>[0-9]+)\\:(?<tmins>[0-9]+)(\\:(?<tsecs>[0-9]+))?)?`);
 
 declare global { interface DateConstructor {
     diff(a: Date, b: Date): OrgDuration;
