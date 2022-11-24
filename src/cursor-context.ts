@@ -35,6 +35,7 @@ export interface INodeData extends IContextData{
     deadline:  IContextData;
     closed:    IContextData;
     timestamp: IContextData;
+    todo:      IContextData;
 }
 
 export interface ContextOptions {
@@ -42,8 +43,8 @@ export interface ContextOptions {
     includeTodo  ?: boolean,
 }
 
-const chkRegexp       = new RegExp(`^\\s*[+-] \\[[xX -]\\]`);
-const listRegexp      = new RegExp(`^\\s*[0-9]+[.)]`);
+const chkRegexp       = new RegExp(`^\\s*[+-] \\[[xX -]\\]\\s+.*`);
+const listRegexp      = new RegExp(`^\\s*[0-9]+[.)]\\s+.*`);
 const timestampRegexp = /\s*[<\[]\s*\d{4}-\d{1,2}-\d{1,2}\s*(?:\w{3})?\s*[>\]]/g;
 const scheduleRegexp = /\s*(CLOSED|SCHEDULED|DEADLINE)[:]?\s*([<\[])(\s*\d{4}-\d{1,2}-\d{1,2})(?: \w{3})?\s*[>\]]/g;
 export function parseTimestampContext(cursorPos: Position, curLine: string) {
@@ -191,14 +192,16 @@ function getListContext(match: RegExpExecArray, cursorPos: Position, CTX: string
     }
 }
 
-
 export function getNodeContext(cursorPos: Position, document: TextDocument): INodeData {
 
     let scheduled = null;
     let deadline  = null;
     let closed    = null;
     let timestamp = null;
-    const nodeStart = new RegExp(`^\\s*(?<stars>\\*+)\\s+[a-zA-Z0-9]`);
+    let todo      = null;
+    const nodeStart        = new RegExp(`^\\s*(?<stars>\\*+)\\s+[a-zA-Z0-9]`);
+    const todoKeywords = Sets.keywords.join("|");
+    const todoHeaderRegexp = new RegExp(`^(\\s*\\*+\\s+)(${todoKeywords})(?:\\b|\\[|$)`);
     let startLine: number = -1;
     let endLine: number = document.lineCount-1;
     let lineNum: number = cursorPos.line;
@@ -226,6 +229,12 @@ export function getNodeContext(cursorPos: Position, document: TextDocument): INo
             startLine = i;
             startText = tempLine;
             numStars  = match.groups.stars.length;
+            // Extract todo line for todo context.
+            const tdmatch = todoHeaderRegexp.exec(tempLine);
+            if (tdmatch) {
+                // We've found our match
+                todo = getTodoContext(tdmatch, tpos);
+            }
             break;
         }
     }
@@ -268,7 +277,8 @@ export function getNodeContext(cursorPos: Position, document: TextDocument): INo
             scheduled,
             deadline,
             timestamp,
-            closed
+            closed,
+            todo
         }
     }
     return undefined;

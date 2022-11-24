@@ -105,6 +105,8 @@ export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(vscode.commands.registerCommand('org.scheduleNode',  async () => OrgExtension.get().timestamp(CalendarMode.schedule)));
 	context.subscriptions.push(vscode.commands.registerCommand('org.deadlineNode',  async () => OrgExtension.get().timestamp(CalendarMode.deadline)));
 	context.subscriptions.push(vscode.commands.registerCommand('org.timestampNode', async () => OrgExtension.get().timestamp(CalendarMode.timestamp)));
+	context.subscriptions.push(vscode.commands.registerCommand('org.chooseTodo', HeaderFunctions.chooseAndChangeTodo));
+
     context.subscriptions.push(nextDayPageCmd);
     context.subscriptions.push(prevDayPageCmd);
     context.subscriptions.push(showDayPageCmd);

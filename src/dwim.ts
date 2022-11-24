@@ -8,7 +8,7 @@ import { Uri, window, Disposable } from 'vscode';
 import { QuickPickItem } from 'vscode';
 import { workspace } from 'vscode';
 import {Range, TextDocument, Position, TextEditor, TextEditorEdit, Selection} from "vscode";
-import getCursorContext, { DATE, TODO, LIST, CHECK, NODE, IContextData } from './cursor-context';
+import getCursorContext, { DATE, TODO, LIST, CHECK, NODE, IContextData, INodeData } from './cursor-context';
 import * as header from './header-functions'
 
 export function addDoWhatIMean(doc: TextEditor, edit: vscode.TextEditorEdit) 
@@ -61,7 +61,11 @@ export function toggleDoWhatIMean(doc: TextEditor, edit: vscode.TextEditorEdit)
 
     switch (ctx.dataLabel) {
         case DATE: break; // TODO
-        case TODO: header.chooseAndChangeTodo(ctx, doc, edit); break;
+        case TODO: header.chooseAndChangeTodo(doc, edit, ctx); break;
+        case NODE:
+            const inode: INodeData = <INodeData>ctx;
+            header.chooseAndChangeTodo(doc, edit, inode.todo); 
+            break;
         case LIST:  break;
         case CHECK: checkbox.toggleCheckboxCommand(doc, edit);
     }

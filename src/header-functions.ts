@@ -105,24 +105,41 @@ export function promoteLine(textEditor: vscode.TextEditor, edit: vscode.TextEdit
 }
 
 async function selectTodo(): Promise<string | undefined> {
-    return window.showQuickPick(Sets.keywords);;
+    let keys = Sets.keywords;
+    // Deep copy it. This is ANNOYING that there is no deep copy mechanism.
+    keys = JSON.parse(JSON.stringify(keys));
+    const idx = keys.indexOf("");
+    if (idx !== -1) {
+        keys[idx] = "none";
+    }
+    return window.showQuickPick(keys);
 }
 
 // Dynamic TODO Selection from a menu rather than cycling.
-export async function chooseAndChangeTodo(ctx , doc: TextEditor, edit: vscode.TextEditorEdit) {
+export async function chooseAndChangeTodo(doc: TextEditor, edit: vscode.TextEditorEdit, ctx) {
+    if (ctx == null || ctx === undefined) {
+        
+    }
     let newTodoString = await selectTodo();
     if (newTodoString !== undefined) {
-        if (newTodoString === "") {
-            // Must remove extra space
-            const oldEnd   = ctx.range.end
-            const newEnd   = oldEnd.with({ character: oldEnd.character + 1 });
-            const oldRange = ctx.range;
-            ctx.range = oldRange.with({ end: newEnd });
+        if (newTodoString === "" || newTodoString === "none") {
+            newTodoString = "";
+            // Check if I HAD a todo before.
+            if (ctx.data.length > 0) {
+                // Must remove extra space
+                const oldEnd   = ctx.range.end
+                const newEnd   = oldEnd.with({ character: oldEnd.character + 1 });
+                const oldRange = ctx.range;
+                ctx.range = oldRange.with({ end: newEnd });
+            }
         }
-        doc.edit((editBuilder) => {
+        await doc.edit(async (editBuilder) => {
+            // Append a space if we are inserting FROM none.
+            if (ctx.data.length == 0) {
+                newTodoString += " ";
+            }
             editBuilder.replace(ctx.range, newTodoString);
             //editBuilder.insert(textEditor.selection.active, item.fsPath);
         });
-
     }
 }
