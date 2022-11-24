@@ -110,8 +110,11 @@ export class CalendarState {
 		// insert new date
 		const space = (this.effector.document.lineAt(line).text.length > 0) ? ' ' : '';
         const tlines = this.effector.node.range.end.line - this.effector.node.range.start.line
-        const newline = tlines > 2 && delLine != line ? '\n' : '';
-		const text = prefix + this.effector.mode + '<' + this.date.toISOString().slice(0, 10) + ' ' + this.date.toLocaleString('en-US', { weekday: 'short' }) + '>' + space + newline;
+        const newline = tlines > 2 && (didDelete && delLine != line) ? '\n' : '';
+
+        var tzoffset = (new Date()).getTimezoneOffset() * 60000; //offset in milliseconds
+        var tdate = (new Date(this.date.getTime() - tzoffset));
+		const text = prefix + this.effector.mode + '<' + tdate.toISOString().slice(0, 10) + ' ' + tdate.toLocaleString('en-US', { weekday: 'short' }) + '>' + space + newline;
 		await this.effector.editor.edit((editBuilder) => {
 			editBuilder.insert(new vscode.Position(line, idt), text);
 		});
