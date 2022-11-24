@@ -1,7 +1,6 @@
 
 import { parse } from 'path';
 import * as vscode from 'vscode';
-//import { Config } from './config';
 import { Page } from "./page";
 import { Signal } from "./signal";
 import * as Util from './utils';
