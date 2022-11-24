@@ -20,12 +20,12 @@ import * as daypage from './daypage';
 import * as odb from './db';
 import * as Util from './utils';
 import * as CC from './cursor-context';
-import { Calendar2, CalendarMode } from './calendar2';
+import { Calendar, CalendarMode } from './calendar';
 export class OrgExtension {
     private static instance: OrgExtension;
 
     context: vscode.ExtensionContext;    
-    calendar: Calendar2;
+    calendar: Calendar;
 
     constructor()
     {
@@ -41,7 +41,7 @@ export class OrgExtension {
 
     public activate(context: vscode.ExtensionContext) {
         this.context = context;
-		this.calendar = new Calendar2(context);
+		this.calendar = new Calendar(context);
     }
 
     async timestamp(mode: CalendarMode): Promise<void> {
