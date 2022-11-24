@@ -49,7 +49,7 @@ export class CalendarState {
     public effector:  CalendarEffector;
     public date:      Date;
     public ok:        boolean;
-    constructor(cal: Calendar2, ok: boolean) {
+    constructor(cal: Calendar, ok: boolean) {
         this.effector  = cal.effector;
         this.ok        = ok;
         this.date      = cal.getDate();
@@ -120,7 +120,7 @@ export class CalendarState {
     }
 }
 
-export class Calendar2 implements vscode.TextDocumentContentProvider {
+export class Calendar implements vscode.TextDocumentContentProvider {
     private page: Page;
 	//private config: Config;
 	private numberMonth: number;
@@ -141,8 +141,8 @@ export class Calendar2 implements vscode.TextDocumentContentProvider {
 		return this._onDidChange.event;
     }
 
-    private readonly _onDone    = new Signal<Calendar2, CalendarState>();
-    private readonly _onChanged = new Signal<Calendar2, Date>();
+    private readonly _onDone    = new Signal<Calendar, CalendarState>();
+    private readonly _onChanged = new Signal<Calendar, Date>();
 
     onEnterHandler() {
         const state = new CalendarState(this, true);
@@ -228,7 +228,7 @@ export class Calendar2 implements vscode.TextDocumentContentProvider {
 
 	private static dayName = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
 	private getDay(day: number): string {
-		return Calendar2.dayName[day % Calendar2.dayName.length];
+		return Calendar.dayName[day % Calendar.dayName.length];
 	}
 
 	private getCalendar(date: Date): string[] {
