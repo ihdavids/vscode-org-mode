@@ -71,7 +71,11 @@ Date.prototype.addMins = function(m) {
     return this;
 };
 Date.prototype.addDuration = function(d) {
-    this.setTime(this.getTime() + (d.mins*60*1000));
+    if(d.isNeg) {
+        this.setTime(this.getTime() - (d.mins*60*1000));
+    } else {
+        this.setTime(this.getTime() + (d.mins*60*1000));
+    }
     return this;
 };
 Date.prototype.isToday = function (): boolean{
