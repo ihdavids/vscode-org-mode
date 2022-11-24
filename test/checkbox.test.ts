@@ -6,11 +6,16 @@ interface TestEditorOptions {
     content?: string;
 }
 
+function delay(ms: number) {
+    return new Promise( resolve => setTimeout(resolve, ms) );
+}
+
 type TestEditorAction = (editor: vscode.TextEditor, document: vscode.TextDocument) => void;
 
 async function inTextEditor(options: TestEditorOptions, action: TestEditorAction) {
     const d = await vscode.workspace.openTextDocument(options);
     await vscode.window.showTextDocument(d);
+    await delay(100);
     await action(vscode.window.activeTextEditor!, d);
 }
 
@@ -57,11 +62,13 @@ suite('Checkbox', () => {
         const expected = 
 `   - [ ] A
    - [ ] 
-   - [ ] B
-   - [ ] `;
+   - [ ] 
+   - [ ] B`;
 
         await inTextEditor({ language: 'org', content: initial }, async (ed, document) => {
+            await delay(100);
             await vscode.commands.executeCommand('org.insertCheckbox');
+            await delay(100);
             await vscode.commands.executeCommand('org.insertCheckbox');
             assert.equal(document.getText(), expected);
         });

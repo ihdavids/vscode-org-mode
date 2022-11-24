@@ -415,10 +415,12 @@ async function recalculateAllCheckboxSummaries(doc: TextEditor, pos: Position, e
 }
 
 let clineInfoRe = /^(\s*)([-+0-9](\.)?)?.*$/;
-export function insertCheckboxCommand(doc: TextEditor, edit: vscode.TextEditorEdit)
+export async function insertCheckboxCommand(doc: TextEditor, edit: vscode.TextEditorEdit)
 {
     let row = doc.selection.start.line;
+    //console.log("XXX:",row);
     let line = doc.document.lineAt(row).text;
+    //console.log("AAA:",line);
     let m = clineInfoRe.exec(line);
     let indent = m[1];
     let start  = m[2];
@@ -426,8 +428,8 @@ export function insertCheckboxCommand(doc: TextEditor, edit: vscode.TextEditorEd
     {
         indent = indent + start + " [ ] ";
     }
-    let pos = new Position(row,line.length);
-    edit.insert(pos, "\n" + indent);
+    let pos = new Position(row,line.length-1);
+    await edit.insert(pos, "\n" + indent);
     row = row + 1;
     pos = new Position(row, 0);
     doc.selection = new Selection(pos, pos);

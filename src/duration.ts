@@ -27,7 +27,7 @@
 
 import { print } from "util";
 
-const RE_DURATION_PARSER       = new RegExp(`\\s*((?<years>[0-9.]+)y)?\\s*((?<days>[0-9.]+)d)?\\s*((?<hours>[0-9.]+)h)?\\s*((?<mins>[0-9.]+)min)?\\s*((?<thours>[0-9]+)\\:(?<tmins>[0-9]+)(\\:(?<tsecs>[0-9]+))?)?`);
+const RE_DURATION_PARSER       = new RegExp(`\\s*(?<pn>[+-])?\\s*((?<years>[0-9.]+)y)?\\s*((?<days>[0-9.]+)d)?\\s*((?<hours>[0-9.]+)h)?\\s*((?<mins>[0-9.]+)min)?\\s*((?<thours>[0-9]+)\\:(?<tmins>[0-9]+)(\\:(?<tsecs>[0-9]+))?)?`);
 
 declare global { interface DateConstructor {
     diff(a: Date, b: Date): OrgDuration;
@@ -80,13 +80,18 @@ Date.prototype.isToday = function (): boolean{
  };
 
 export class OrgDuration {
-    mins: number;
-    public constructor(minutes: number) {
-        this.mins = minutes;
+    mins:  number;
+    isNeg: boolean;
+    public constructor(minutes: number, isNeg: boolean = false) {
+        this.mins  = minutes;
+        this.isNeg = isNeg;
     }
 
     public toString(): string {
        let r = "";
+       if(this.isNeg) {
+            r += "-";
+       }
        const y = Math.floor(this.mins / 525600.0);
        if(y > 0 ) {
             r += y.toString() + "y";
@@ -125,9 +130,14 @@ export class OrgDuration {
 
     public static parse(txt: string, need: boolean = false) {
         let m = RE_DURATION_PARSER.exec(txt);
+        let isNeg = false;
         if(m) {
             let mtot = 0.0;
             let got  = false;
+            const pn = m.groups.pn;
+            if(pn && pn == '-') {
+                isNeg = true;
+            }
             const y = m.groups.years;
             if(y) {
                 mtot += parseFloat(y)*525600.0;
@@ -164,7 +174,7 @@ export class OrgDuration {
                 got   = true;
             }
             if(got || !need) {
-                return new OrgDuration(mtot)
+                return new OrgDuration(mtot, isNeg)
             }
         }
         return null;
