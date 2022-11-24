@@ -1,17 +1,23 @@
 import * as vscode from 'vscode';
 import * as assert from 'assert';
+import { deflateSync } from 'zlib';
 
 interface TestEditorOptions {
     language?: string;
     content?: string;
 }
 
-type TestEditorAction = (editor: vscode.TextEditor, document: vscode.TextDocument) => void;
+function delay(ms: number) {
+    return new Promise( resolve => setTimeout(resolve, ms) );
+}
+type TestEditorAction = (editor: vscode.TextEditor, document: vscode.TextDocument) => Promise<void>;
 
 async function inTextEditor(options: TestEditorOptions, action: TestEditorAction) {
     const d = await vscode.workspace.openTextDocument(options);
-    await vscode.window.showTextDocument(d);
-    await action(vscode.window.activeTextEditor!, d);
+    await vscode.window.showTextDocument(d).then( async (ed) => {
+        move(ed,0,0);
+        await action(ed, d);
+    });
 }
 
 function move(editor: vscode.TextEditor, line: number, col: number) {
@@ -149,6 +155,7 @@ suite('Commands', () => {
 * Header2`;
 
         await inTextEditor({ language: 'org', content: initial }, async (ed, document) => {
+            await delay(1000);
             await vscode.commands.executeCommand('org.insertSubheading');
             await insert(ed,"A");
             await vscode.commands.executeCommand('org.insertSubheading');

@@ -10,13 +10,14 @@ function delay(ms: number) {
     return new Promise( resolve => setTimeout(resolve, ms) );
 }
 
-type TestEditorAction = (editor: vscode.TextEditor, document: vscode.TextDocument) => void;
+type TestEditorAction = (editor: vscode.TextEditor, document: vscode.TextDocument) => Promise<void>;
 
 async function inTextEditor(options: TestEditorOptions, action: TestEditorAction) {
     const d = await vscode.workspace.openTextDocument(options);
-    await vscode.window.showTextDocument(d);
-    await delay(100);
-    await action(vscode.window.activeTextEditor!, d);
+    await vscode.window.showTextDocument(d).then( async (ed) => {
+        move(ed,1,0);
+        await action(ed, d);
+    });
 }
 
 function move(editor: vscode.TextEditor, line: number, col: number) {
