@@ -8,6 +8,7 @@ import * as Util from './utils';
 import * as CC from './cursor-context';
 import { OrgDuration } from './duration';
 import './duration';
+import * as Datetime from './simple-datetime';
 
 export enum CalendarMode {
 	none = 'none',
@@ -70,19 +71,23 @@ export class CalendarState {
 		let column = 0;
 		let length = 0;
         let didDelete = false;
+        let delLine = -1;
         if (this.effector.node.scheduled && this.effector.mode === CalendarMode.schedule) {
+            delLine = this.effector.node.scheduled.range.start.line;
 			await this.effector.editor.edit((editBuilder) => {
 				editBuilder.delete(this.effector.node.scheduled.range);
 			});
             didDelete = true;
         }
         if (this.effector.node.timestamp && this.effector.mode === CalendarMode.timestamp) {
+            delLine = this.effector.node.timestamp.range.start.line;
 			await this.effector.editor.edit((editBuilder) => {
 				editBuilder.delete(this.effector.node.timestamp.range);
 			});
             didDelete = true;
         }
         if (this.effector.node.deadline && this.effector.mode === CalendarMode.deadline) {
+            delLine = this.effector.node.deadline.range.start.line;
 			await this.effector.editor.edit((editBuilder) => {
 				editBuilder.delete(this.effector.node.deadline.range);
 			});
@@ -104,7 +109,9 @@ export class CalendarState {
         }
 		// insert new date
 		const space = (this.effector.document.lineAt(line).text.length > 0) ? ' ' : '';
-		const text = prefix + this.effector.mode + '<' + this.date.toISOString().slice(0, 10) + ' ' + this.date.toLocaleString('en-US', { weekday: 'short' }) + '>' + space;
+        const tlines = this.effector.node.range.end.line - this.effector.node.range.start.line
+        const newline = tlines > 2 && delLine != line ? '\n' : '';
+		const text = prefix + this.effector.mode + '<' + this.date.toISOString().slice(0, 10) + ' ' + this.date.toLocaleString('en-US', { weekday: 'short' }) + '>' + space + newline;
 		await this.effector.editor.edit((editBuilder) => {
 			editBuilder.insert(new vscode.Position(line, idt), text);
 		});
@@ -132,7 +139,8 @@ export class Calendar2 implements vscode.TextDocumentContentProvider {
 		return this._onDidChange.event;
     }
 
-    private readonly _onDone = new Signal<Calendar2, CalendarState>();
+    private readonly _onDone    = new Signal<Calendar2, CalendarState>();
+    private readonly _onChanged = new Signal<Calendar2, Date>();
 
     onEnterHandler() {
         const state = new CalendarState(this, true);
@@ -146,6 +154,9 @@ export class Calendar2 implements vscode.TextDocumentContentProvider {
 
     get onDone() {
         return this._onDone;
+    }
+    get onChanged() {
+        return this._onChanged;
     }
 
 	constructor(context: vscode.ExtensionContext) {
@@ -404,13 +415,16 @@ export class Calendar2 implements vscode.TextDocumentContentProvider {
         this.regenCalendars(false);
 		await this.redraw();
 		this.showCurrDate();
+        this.onChanged.trigger(this, this.date);
 	}
 
 	async setDate(dt: Date) {
-		this.date = dt;
-        this.regenCalendars();
-		await this.redraw();
-		this.showCurrDate();
+        if (dt !== this.date) {
+		    this.date = dt;
+            this.regenCalendars();
+		    await this.redraw();
+		    this.showCurrDate();
+        }
 	}
 
 
@@ -426,14 +440,24 @@ export class Calendar2 implements vscode.TextDocumentContentProvider {
         box.onDidChangeValue((strLine: string) => {
             let dt = OrgDuration.parse(strLine);
             if(dt && dt.mins > 0) {
-                console.log("HAVE DURATION",dt.toString());
                 let cdate: Date = new Date();
                 this.setDate(cdate.addDuration(dt));
+            } else {
+                let sd = Datetime.parseDateTime(strLine);
+                if (sd && sd.year !== undefined) {
+                    let d = Datetime.simpleDateTimeToDate(sd);
+                    if (d) {
+                        this.setDate(d);
+                    }
+                }
             }
-            console.log(strLine);
+            //console.log(strLine);
         })
         box.ignoreFocusOut = true;
-        
+       
+        this.onChanged.on((cal,dt) => {
+            box.value = Datetime.dateToRawString(dt,Datetime.hasTime(box.value));
+        });
         const curDate = this.getDate();
         box.value = curDate.toISOString().slice(0, 10);
         const promise = new Promise<[Date|undefined,boolean]>((resolve, reject) =>{

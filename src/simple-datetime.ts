@@ -18,6 +18,26 @@ export interface ISimpleDateTime extends ISimpleDate {
     minutes: number;
 }
 
+export function parseDateTime(dateString: string): ISimpleDateTime {
+    const dateRegExp = /\s*(?<active>[<\[])?\s*(?<year>\d{4})-(?<month>\d{1,2})-(?<day>\d{1,2})\s*((?<hours>\d{1,2})\:(?<mins>\d{1,2}))?/;
+    const dateResult = dateRegExp.exec(dateString);
+
+    const year = dateResult ? parseInt(dateResult.groups.year, 10) : undefined;
+    const month = dateResult ? parseInt(dateResult.groups.month, 10) : undefined;
+    const day = dateResult ? parseInt(dateResult.groups.day, 10) : undefined;
+    let active: boolean = dateResult ? dateResult.groups.active === '<' : false;
+    const hours = dateResult  && dateResult.groups.hours ? parseInt(dateResult.groups.hours, 10) : undefined; 
+    const minutes = dateResult && dateResult.groups.mins ? parseInt(dateResult.groups.mins, 10) : undefined; 
+
+    const weekdayRegExp = /[A-Za-z]{3}/;
+    const weekdayResult = weekdayRegExp.exec(dateString);
+    let weekday;
+    if (weekdayResult) {
+        weekday = weekdayResult[0];
+    }
+    return { year, month, day, weekday, active, hours, minutes };
+};
+
 export function parseDate(dateString: string): ISimpleDate {
     const dateRegExp = /([<\[])?\s*(\d{4})-(\d{1,2})-(\d{1,2})/;
     const dateResult = dateRegExp.exec(dateString);
@@ -117,6 +137,52 @@ export function dateToSimpleDateTime(dateObject: Date): ISimpleDateTime {
     simpleDateTime.minutes = dateObject.getMinutes();
 
     return simpleDateTime;
+}
+export function simpleDateTimeToDate(obj: ISimpleDateTime): Date {
+    if (obj.hours === undefined || obj.minutes === undefined) {
+        return new Date(obj.year,obj.month-1,obj.day);
+    } else {
+        return new Date(obj.year,obj.month-1,obj.day,obj.hours, obj.minutes);
+    }
+}
+
+export function simpleDateToDate(obj: ISimpleDate): Date {
+    const dt = new Date(obj.year,obj.month,obj.day);
+    return dt;
+}
+
+export function hasTime(inStr: string): boolean {
+    const v = parseDateTime(inStr);
+    return (v.hours !== undefined);
+}
+
+export function dateToRawString(dt: Date, includeTime: boolean): string {
+    const year    = dt.getFullYear();
+    const month   = dt.getMonth() + 1; // Why, Javascript, why!?
+    const day     = dt.getDate();
+    //const weekday = weekdayArray[dt.getDay()];
+
+    let dateString = `${year}-${month}-${day}`;
+
+    if (Sets.leftZero) {
+        dateString = padDate(dateString);
+    }
+    /*
+    if (weekday) {
+        dateString = `${dateString} ${weekday}`;
+    }
+    */
+
+    if (includeTime) {
+        const hours   = dt.getHours();
+        const minutes = dt.getMinutes();
+        let timeString = `${hours}:${minutes}`;
+        if (Sets.leftZero) {
+            timeString = padTime(timeString);
+        }
+        return `${dateString} ${timeString}`
+    }
+    return dateString
 }
 
 export function currentDate(): ISimpleDate {
