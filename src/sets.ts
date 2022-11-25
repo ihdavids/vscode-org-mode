@@ -16,7 +16,9 @@ export class Sets {
     public constructor() {
         this.settings = vscode.workspace.getConfiguration("org");
     }
-
+  	public reload() {
+		this.settings = vscode.workspace.getConfiguration('org');
+	}
     public static getProp<T>(name: string, defaultVal = undefined): T      
     { 
         return Sets.get().settings.get<T>(name, defaultVal); 

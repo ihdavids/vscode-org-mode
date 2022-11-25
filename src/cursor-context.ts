@@ -22,6 +22,56 @@ export const SCHEDULED = "SCHEDULED";
 export const DEADLINE = "DEADLINE";
 export const CLOSED   = "CLOSED";
 
+export enum OrgTypes {
+    DATE,
+    TODO,
+    LIST,
+    CHECK,
+    NODE,
+    SCHEDULED,
+    DEADLINE,
+    CLOSED,
+};
+
+export type Primitive = string | number | boolean
+interface Data { }
+interface Node {
+    type:     OrgTypes;
+    range:    Range;
+    is<T>():  boolean;
+    as<T>():  T | undefined;
+};
+
+interface Parent extends Node {
+  children: [Node];
+  parent?:  Node;
+}
+
+interface Literal extends Node {
+    //value: any
+}
+
+/*
+class Headline implements Parent {
+    children: [Node];
+    parent?:  Node;
+    type:     OrgTypes;
+    range:    Range;
+    is<T>():  boolean {
+        return (typeof T == Headline);
+    }
+    as<T>():  T | undefined {
+        if (T is Headline) {
+            return <T>this;
+        }
+        return undefined;
+    }
+}
+*/
+class OrgDocument {
+    nodes: [Node];
+};
+
 export interface IContextData {
     dataLabel: string,
     data: string,
