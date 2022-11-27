@@ -1,5 +1,167 @@
-/*
+import * as vscode from 'vscode';
+import { Sets } from './sets';
+import { isHeaderLine } from './utils';
 
+export enum OrgTypes {
+    Root,
+    Headline,
+    DATE,
+    TODO,
+    LIST,
+    CHECK,
+    SCHEDULED,
+    DEADLINE,
+    CLOSED,
+};
+
+export type Primitive = string | number | boolean
+interface Data { }
+interface Node {
+    type:     OrgTypes;
+    range:    vscode.Range;
+    isType(type: OrgTypes):  boolean;
+};
+
+
+interface Parent extends Node {
+  children: [Node];
+  parent?:  Node;
+}
+
+interface Literal extends Node {
+    //value: any
+}
+
+export class TypeHelper {
+
+    static typeName(ctor: { name:string }) : string {
+        return ctor.name;
+    }
+}
+
+class Headline implements Parent {
+    type:     OrgTypes = OrgTypes.Headline;
+    range:    vscode.Range;
+    level:    number;
+    status:   string;
+    parent?:  Headline;
+    children: [Headline];
+
+    constructor() {
+    }
+
+    isType(type: OrgTypes):  boolean {
+        if (type == OrgTypes.Headline) {
+            return true;
+        }
+        return false;
+    }
+    asType(type: OrgTypes): Headline | undefined {
+        if (type == OrgTypes.Headline) {
+            return this;
+        }
+        return undefined;
+    }
+
+}
+
+class RootNode implements Parent {
+    type:     OrgTypes = OrgTypes.Root;
+    range:    vscode.Range;
+    children: [Node];
+    nodes:    [Node];
+
+    constructor() {
+    }
+
+    isType(type: OrgTypes):  boolean {
+        if (type == OrgTypes.Root) {
+            return true;
+        }
+        return false;
+    }
+    asType(type: OrgTypes): RootNode | undefined {
+        if (type == OrgTypes.Root) {
+            return this;
+        }
+        return undefined;
+    }
+}
+
+
+function finishHeadline(curNode, start, end) {
+    curNode.range = new vscode.Range(new vscode.Position(start,0), new vscode.Position(end, 0));
+}
+
+function startHeadline(rootNode, m, curLine, parent: Headline | null): Headline {
+    let h: Headline = new Headline();
+    h.parent = parent;
+    rootNode.nodes.push(h);
+    const stars = m.groups.stars;
+    h.level = stars.length;
+    h.status = m.groups.status;
+    if(h.level === 1) {
+        rootNode.children.push(h);
+    } 
+    return h;
+}
+
+const linere = RegExp('^.*$','m');
+const todoKeywords = Sets.keywords.join("|");
+// const todoWords = "TODO|DONE";
+const todoHeaderRegexp = new RegExp(`^\\s*(?<stars>\\*+)\\s+(?<todo>${todoKeywords})(?:\\b|\\[|$)`);
+function* parseLines(rootNode: RootNode, content: string) {
+    let curLine  = 0;
+    var line;
+    var lastLine = 0;
+    var curNode  = null;
+    var start    = 0;
+    while((line = linere.exec(content)) !== null) {
+        const m = todoHeaderRegexp.exec(line);
+        if(m) {
+            if (curNode == null) {
+                start   = curLine;
+                curNode = startHeadline(rootNode, m, curLine, null);
+            } else {
+                finishHeadline(curNode, start, curLine);
+                start = curLine;
+                curNode = startHeadline(rootNode, m, curLine, curNode);
+            }
+        } else {
+            // Offset within the heading.
+            const offset = curLine - start;
+            yield [rootNode, curNode, offset, curLine, line];
+        }
+        curLine += 1;
+    } 
+}
+
+function* parseSDC(gen) {
+    for (var lineData of gen) {
+        let [rootNode, curNode, offset, curLine, line] = lineData;
+        if (offset < 3) {
+            // TODO: Parse SCHEDULED ET AL
+        } else {
+            yield lineData;
+        }
+
+    }
+}
+
+function parseFileContents(contents: string) {
+    let root: RootNode = new RootNode();
+    let gen = parseLines(root, contents);
+    gen     = parseSDC(gen);
+
+    for (var x of gen) {}
+
+    return root;
+}
+
+
+
+
+/*
 import * as vscode from 'vscode';
 import { Config } from './config';
 import { Head } from './orgdoc';
