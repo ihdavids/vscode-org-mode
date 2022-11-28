@@ -5,13 +5,13 @@ import { isHeaderLine } from './utils';
 export enum OrgTypes {
     Root,
     Headline,
-    DATE,
+    Scheduled,
+    Deadline,
+    Closed,
+    Timestamp,
     TODO,
     LIST,
     CHECK,
-    SCHEDULED,
-    DEADLINE,
-    CLOSED,
 };
 
 export type Primitive = string | number | boolean
@@ -39,11 +39,64 @@ export class TypeHelper {
     }
 }
 
+class Scheduled implements Node {
+    type:     OrgTypes = OrgTypes.Scheduled;
+    range:    vscode.Range;
+    date:     Date;
+
+    isType(type: OrgTypes):  boolean {
+        if (type == OrgTypes.Scheduled) {
+            return true;
+        }
+        return false;
+    }
+}
+class Deadline implements Node {
+    type:     OrgTypes = OrgTypes.Deadline;
+    range:    vscode.Range;
+    date:     Date;
+
+    isType(type: OrgTypes):  boolean {
+        if (type == this.type) {
+            return true;
+        }
+        return false;
+    }
+}
+class Closed implements Node {
+    type:     OrgTypes = OrgTypes.Closed;
+    range:    vscode.Range;
+    date:     Date;
+
+    isType(type: OrgTypes):  boolean {
+        if (type == this.type) {
+            return true;
+        }
+        return false;
+    }
+}
+class Timestamp implements Node {
+    type:     OrgTypes = OrgTypes.Timestamp;
+    range:    vscode.Range;
+    date:     Date;
+    active:   string;
+
+    isType(type: OrgTypes):  boolean {
+        if (type == this.type) {
+            return true;
+        }
+        return false;
+    }
+}
 class Headline implements Parent {
     type:     OrgTypes = OrgTypes.Headline;
     range:    vscode.Range;
     level:    number;
     status:   string;
+    scheduled: Scheduled | undefined;
+    deadline:  Deadline | undefined;
+    closed:    Closed | undefined;
+    timestamp: Timestamp | undefined;
     parent?:  Headline;
     children: [Headline];
 
@@ -136,15 +189,56 @@ function* parseLines(rootNode: RootNode, content: string) {
     } 
 }
 
+const scheduleRegexp = /\s*((?<scd>CLOSED|SCHEDULED|DEADLINE)[:])?\s*(?<active>[<\[])\s*(?<year>\d{4})-(?<month>\d{1,2})-(?<day>\d{1,2})(?: \w{3})?\s*[>\]]/g;
 function* parseSDC(gen) {
     for (var lineData of gen) {
         let [rootNode, curNode, offset, curLine, line] = lineData;
         if (offset < 3) {
-            // TODO: Parse SCHEDULED ET AL
-        } else {
-            yield lineData;
+            let m = scheduleRegexp.exec(line);
+            if (m) {
+                const startPos = new vscode.Position(curLine, m.index);
+                const endPos   = new vscode.Position(curLine, m.index + m[0].length);
+                const range    = new vscode.Range(startPos, endPos);
+                const sdc      = m.groups.sdc;
+                const active   = m.groups.active;
+                const year     = parseInt(m.groups.year);
+                const month    = parseInt(m.groups.month);
+                const day      = parseInt(m.groups.day);
+                switch(sdc) {
+                    case "SCHEDULED": 
+                    {
+                        let r = new Scheduled();
+                        r.range = range;
+                        r.date  = new Date(year, month, day);
+                        curNode.scheduled = r;
+                    }
+                    case "DEADLINE":
+                    {
+                        let r = new Deadline();
+                        r.range = range;
+                        r.date  = new Date(year, month, day);
+                        curNode.deadline = r;
+                    }
+                    case "CLOSED":
+                    {
+                        let r = new Closed();
+                        r.range = range;
+                        r.date  = new Date(year, month, day);
+                        curNode.closed = r;
+                    }
+                    case "":
+                    {
+                        let r = new Timestamp();
+                        r.range = range;
+                        r.date  = new Date(year, month, day);
+                        r.active = active;
+                        curNode.timestamp = r;
+                    }
+                }
+                continue;
+            }
         }
-
+        yield lineData;
     }
 }
 
