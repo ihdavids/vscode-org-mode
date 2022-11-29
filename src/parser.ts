@@ -189,7 +189,8 @@ function* parseLines(rootNode: RootNode, content: string) {
     } 
 }
 
-const scheduleRegexp = /\s*((?<scd>CLOSED|SCHEDULED|DEADLINE)[:])?\s*(?<active>[<\[])\s*(?<year>\d{4})-(?<month>\d{1,2})-(?<day>\d{1,2})(?: \w{3})?\s*[>\]]/g;
+const scheduleRegexp = /\s*((?<scd>CLOSED|SCHEDULED|DEADLINE)[:])?\s*(?<active>[<\[])\s*(?<year>\d{4})-(?<month>\d{1,2})-(?<day>\d{1,2})(?: \w{3})?\s*((?<shour>\d{1,2}):(?<smins>\d{1,2}))?\s*(\s*--\s*(?<ehour>\d{1,2}):(?<emins>\d{1,2}))?\s*(\s*(?<repeatpre>[\.\+]{1,2})\s*(?<repeatnum>\d+)\s*(?<repeatdwmy>[dwmy]))?(\s*(?<warnpre>\-)\s*(?<warnnum>\d+)\s*(?<warndwmy>[dwmy]))?[>\]]/g;
+
 function* parseSDC(gen) {
     for (var lineData of gen) {
         let [rootNode, curNode, offset, curLine, line] = lineData;

@@ -2,6 +2,7 @@ import * as datefns from 'date-fns';
 import * as vscode from 'vscode';
 import * as Utils from './utils';
 import {Sets} from './sets';
+import internal = require('assert');
 
 const weekdayArray = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -228,4 +229,83 @@ export function getClockTotal(line) {
     }
 
     return clockString;
+}
+
+
+export enum DateType {
+    SCHEDULED,
+    DEADLINE,
+    CLOSED,
+    TIMESTAMP,
+}
+
+const scheduleRegexp = /\s*((?<scd>CLOSED|SCHEDULED|DEADLINE)[:])?\s*(?<active>[<\[])\s*(?<year>\d{4})-(?<month>\d{1,2})-(?<day>\d{1,2})(?: \w{3})?\s*((?<shour>\d{1,2}):(?<smins>\d{1,2}))?\s*(\s*--\s*(?<ehour>\d{1,2}):(?<emins>\d{1,2}))?\s*(\s*(?<repeatpre>[\.\+]{1,2})\s*(?<repeatnum>\d+)\s*(?<repeatdwmy>[dwmy]))?(\s*(?<warnpre>\-)\s*(?<warnnum>\d+)\s*(?<warndwmy>[dwmy]))?[>\]]/g;
+class OrgDate {
+    public start:       Date;
+    public end?:        Date;
+    public brackets:    string;
+    public repeatpre?:  string;
+    public repeatnum?:  number;
+    public repeatdwmy?: string;
+    public warnpre?:    string;
+    public warnnum?:    number;
+    public warndwmy?:   string;
+
+    public static parseFromRegex(m: RegExpExecArray): OrgDate{
+        const sdc      = m.groups.sdc;
+        const active   = m.groups.active;
+        const year     = parseInt(m.groups.year);
+        const month    = parseInt(m.groups.month);
+        const day      = parseInt(m.groups.day);
+        const shour    = parseInt(m.groups.ehour);
+        const smins    = parseInt(m.groups.smins);
+        let ehour      = null;
+        let emins      = null;
+        if (m.groups.ehour) {
+            ehour    = parseInt(m.groups.ehour);
+            emins    = parseInt(m.groups.emins);
+        }
+        let dateType: DateType;
+        if (sdc == "") {
+            dateType = DateType.TIMESTAMP;
+        } else {
+            dateType = <DateType><unknown>sdc;
+        }
+        let r: OrgDate = new OrgDate();
+        let d: Date;
+        if (shour != null) {
+            d = new Date(year,month,day,shour,smins);
+        } else {
+            d = new Date(year,month,day);
+        }
+        r.start = d;
+        if (ehour != null) {
+            d = new Date(year,month,day,ehour,emins);
+            r.end = d;
+        }
+        if (active) {
+            r.brackets = active;
+        } else {
+            r.brackets = "";
+        }
+        if (m.groups.repeatnum) {
+            r.repeatpre = m.groups.repeatpre;
+            r.repeatnum = parseInt(m.groups.repeatnum);
+            r.repeatdwmy = m.groups.repeatdwmy;
+        }
+        if (m.groups.warnnum) {
+            r.warnpre = m.groups.warnpre;
+            r.warnnum = parseInt(m.groups.warnnum);
+            r.warndwmy = m.groups.warndwmy;
+        }
+        return r;
+    }
+
+    public static parse(line: string): OrgDate | undefined {
+            let m = scheduleRegexp.exec(line);
+            if (m) {
+                return OrgDate.parseFromRegex(m);
+            }
+            return undefined;
+    }
 }
