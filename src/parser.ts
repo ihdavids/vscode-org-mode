@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { Sets } from './sets';
 import { isHeaderLine } from './utils';
+import { DateType, OrgDate } from './simple-datetime'
 
 export enum OrgTypes {
     Root,
@@ -9,6 +10,7 @@ export enum OrgTypes {
     Deadline,
     Closed,
     Timestamp,
+    Link,
     TODO,
     LIST,
     CHECK,
@@ -42,7 +44,7 @@ export class TypeHelper {
 class Scheduled implements Node {
     type:     OrgTypes = OrgTypes.Scheduled;
     range:    vscode.Range;
-    date:     Date;
+    date:     OrgDate;
 
     isType(type: OrgTypes):  boolean {
         if (type == OrgTypes.Scheduled) {
@@ -54,7 +56,7 @@ class Scheduled implements Node {
 class Deadline implements Node {
     type:     OrgTypes = OrgTypes.Deadline;
     range:    vscode.Range;
-    date:     Date;
+    date:     OrgDate;
 
     isType(type: OrgTypes):  boolean {
         if (type == this.type) {
@@ -66,7 +68,7 @@ class Deadline implements Node {
 class Closed implements Node {
     type:     OrgTypes = OrgTypes.Closed;
     range:    vscode.Range;
-    date:     Date;
+    date:     OrgDate;
 
     isType(type: OrgTypes):  boolean {
         if (type == this.type) {
@@ -78,8 +80,21 @@ class Closed implements Node {
 class Timestamp implements Node {
     type:     OrgTypes = OrgTypes.Timestamp;
     range:    vscode.Range;
-    date:     Date;
+    date:     OrgDate;
     active:   string;
+
+    isType(type: OrgTypes):  boolean {
+        if (type == this.type) {
+            return true;
+        }
+        return false;
+    }
+}
+class Link implements Node {
+    type:     OrgTypes = OrgTypes.Link;
+    range:    vscode.Range;
+    href:     string;
+    desc:     string;
 
     isType(type: OrgTypes):  boolean {
         if (type == this.type) {
@@ -99,6 +114,7 @@ class Headline implements Parent {
     timestamp: Timestamp | undefined;
     parent?:  Headline;
     children: [Headline];
+    links: [Link];
 
     constructor() {
     }
@@ -123,6 +139,7 @@ class RootNode implements Parent {
     range:    vscode.Range;
     children: [Node];
     nodes:    [Node];
+    links:    [Link];
 
     constructor() {
     }
@@ -189,50 +206,64 @@ function* parseLines(rootNode: RootNode, content: string) {
     } 
 }
 
-const scheduleRegexp = /\s*((?<scd>CLOSED|SCHEDULED|DEADLINE)[:])?\s*(?<active>[<\[])\s*(?<year>\d{4})-(?<month>\d{1,2})-(?<day>\d{1,2})(?: \w{3})?\s*((?<shour>\d{1,2}):(?<smins>\d{1,2}))?\s*(\s*--\s*(?<ehour>\d{1,2}):(?<emins>\d{1,2}))?\s*(\s*(?<repeatpre>[\.\+]{1,2})\s*(?<repeatnum>\d+)\s*(?<repeatdwmy>[dwmy]))?(\s*(?<warnpre>\-)\s*(?<warnnum>\d+)\s*(?<warndwmy>[dwmy]))?[>\]]/g;
+const linkRegexp = /\[\[(?<link>[^\]]+)\](\[(?<desc>[^\]]+)\])?\]/g
+function* parseLinks(gen) {
+    for (var lineData of gen) {
+        let [rootNode, curNode, offset, curLine, line] = lineData;
+        let m = linkRegexp.exec(line);
+        if (m) {
+            let link = new Link();
+            link.href = m.groups.link;
+            link.desc = m.groups.desc;
+            const startPos = new vscode.Position(curLine, m.index);
+            const endPos   = new vscode.Position(curLine, m.index + m[0].length);
+            link.range     = new vscode.Range(startPos, endPos);
+            
+            rootNode.links.push(link);
+            curNode.links.push(link);
+        }
+        yield lineData;
+    }
+}
 
 function* parseSDC(gen) {
     for (var lineData of gen) {
         let [rootNode, curNode, offset, curLine, line] = lineData;
         if (offset < 3) {
-            let m = scheduleRegexp.exec(line);
+            let m = OrgDate.getRegex().exec(line);
             if (m) {
+                const date     = OrgDate.parseFromRegex(m);
                 const startPos = new vscode.Position(curLine, m.index);
                 const endPos   = new vscode.Position(curLine, m.index + m[0].length);
                 const range    = new vscode.Range(startPos, endPos);
-                const sdc      = m.groups.sdc;
-                const active   = m.groups.active;
-                const year     = parseInt(m.groups.year);
-                const month    = parseInt(m.groups.month);
-                const day      = parseInt(m.groups.day);
-                switch(sdc) {
-                    case "SCHEDULED": 
+
+                switch(date.dateType) {
+                    case DateType.SCHEDULED: 
                     {
                         let r = new Scheduled();
                         r.range = range;
-                        r.date  = new Date(year, month, day);
+                        r.date  = date;
                         curNode.scheduled = r;
                     }
-                    case "DEADLINE":
+                    case DateType.DEADLINE:
                     {
                         let r = new Deadline();
                         r.range = range;
-                        r.date  = new Date(year, month, day);
+                        r.date  = date;
                         curNode.deadline = r;
                     }
-                    case "CLOSED":
+                    case DateType.CLOSED:
                     {
                         let r = new Closed();
                         r.range = range;
-                        r.date  = new Date(year, month, day);
+                        r.date  = date;
                         curNode.closed = r;
                     }
-                    case "":
+                    case DateType.TIMESTAMP:
                     {
                         let r = new Timestamp();
                         r.range = range;
-                        r.date  = new Date(year, month, day);
-                        r.active = active;
+                        r.date  = date;
                         curNode.timestamp = r;
                     }
                 }
@@ -247,6 +278,7 @@ function parseFileContents(contents: string) {
     let root: RootNode = new RootNode();
     let gen = parseLines(root, contents);
     gen     = parseSDC(gen);
+    gen     = parseLinks(gen);
 
     for (var x of gen) {}
 

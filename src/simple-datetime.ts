@@ -240,7 +240,7 @@ export enum DateType {
 }
 
 const scheduleRegexp = /\s*((?<scd>CLOSED|SCHEDULED|DEADLINE)[:])?\s*(?<active>[<\[])\s*(?<year>\d{4})-(?<month>\d{1,2})-(?<day>\d{1,2})(?: \w{3})?\s*((?<shour>\d{1,2}):(?<smins>\d{1,2}))?\s*(\s*--\s*(?<ehour>\d{1,2}):(?<emins>\d{1,2}))?\s*(\s*(?<repeatpre>[\.\+]{1,2})\s*(?<repeatnum>\d+)\s*(?<repeatdwmy>[dwmy]))?(\s*(?<warnpre>\-)\s*(?<warnnum>\d+)\s*(?<warndwmy>[dwmy]))?[>\]]/g;
-class OrgDate {
+export class OrgDate {
     public start:       Date;
     public end?:        Date;
     public brackets:    string;
@@ -250,6 +250,11 @@ class OrgDate {
     public warnpre?:    string;
     public warnnum?:    number;
     public warndwmy?:   string;
+    public dateType:    DateType;
+
+    public static getRegex() {
+        return scheduleRegexp;
+    }
 
     public static parseFromRegex(m: RegExpExecArray): OrgDate{
         const sdc      = m.groups.sdc;
@@ -272,6 +277,7 @@ class OrgDate {
             dateType = <DateType><unknown>sdc;
         }
         let r: OrgDate = new OrgDate();
+        r.dateType = dateType;
         let d: Date;
         if (shour != null) {
             d = new Date(year,month,day,shour,smins);
