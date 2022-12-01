@@ -65,10 +65,7 @@ export function isValidSimpleDate(datetime: ISimpleDate): boolean {
 export function buildDateString(datetime: ISimpleDate): string {
     const { year, month, day, weekday } = datetime;
 
-    let dateString = `${year}-${month}-${day}`;
-    if (Sets.leftZero) {
-        dateString = padDate(dateString);
-    }
+    let dateString = `${padLeft(year,4)}-${padLeft(month,2)}-${padLeft(day,2)}`;
     if (weekday) {
         dateString = `${dateString} ${weekday}`;
     }
@@ -83,12 +80,8 @@ export function buildDateString(datetime: ISimpleDate): string {
 export function buildDateTimeString(datetime: ISimpleDateTime): string {
     const { year, month, day, hours, minutes, weekday } = datetime;
 
-    let dateString = `${year}-${month}-${day}`;
-    let timeString = `${hours}:${minutes}`;
-    if (Sets.leftZero) {
-        dateString = padDate(dateString);
-        timeString = padTime(timeString);
-    }
+    let dateString = `${padLeft(year,4)}-${padLeft(month,2)}-${padLeft(day,2)}`;
+    let timeString = `${hours}:${padLeft(minutes,2)}`;
     if (weekday) {
         dateString = `${dateString} ${weekday}`;
     }
@@ -99,6 +92,11 @@ export function buildDateTimeString(datetime: ISimpleDateTime): string {
         return `[${dateString} ${timeString}]`
     }
 };
+
+function padLeft(v:number, size:number =2, padChar:string = '0'): string {
+    const text = v.toString();
+    return (String(padChar).repeat(size) + text).substr( (size * -1), size) ;
+}
 
 function padDate(str: string): string {
     const regex = /-(\d)(-|$)/;
@@ -163,12 +161,8 @@ export function dateToRawString(dt: Date, includeTime: boolean, includeWeekday: 
     const day     = dt.getDate();
     const weekday = weekdayArray[dt.getDay()];
 
-    let dateString = `${year}-${month}-${day}`;
+    let dateString = `${padLeft(year,4)}-${padLeft(month,2)}-${padLeft(day,2)}`;
 
-    if (Sets.leftZero) {
-        dateString = padDate(dateString);
-    }
-    
     if (includeWeekday && weekday) {
         dateString = `${dateString} ${weekday}`;
     }
@@ -176,10 +170,7 @@ export function dateToRawString(dt: Date, includeTime: boolean, includeWeekday: 
     if (includeTime) {
         const hours   = dt.getHours();
         const minutes = dt.getMinutes();
-        let timeString = `${hours}:${minutes}`;
-        if (Sets.leftZero) {
-            timeString = padTime(timeString);
-        }
+        let timeString = `${hours}:${padLeft(minutes,2)}`;
         return `${dateString} ${timeString}`
     }
     return dateString
@@ -222,11 +213,7 @@ export function getClockTotal(line) {
     const hours = Math.floor(clock / (60 * 60 * 1000));
     const minutes = clock / (60 * 1000) - (60 * hours);
 
-    let clockString = `${hours}:${minutes}`;
-    if (Sets.leftZero) {
-        clockString = padTime(clockString);
-    }
-
+    let clockString = `${hours}:${padLeft(minutes,2)}`;
     return clockString;
 }
 

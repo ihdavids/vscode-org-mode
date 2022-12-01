@@ -17,20 +17,20 @@ export enum OrgTypes {
 };
 
 export type Primitive = string | number | boolean
-interface Data { }
-interface Node {
+export interface Data { }
+export interface Node {
     type:     OrgTypes;
     range:    vscode.Range;
     isType(type: OrgTypes):  boolean;
 };
 
 
-interface Parent extends Node {
-  children: [Node];
+export interface Parent extends Node {
+  children: Node[];
   parent?:  Node;
 }
 
-interface Literal extends Node {
+export interface Literal extends Node {
     //value: any
 }
 
@@ -41,7 +41,7 @@ export class TypeHelper {
     }
 }
 
-class Scheduled implements Node {
+export class Scheduled implements Node {
     type:     OrgTypes = OrgTypes.Scheduled;
     range:    vscode.Range;
     date:     OrgDate;
@@ -53,7 +53,7 @@ class Scheduled implements Node {
         return false;
     }
 }
-class Deadline implements Node {
+export class Deadline implements Node {
     type:     OrgTypes = OrgTypes.Deadline;
     range:    vscode.Range;
     date:     OrgDate;
@@ -65,7 +65,7 @@ class Deadline implements Node {
         return false;
     }
 }
-class Closed implements Node {
+export class Closed implements Node {
     type:     OrgTypes = OrgTypes.Closed;
     range:    vscode.Range;
     date:     OrgDate;
@@ -77,7 +77,7 @@ class Closed implements Node {
         return false;
     }
 }
-class Timestamp implements Node {
+export class Timestamp implements Node {
     type:     OrgTypes = OrgTypes.Timestamp;
     range:    vscode.Range;
     date:     OrgDate;
@@ -90,7 +90,7 @@ class Timestamp implements Node {
         return false;
     }
 }
-class Link implements Node {
+export class Link implements Node {
     type:     OrgTypes = OrgTypes.Link;
     range:    vscode.Range;
     href:     string;
@@ -103,7 +103,7 @@ class Link implements Node {
         return false;
     }
 }
-class Headline implements Parent {
+export class Headline implements Parent {
     type:     OrgTypes = OrgTypes.Headline;
     range:    vscode.Range;
     level:    number;
@@ -112,11 +112,15 @@ class Headline implements Parent {
     deadline:  Deadline | undefined;
     closed:    Closed | undefined;
     timestamp: Timestamp | undefined;
+    text:     string;
+    tags:     string;
     parent?:  Headline;
-    children: [Headline];
-    links: [Link];
+    children: Headline[];
+    links: Link[];
 
     constructor() {
+        this.children = [];
+        this.links    = [];
     }
 
     isType(type: OrgTypes):  boolean {
@@ -134,14 +138,17 @@ class Headline implements Parent {
 
 }
 
-class RootNode implements Parent {
+export class RootNode implements Parent {
     type:     OrgTypes = OrgTypes.Root;
     range:    vscode.Range;
-    children: [Node];
-    nodes:    [Node];
-    links:    [Link];
+    children: Headline[];
+    nodes:    Headline[];
+    links:    Link[];
 
     constructor() {
+        this.nodes    = [];
+        this.children = [];
+        this.links    = [];
     }
 
     isType(type: OrgTypes):  boolean {
@@ -163,30 +170,53 @@ function finishHeadline(curNode, start, end) {
     curNode.range = new vscode.Range(new vscode.Position(start,0), new vscode.Position(end, 0));
 }
 
-function startHeadline(rootNode, m, curLine, parent: Headline | null): Headline {
+function startHeadline(rootNode, m, curLine, last: Headline | null): Headline {
     let h: Headline = new Headline();
-    h.parent = parent;
     rootNode.nodes.push(h);
     const stars = m.groups.stars;
     h.level = stars.length;
     h.status = m.groups.status;
+    h.text   = m.groups.text;
+    h.tags   = m.groups.tags;
     if(h.level === 1) {
         rootNode.children.push(h);
     } 
+    if(!last) {
+        h.parent = undefined;
+        // Still a child even if we start with **
+        if (h.level !== 1) {
+            rootNode.children.push(h);
+        }
+    } else if (h.level > last.level) {
+        h.parent = last;
+        last.children.push(h);
+    } else {
+        h.parent = undefined;
+        let ll = last;
+        while(ll && ll.level > h.level) {
+            ll = ll.parent;
+        }
+        if (ll) {
+            h.parent = ll.parent;
+            if (ll.parent) {
+                ll.parent.children.push(h);
+            }
+        }
+    }
     return h;
 }
 
-const linere = RegExp('^.*$','m');
-const todoKeywords = Sets.keywords.join("|");
 // const todoWords = "TODO|DONE";
-const todoHeaderRegexp = new RegExp(`^\\s*(?<stars>\\*+)\\s+(?<todo>${todoKeywords})(?:\\b|\\[|$)`);
 function* parseLines(rootNode: RootNode, content: string) {
     let curLine  = 0;
     var line;
     var lastLine = 0;
     var curNode  = null;
     var start    = 0;
-    while((line = linere.exec(content)) !== null) {
+    const linere = /^.*$/mg;
+    const todoKeywords = Sets.keywords.join("|");
+    const todoHeaderRegexp = new RegExp(`^\\s*(?<stars>\\*+)\\s+(?<status>${todoKeywords})?\\s*(?<text>[^:]+)\\s*(?<tags>[:][a-zA-Z0-9@#$!_]+[:])?`);
+    while((line = linere.exec(content)) && line.index < content.length) {
         const m = todoHeaderRegexp.exec(line);
         if(m) {
             if (curNode == null) {
@@ -274,7 +304,7 @@ function* parseSDC(gen) {
     }
 }
 
-function parseFileContents(contents: string) {
+export function parseFileContents(contents: string) {
     let root: RootNode = new RootNode();
     let gen = parseLines(root, contents);
     gen     = parseSDC(gen);
