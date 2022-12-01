@@ -1,6 +1,7 @@
 import * as assert from 'assert';
 import * as vscode from 'vscode';
 import * as dur    from '../src/duration';
+import * as dat    from '../src/simple-datetime';
 
 suite("Duration Tests", () => {
 
@@ -94,4 +95,26 @@ suite("Duration Tests", () => {
         const result = val.toString();
         assert.equal(result, expected);
     });
+});
+
+
+
+suite("OrgDate Tests", () => {
+
+    test("Date Conversion", async () => {
+        const expected = '<2022-11-30 Wed>';
+        const val   = dat.OrgDate.parse(expected);
+        assert.notEqual(undefined, val);
+        const result = val.toString();
+        assert.equal(result, expected);
+    });
+    test("DateTime Conversion", async () => {
+        const expected = '<2022-11-30 Wed 11:51>';
+        const val   = dat.OrgDate.parse(expected);
+        assert.notEqual(undefined, val);
+        const result = val.toString();
+        assert.equal(result, expected);
+    });
+
+
 });

@@ -157,22 +157,21 @@ export function hasTime(inStr: string): boolean {
     return (v.hours !== undefined);
 }
 
-export function dateToRawString(dt: Date, includeTime: boolean): string {
+export function dateToRawString(dt: Date, includeTime: boolean, includeWeekday: boolean = false): string {
     const year    = dt.getFullYear();
     const month   = dt.getMonth() + 1; // Why, Javascript, why!?
     const day     = dt.getDate();
-    //const weekday = weekdayArray[dt.getDay()];
+    const weekday = weekdayArray[dt.getDay()];
 
     let dateString = `${year}-${month}-${day}`;
 
     if (Sets.leftZero) {
         dateString = padDate(dateString);
     }
-    /*
-    if (weekday) {
+    
+    if (includeWeekday && weekday) {
         dateString = `${dateString} ${weekday}`;
     }
-    */
 
     if (includeTime) {
         const hours   = dt.getHours();
@@ -239,7 +238,6 @@ export enum DateType {
     TIMESTAMP,
 }
 
-const scheduleRegexp = /\s*((?<scd>CLOSED|SCHEDULED|DEADLINE)[:])?\s*(?<active>[<\[])\s*(?<year>\d{4})-(?<month>\d{1,2})-(?<day>\d{1,2})(?: \w{3})?\s*((?<shour>\d{1,2}):(?<smins>\d{1,2}))?\s*(\s*--\s*(?<ehour>\d{1,2}):(?<emins>\d{1,2}))?\s*(\s*(?<repeatpre>[\.\+]{1,2})\s*(?<repeatnum>\d+)\s*(?<repeatdwmy>[dwmy]))?(\s*(?<warnpre>\-)\s*(?<warnnum>\d+)\s*(?<warndwmy>[dwmy]))?[>\]]/g;
 export class OrgDate {
     public start:       Date;
     public end?:        Date;
@@ -251,18 +249,45 @@ export class OrgDate {
     public warnnum?:    number;
     public warndwmy?:   string;
     public dateType:    DateType;
+    public haveTime:    boolean;
 
     public static getRegex() {
-        return scheduleRegexp;
+        return /\s*((?<scd>CLOSED|SCHEDULED|DEADLINE)[:])?\s*(?<active>[<\[])\s*(?<year>\d{4})-(?<month>\d{1,2})-(?<day>\d{1,2})\s*( \w{3})?\s*((?<shour>\d{1,2})[:](?<smins>\d{1,2}))?\s*(\s*--\s*(?<ehour>\d{1,2}):(?<emins>\d{1,2}))?\s*(\s*(?<repeatpre>[\.\+]{1,2})\s*(?<repeatnum>\d+)\s*(?<repeatdwmy>[dwmy]))?(\s*(?<warnpre>\-)\s*(?<warnnum>\d+)\s*(?<warndwmy>[dwmy]))?[>\]]/g;
+    }
+
+    public toString(): string {
+        let r: string = "";
+        if (this.dateType != DateType.TIMESTAMP) {
+            r += this.dateType.toString() + ": "
+        }
+        r += this.brackets;
+        let end = ">";
+        if(this.brackets == "[") {
+            end = "]";
+        }
+
+        r += dateToRawString(this.start, this.haveTime, true);
+        if (this.end) {
+            r += " -- ";
+            r += dateToRawString(this.end, this.haveTime, true);
+        }
+
+        r += end;
+        return r;
     }
 
     public static parseFromRegex(m: RegExpExecArray): OrgDate{
         const sdc      = m.groups.sdc;
         const active   = m.groups.active;
         const year     = parseInt(m.groups.year);
-        const month    = parseInt(m.groups.month);
+        const month    = parseInt(m.groups.month) - 1; // Javascript month madness!
         const day      = parseInt(m.groups.day);
-        const shour    = parseInt(m.groups.ehour);
+
+        let haveTime   = false;
+        if (m.groups.shour && m.groups.smins) {
+            haveTime = true
+        }
+        const shour    = parseInt(m.groups.shour);
         const smins    = parseInt(m.groups.smins);
         let ehour      = null;
         let emins      = null;
@@ -271,21 +296,22 @@ export class OrgDate {
             emins    = parseInt(m.groups.emins);
         }
         let dateType: DateType;
-        if (sdc == "") {
+        if (sdc === "" || sdc === undefined || sdc == null) {
             dateType = DateType.TIMESTAMP;
         } else {
             dateType = <DateType><unknown>sdc;
         }
         let r: OrgDate = new OrgDate();
         r.dateType = dateType;
+        r.haveTime = haveTime;
         let d: Date;
-        if (shour != null) {
+        if (r.haveTime && shour !== null && !Number.isNaN(shour)) {
             d = new Date(year,month,day,shour,smins);
         } else {
             d = new Date(year,month,day);
         }
         r.start = d;
-        if (ehour != null) {
+        if (r.haveTime && ehour !== null && !Number.isNaN(ehour)) {
             d = new Date(year,month,day,ehour,emins);
             r.end = d;
         }
@@ -308,7 +334,7 @@ export class OrgDate {
     }
 
     public static parse(line: string): OrgDate | undefined {
-            let m = scheduleRegexp.exec(line);
+            let m = OrgDate.getRegex().exec(line);
             if (m) {
                 return OrgDate.parseFromRegex(m);
             }
