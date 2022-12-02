@@ -178,7 +178,7 @@ export class Headline implements Parent {
             let val = this.comments[name];
             if (!val) {
                 if (this.parent) {
-                    this.parent.getComment(name, defaultVal);
+                    val = this.parent.getComment(name, defaultVal);
                 } else {
                     if (this.root) {
                         val = this.root.getComment(name, defaultVal);
@@ -311,6 +311,8 @@ function* parseLines(rootNode: RootNode, content: string) {
                 curNode = startHeadline(rootNode, m, curLine, curNode);
             }
         } else {
+            // Offset within the heading.
+            const offset = curLine - start;
             // In header, have to parse heading bits.
             if (curNode == null) {
                 const cm = commentRegexp.exec(line);
@@ -318,10 +320,9 @@ function* parseLines(rootNode: RootNode, content: string) {
                     const comment: Comment = parseComment(cm, rootNode, curLine, null);
                     rootNode.comments[comment.name] = comment;
                 }
+            } else {
+                yield [rootNode, curNode, offset, curLine, line];
             }
-            // Offset within the heading.
-            const offset = curLine - start;
-            yield [rootNode, curNode, offset, curLine, line];
         }
         curLine += 1;
     } 
