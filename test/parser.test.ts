@@ -50,6 +50,20 @@ suite("Parser Tests", () => {
             assert.equal(val.links[1].parent,val.nodes[0]);
         }
     });
+    test("Scheduled", async () => {
+        const file = '* H1\n  SCHEDULED: <2022-11-30 Wed>\n  Some text\n** H2\n   <2022-11-30 Wed 11:51>\n   More text\n';
+        const val:par.RootNode   = par.parseFileContents(file);
+        assert.equal(val.children.length, 1);
+        assert.equal(val.nodes.length, 4);
+        if (val.nodes.length === 4) {
+            assert.equal(val.nodes[0].level, 1);
+            assert.equal(val.nodes[0].text,  "H1");
+            assert.equal(val.nodes[0].children.length,  1);
+
+            assert.equal(val.nodes[0].scheduled.date.start.getDate(),30);
+        }
+    });
+
 
 });
 

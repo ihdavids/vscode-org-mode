@@ -375,7 +375,8 @@ function* parseSDC(gen) {
                         r.date  = date;
                         r.parent = curNode;
                         curNode.scheduled = r;
-                    }
+                        rootNode.nodes.push(r);
+                    } break;
                     case DateType.DEADLINE:
                     {
                         let r = new Deadline();
@@ -383,7 +384,8 @@ function* parseSDC(gen) {
                         r.date  = date;
                         r.parent = curNode;
                         curNode.deadline = r;
-                    }
+                        rootNode.nodes.push(r);
+                    } break;
                     case DateType.CLOSED:
                     {
                         let r = new Closed();
@@ -391,7 +393,8 @@ function* parseSDC(gen) {
                         r.date  = date;
                         r.parent = curNode;
                         curNode.closed = r;
-                    }
+                        rootNode.nodes.push(r);
+                    } break;
                     case DateType.TIMESTAMP:
                     {
                         let r = new Timestamp();
@@ -399,7 +402,8 @@ function* parseSDC(gen) {
                         r.date  = date;
                         r.parent = curNode;
                         curNode.timestamp = r;
-                    }
+                        rootNode.nodes.push(r);
+                    } break;
                 }
                 continue;
             }

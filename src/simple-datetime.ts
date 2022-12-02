@@ -264,7 +264,7 @@ export class OrgDate {
     }
 
     public static parseFromRegex(m: RegExpExecArray): OrgDate{
-        const sdc      = m.groups.sdc;
+        const sdc      = m.groups.scd;
         const active   = m.groups.active;
         const year     = parseInt(m.groups.year);
         const month    = parseInt(m.groups.month) - 1; // Javascript month madness!
@@ -286,7 +286,11 @@ export class OrgDate {
         if (sdc === "" || sdc === undefined || sdc == null) {
             dateType = DateType.TIMESTAMP;
         } else {
-            dateType = <DateType><unknown>sdc;
+            switch(sdc) {
+                case 'SCHEDULED': dateType = DateType.SCHEDULED; break;
+                case 'DEADLINE':  dateType = DateType.DEADLINE; break;
+                case 'CLOSED':    dateType = DateType.CLOSED; break;
+            }
         }
         let r: OrgDate = new OrgDate();
         r.dateType = dateType;
