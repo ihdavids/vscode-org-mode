@@ -14,7 +14,7 @@ export enum OrgTypes {
     List,
     NumList,
     CheckList,
-    TODO,
+    Comment,
 };
 
 export type Primitive = string | number | boolean
@@ -133,6 +133,20 @@ export class Link implements Node {
         return false;
     }
 }
+export class Comment implements Node {
+    type:     OrgTypes = OrgTypes.Comment;
+    range:    vscode.Range;
+    name:     string;
+    val:      string;
+    parent?:  Headline;
+
+    isType(type: OrgTypes):  boolean {
+        if (type == this.type) {
+            return true;
+        }
+        return false;
+    }
+}
 export class Headline implements Parent {
     type:      OrgTypes = OrgTypes.Headline;
     range:     vscode.Range;
@@ -148,11 +162,34 @@ export class Headline implements Parent {
     children:  Headline[];
     links:     Link[];
     nodes:     Node[];
+    comments:  {[key: string]: Comment}
+    root:      RootNode;
+    
 
     constructor() {
         this.children = [];
         this.links    = [];
         this.nodes    = [];
+        this.comments = {};
+    }
+
+    getComment(name: string, defaultVal: Comment | undefined = undefined): Comment | undefined {
+        if (this.comments) {
+            let val = this.comments[name];
+            if (!val) {
+                if (this.parent) {
+                    this.parent.getComment(name, defaultVal);
+                } else {
+                    if (this.root) {
+                        val = this.root.getComment(name, defaultVal);
+                    } else {
+                        val = defaultVal;
+                    }
+                }
+            }
+            return val;
+        }
+        return undefined;
     }
 
     isType(type: OrgTypes):  boolean {
@@ -174,13 +211,23 @@ export class RootNode implements Parent {
     type:     OrgTypes = OrgTypes.Root;
     range:    vscode.Range;
     children: Headline[];
-    nodes:    Headline[];
+    nodes:    Node[];
     links:    Link[];
+    comments: {[key: string]: Comment};
 
     constructor() {
         this.nodes    = [];
         this.children = [];
         this.links    = [];
+        this.comments = {};
+    }
+
+    getComment(name: string, defaultVal: Comment | undefined = undefined): Comment | undefined {
+        if (this.comments) {
+            const val = this.comments[name] || defaultVal;
+            return val;
+        }
+        return undefined;
     }
 
     isType(type: OrgTypes):  boolean {
@@ -204,7 +251,10 @@ function finishHeadline(curNode, start, end) {
 
 function startHeadline(rootNode, m, curLine, last: Headline | null): Headline {
     let h: Headline = new Headline();
+    // Track our nodes from parent to child and child to parent.
     rootNode.nodes.push(h);
+    h.root = rootNode;
+    // Now fill out headline details.
     const stars = m.groups.stars;
     h.level = stars.length;
     h.status = m.groups.status;
@@ -248,6 +298,7 @@ function* parseLines(rootNode: RootNode, content: string) {
     const linere = /^.*$/mg;
     const todoKeywords = Sets.keywords.join("|");
     const todoHeaderRegexp = new RegExp(`^\\s*(?<stars>\\*+)\\s+(?<status>${todoKeywords})?\\s*(?<text>[^:]+)\\s*(?<tags>[:][a-zA-Z0-9@#$!_]+[:])?`);
+    const commentRegexp = /^\s*[#][+](?<name>[A-Za-z][A-Za-z0-9_]+)[:]\s*(?<val>.*)$/;
     while((line = linere.exec(content)) && line.index < content.length) {
         const m = todoHeaderRegexp.exec(line);
         if(m) {
@@ -260,6 +311,14 @@ function* parseLines(rootNode: RootNode, content: string) {
                 curNode = startHeadline(rootNode, m, curLine, curNode);
             }
         } else {
+            // In header, have to parse heading bits.
+            if (curNode == null) {
+                const cm = commentRegexp.exec(line);
+                if (cm) {
+                    const comment: Comment = parseComment(cm, rootNode, curLine, null);
+                    rootNode.comments[comment.name] = comment;
+                }
+            }
             // Offset within the heading.
             const offset = curLine - start;
             yield [rootNode, curNode, offset, curLine, line];
@@ -333,6 +392,35 @@ function* parseCheckList(gen) {
         }
     }
 }
+
+function parseComment(m, rootNode: RootNode, curLine, curNode: Headline=null): Comment {
+    let cmnt = new Comment();
+    cmnt.name = m.groups.name;
+    cmnt.val  = m.groups.val;
+    cmnt.parent = curNode;
+    const startPos = new vscode.Position(curLine, m.index);
+    const endPos   = new vscode.Position(curLine, m.index + m[0].length);
+    cmnt.range     = new vscode.Range(startPos, endPos);
+           
+    rootNode.nodes.push(cmnt);
+    if (curNode) {
+        curNode.comments[cmnt.name] = cmnt;
+    }
+    return cmnt;
+}
+
+function* parseComments(gen) {
+    for (var lineData of gen) {
+        const commentRegexp = /^\s*[#][+](?<name>[A-Za-z][A-Za-z0-9_]+)[:]\s*(?<val>.*)$/g
+        let [rootNode, curNode, offset, curLine, line] = lineData;
+        let m = commentRegexp.exec(line);
+        if (m) {
+            parseComment(m, rootNode, curLine, curNode);
+        }
+        yield lineData;
+    }
+}
+
 
 function* parseLinks(gen) {
     for (var lineData of gen) {
@@ -416,6 +504,7 @@ export function parseFileContents(contents: string) {
     let root: RootNode = new RootNode();
     let gen = parseLines(root, contents);
     gen     = parseSDC(gen);
+    gen     = parseComments(gen);
     gen     = parseLinks(gen);
     gen     = parseCheckList(gen);
     gen     = parseNumList(gen);

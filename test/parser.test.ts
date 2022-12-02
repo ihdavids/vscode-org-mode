@@ -11,18 +11,22 @@ suite("Parser Tests", () => {
         const val:par.RootNode   = par.parseFileContents(file);
         assert.equal(val.nodes.length, 4);
         if (val.nodes.length === 4) {
-            assert.equal(val.nodes[0].level, 1);
-            assert.equal(val.nodes[0].text,  "H1");
-            assert.equal(val.nodes[0].children.length,  1);
-            assert.equal(val.nodes[1].level, 2);
-            assert.equal(val.nodes[1].text,  "H2");
-            assert.equal(val.nodes[1].children.length,  1);
-            assert.equal(val.nodes[2].level, 3);
-            assert.equal(val.nodes[2].text,  "H3");
-            assert.equal(val.nodes[2].children.length,  0);
-            assert.equal(val.nodes[3].level, 1);
-            assert.equal(val.nodes[3].text,  "H4");
-            assert.equal(val.nodes[3].children.length,  0);
+            assert.equal(val.nodes[0].isType(par.OrgTypes.Headline), true);
+            assert.equal((<par.Headline>val.nodes[0]).level, 1);
+            assert.equal((<par.Headline>val.nodes[0]).text,  "H1");
+            assert.equal((<par.Headline>val.nodes[0]).children.length,  1);
+            assert.equal(val.nodes[1].isType(par.OrgTypes.Headline), true);
+            assert.equal((<par.Headline>val.nodes[1]).level, 2);
+            assert.equal((<par.Headline>val.nodes[1]).text,  "H2");
+            assert.equal((<par.Headline>val.nodes[1]).children.length,  1);
+            assert.equal(val.nodes[2].isType(par.OrgTypes.Headline), true);
+            assert.equal((<par.Headline>val.nodes[2]).level, 3);
+            assert.equal((<par.Headline>val.nodes[2]).text,  "H3");
+            assert.equal((<par.Headline>val.nodes[2]).children.length,  0);
+            assert.equal(val.nodes[3].isType(par.OrgTypes.Headline), true);
+            assert.equal((<par.Headline>val.nodes[3]).level, 1);
+            assert.equal((<par.Headline>val.nodes[3]).text,  "H4");
+            assert.equal((<par.Headline>val.nodes[3]).children.length,  0);
         }
         // 2 top level nodes
         assert.equal(val.children.length, 2);
@@ -36,9 +40,9 @@ suite("Parser Tests", () => {
         assert.equal(val.children.length, 1);
         assert.equal(val.nodes.length, 4);
         if (val.nodes.length === 4) {
-            assert.equal(val.nodes[0].level, 1);
-            assert.equal(val.nodes[0].text,  "H1");
-            assert.equal(val.nodes[0].children.length,  1);
+            assert.equal(val.children[0].level, 1);
+            assert.equal(val.children[0].text,  "H1");
+            assert.equal(val.children[0].children.length,  1);
 
             assert.equal(val.links.length, 2);
             assert.equal(val.links[0].href, "http://gooble.com");
@@ -56,11 +60,16 @@ suite("Parser Tests", () => {
         assert.equal(val.children.length, 1);
         assert.equal(val.nodes.length, 4);
         if (val.nodes.length === 4) {
-            assert.equal(val.nodes[0].level, 1);
-            assert.equal(val.nodes[0].text,  "H1");
-            assert.equal(val.nodes[0].children.length,  1);
+            assert.equal(val.children[0].level, 1);
+            assert.equal(val.children[0].text,  "H1");
+            assert.equal(val.children[0].children.length,  1);
 
-            assert.equal(val.nodes[0].scheduled.date.start.getDate(),30);
+            assert.equal(val.children[0].scheduled.date.start.getDate(),30);
+
+            assert.equal(val.children[0].children.length, 1);
+            assert.equal(val.children[0].children[0].timestamp.date.start.getDate(), 30);
+            assert.equal(val.children[0].children[0].timestamp.date.start.getHours(), 11);
+            assert.equal(val.children[0].children[0].timestamp.date.start.getMinutes(), 51);
         }
     });
 
