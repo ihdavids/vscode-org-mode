@@ -11,9 +11,10 @@ export enum OrgTypes {
     Closed,
     Timestamp,
     Link,
+    List,
+    NumList,
+    CheckList,
     TODO,
-    LIST,
-    CHECK,
 };
 
 export type Primitive = string | number | boolean
@@ -45,6 +46,7 @@ export class Scheduled implements Node {
     type:     OrgTypes = OrgTypes.Scheduled;
     range:    vscode.Range;
     date:     OrgDate;
+    parent?:  Headline;
 
     isType(type: OrgTypes):  boolean {
         if (type == OrgTypes.Scheduled) {
@@ -57,6 +59,7 @@ export class Deadline implements Node {
     type:     OrgTypes = OrgTypes.Deadline;
     range:    vscode.Range;
     date:     OrgDate;
+    parent?:  Headline;
 
     isType(type: OrgTypes):  boolean {
         if (type == this.type) {
@@ -69,6 +72,7 @@ export class Closed implements Node {
     type:     OrgTypes = OrgTypes.Closed;
     range:    vscode.Range;
     date:     OrgDate;
+    parent?:  Headline;
 
     isType(type: OrgTypes):  boolean {
         if (type == this.type) {
@@ -82,6 +86,7 @@ export class Timestamp implements Node {
     range:    vscode.Range;
     date:     OrgDate;
     active:   string;
+    parent?:  Headline;
 
     isType(type: OrgTypes):  boolean {
         if (type == this.type) {
@@ -90,11 +95,36 @@ export class Timestamp implements Node {
         return false;
     }
 }
+export class List implements Node {
+    type:     OrgTypes = OrgTypes.List;
+    range:    vscode.Range;
+    ltype:    string;
+    text:     string;
+    parent?:  Headline;
+
+    isType(type: OrgTypes):  boolean {
+        if (type == this.type) {
+            return true;
+        }
+        return false;
+    }
+
+}
+export class NumList extends List {
+    type:     OrgTypes = OrgTypes.NumList;
+    num:      number;
+}
+export class CheckList extends List {
+    type:     OrgTypes = OrgTypes.CheckList;
+    state:    string;
+}
+
 export class Link implements Node {
     type:     OrgTypes = OrgTypes.Link;
     range:    vscode.Range;
     href:     string;
     desc:     string;
+    parent?:  Headline;
 
     isType(type: OrgTypes):  boolean {
         if (type == this.type) {
@@ -104,23 +134,25 @@ export class Link implements Node {
     }
 }
 export class Headline implements Parent {
-    type:     OrgTypes = OrgTypes.Headline;
-    range:    vscode.Range;
-    level:    number;
-    status:   string;
+    type:      OrgTypes = OrgTypes.Headline;
+    range:     vscode.Range;
+    level:     number;
+    status:    string;
     scheduled: Scheduled | undefined;
     deadline:  Deadline | undefined;
     closed:    Closed | undefined;
     timestamp: Timestamp | undefined;
-    text:     string;
-    tags:     string;
-    parent?:  Headline;
-    children: Headline[];
-    links: Link[];
+    text:      string;
+    tags:      string;
+    parent?:   Headline;
+    children:  Headline[];
+    links:     Link[];
+    nodes:     Node[];
 
     constructor() {
         this.children = [];
         this.links    = [];
+        this.nodes    = [];
     }
 
     isType(type: OrgTypes):  boolean {
@@ -236,19 +268,87 @@ function* parseLines(rootNode: RootNode, content: string) {
     } 
 }
 
-const linkRegexp = /\[\[(?<link>[^\]]+)\](\[(?<desc>[^\]]+)\])?\]/g
+function* parseNumList(gen) {
+    const numRegexp = /^(?<num>\d+)(?<type>[.)])\s+(?<text>.*)/g
+    for (var lineData of gen) {
+        let [rootNode, curNode, offset, curLine, line] = lineData;
+        let m = numRegexp.exec(line);
+        if (m) {
+            let r    = new NumList();
+            r.parent = curNode;
+            r.num    = parseInt(m.groups.num);
+            r.text   = m.groups.text;
+            r.ltype  = m.groups.type;
+            const startPos = new vscode.Position(curLine, m.index);
+            const endPos   = new vscode.Position(curLine, m.index + m[0].length);
+            const range    = new vscode.Range(startPos, endPos);
+            r.range = range;
+            rootNode.nodes.push(r);
+            curNode.nodes.push(r);
+        } else {
+            yield lineData;
+        }
+    }
+}
+function* parseList(gen) {
+    const listRegexp = /^\s*(?<pre>[+-]+)\s+(?<text>[^\[].*)/g
+    for (var lineData of gen) {
+        let [rootNode, curNode, offset, curLine, line] = lineData;
+        let m = listRegexp.exec(line);
+        if (m) {
+            let r = new List();
+            r.parent = curNode;
+            r.ltype = m.groups.pre;
+            r.text = m.groups.text;
+            const startPos = new vscode.Position(curLine, m.index);
+            const endPos   = new vscode.Position(curLine, m.index + m[0].length);
+            const range    = new vscode.Range(startPos, endPos);
+            r.range = range;
+            rootNode.nodes.push(r);
+            curNode.nodes.push(r);
+        } else {
+            yield lineData;
+        }
+    }
+}
+function* parseCheckList(gen) {
+    const listRegexp = /^\s*(?<pre>[+-]+)\s+\[(?<state>[ x-])\]\s*(?<text>.*)/g
+    for (var lineData of gen) {
+        let [rootNode, curNode, offset, curLine, line] = lineData;
+        let m = listRegexp.exec(line);
+        if (m) {
+            let r = new CheckList();
+            r.parent = curNode;
+            r.ltype = m.groups.pre;
+            r.text = m.groups.text;
+            r.state = m.groups.state;
+            const startPos = new vscode.Position(curLine, m.index);
+            const endPos   = new vscode.Position(curLine, m.index + m[0].length);
+            const range    = new vscode.Range(startPos, endPos);
+            r.range = range;
+            rootNode.nodes.push(r);
+            curNode.nodes.push(r);
+        } else {
+            yield lineData;
+        }
+    }
+}
+
 function* parseLinks(gen) {
     for (var lineData of gen) {
+        const linkRegexp = /\[\[(?<link>[^\]]+)\](\[(?<desc>[^\]]+)\])?\]/g
         let [rootNode, curNode, offset, curLine, line] = lineData;
         let m = linkRegexp.exec(line);
         if (m) {
             let link = new Link();
             link.href = m.groups.link;
             link.desc = m.groups.desc;
+            link.parent = curNode;
             const startPos = new vscode.Position(curLine, m.index);
             const endPos   = new vscode.Position(curLine, m.index + m[0].length);
             link.range     = new vscode.Range(startPos, endPos);
-            
+           
+            rootNode.nodes.push(link);
             rootNode.links.push(link);
             curNode.links.push(link);
         }
@@ -273,6 +373,7 @@ function* parseSDC(gen) {
                         let r = new Scheduled();
                         r.range = range;
                         r.date  = date;
+                        r.parent = curNode;
                         curNode.scheduled = r;
                     }
                     case DateType.DEADLINE:
@@ -280,6 +381,7 @@ function* parseSDC(gen) {
                         let r = new Deadline();
                         r.range = range;
                         r.date  = date;
+                        r.parent = curNode;
                         curNode.deadline = r;
                     }
                     case DateType.CLOSED:
@@ -287,6 +389,7 @@ function* parseSDC(gen) {
                         let r = new Closed();
                         r.range = range;
                         r.date  = date;
+                        r.parent = curNode;
                         curNode.closed = r;
                     }
                     case DateType.TIMESTAMP:
@@ -294,6 +397,7 @@ function* parseSDC(gen) {
                         let r = new Timestamp();
                         r.range = range;
                         r.date  = date;
+                        r.parent = curNode;
                         curNode.timestamp = r;
                     }
                 }
@@ -309,6 +413,9 @@ export function parseFileContents(contents: string) {
     let gen = parseLines(root, contents);
     gen     = parseSDC(gen);
     gen     = parseLinks(gen);
+    gen     = parseCheckList(gen);
+    gen     = parseNumList(gen);
+    gen     = parseList(gen);
 
     for (var x of gen) {}
 

@@ -28,6 +28,29 @@ suite("Parser Tests", () => {
         assert.equal(val.children.length, 2);
         assert.equal(val.links.length, 0);
     });
+
+
+    test("Links", async () => {
+        const file = '* H1\n  [[http://gooble.com][Gooble]]\n  [[https://something.com][Nothing]]\n** H2\n';
+        const val:par.RootNode   = par.parseFileContents(file);
+        assert.equal(val.children.length, 1);
+        assert.equal(val.nodes.length, 4);
+        if (val.nodes.length === 4) {
+            assert.equal(val.nodes[0].level, 1);
+            assert.equal(val.nodes[0].text,  "H1");
+            assert.equal(val.nodes[0].children.length,  1);
+
+            assert.equal(val.links.length, 2);
+            assert.equal(val.links[0].href, "http://gooble.com");
+            assert.equal(val.links[0].desc, "Gooble");
+            assert.equal(val.links[0].parent,val.nodes[0]);
+
+            assert.equal(val.links[1].href, "https://something.com");
+            assert.equal(val.links[1].desc, "Nothing");
+            assert.equal(val.links[1].parent,val.nodes[0]);
+        }
+    });
+
 });
 
 
