@@ -15,6 +15,8 @@ export enum OrgTypes {
     NumList,
     CheckList,
     Comment,
+    Property,
+    Drawer,
 };
 
 export type Primitive = string | number | boolean
@@ -147,6 +149,48 @@ export class Comment implements Node {
         return false;
     }
 }
+export class Property implements Node {
+    type:     OrgTypes = OrgTypes.Property;
+    range:    vscode.Range;
+    name:     string;
+    val:      string;
+    parent?:  Headline;
+
+    isType(type: OrgTypes):  boolean {
+        if (type == this.type) {
+            return true;
+        }
+        return false;
+    }
+}
+export class Drawer implements Node {
+    type:     OrgTypes = OrgTypes.Drawer;
+    range:    vscode.Range;
+    name:     string;
+    val:      string;
+    parent?:  Headline;
+
+    isType(type: OrgTypes):  boolean {
+        if (type == this.type) {
+            return true;
+        }
+        return false;
+    }
+
+}
+
+export class PropertyDrawer extends Drawer {
+    properties:  {[key: string]: Property};
+    add(n: Property) {
+        if (!this.properties) {
+            this.properties = {};
+        }    
+        this.properties[n.name] = n;
+    }
+}
+export class LogBook extends Drawer {
+    entries:  string[];
+}
 export class Headline implements Parent {
     type:      OrgTypes = OrgTypes.Headline;
     range:     vscode.Range;
@@ -163,6 +207,7 @@ export class Headline implements Parent {
     links:     Link[];
     nodes:     Node[];
     comments:  {[key: string]: Comment}
+    properties:  PropertyDrawer;
     root:      RootNode;
     
 
@@ -422,6 +467,53 @@ function* parseComments(gen) {
     }
 }
 
+function* parseProperties(gen) {
+    let inPropDrawer = false;
+    let startPos;
+    for (var lineData of gen) {
+        let [rootNode, curNode, offset, curLine, line] = lineData;
+        if (inPropDrawer) {
+            const endRegexp = /^\s*[:]END[:]\s*$/
+            const em = endRegexp.exec(line);
+            if (em) {
+                inPropDrawer = false;
+                const endPos              = new vscode.Position(curLine, em.index + em[0].length);
+                curNode.properties.range  = new vscode.Range(startPos, endPos);
+            } else {
+                const propRegexp = /^\s*[:](?<name>[A-Za-z][A-Za-z0-9_]+)[:]\s*(?<val>.*)$/
+                const pm = propRegexp.exec(line);
+                if (pm) {
+                    let r = new Property();
+                    r.name = pm.groups.name;
+                    r.val  = pm.groups.val;
+                    r.parent = curNode;
+                    const startPos = new vscode.Position(curLine, pm.index);
+                    const endPos   = new vscode.Position(curLine, pm.index + pm[0].length);
+                    r.range        = new vscode.Range(startPos, endPos);
+                    rootNode.nodes.push(r);
+                    if (curNode) {
+                        curNode.properties.add(r);
+                    }
+                }
+            }
+            continue;
+        } else {
+            const startRegexp = /^\s*[:]PROPERTIES[:]\s*$/
+            const sm = startRegexp.exec(line);
+            if (sm) {
+                inPropDrawer = true;
+                let p = new PropertyDrawer();
+                startPos = new vscode.Position(curLine, sm.index);
+                curNode.properties = p;
+                rootNode.nodes.push(p);
+                p.parent = curNode;
+                continue;
+            }
+        }
+        yield lineData;
+    }
+}
+
 
 function* parseLinks(gen) {
     for (var lineData of gen) {
@@ -505,6 +597,7 @@ export function parseFileContents(contents: string) {
     let root: RootNode = new RootNode();
     let gen = parseLines(root, contents);
     gen     = parseSDC(gen);
+    gen     = parseProperties(gen);
     gen     = parseComments(gen);
     gen     = parseLinks(gen);
     gen     = parseCheckList(gen);
