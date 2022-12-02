@@ -17,6 +17,7 @@ export enum OrgTypes {
     Comment,
     Property,
     Drawer,
+    ClockEntry,
 };
 
 export type Primitive = string | number | boolean
@@ -188,8 +189,36 @@ export class PropertyDrawer extends Drawer {
         this.properties[n.name] = n;
     }
 }
+
+export class ClockEntry {
+    type:     OrgTypes = OrgTypes.ClockEntry;
+    range:    vscode.Range;
+    date:     OrgDate;
+    parent?:  Headline;
+
+    isType(type: OrgTypes):  boolean {
+        if (type == this.type) {
+            return true;
+        }
+        return false;
+    }
+}
+
 export class LogBook extends Drawer {
     entries:  string[];
+    clocks:   ClockEntry[];
+    add(entry: string) {
+        if (!this.entries) {
+            this.entries = [];
+        }    
+        this.entries.push(entry);
+    }
+    addclock(entry: ClockEntry) {
+        if (!this.clocks) {
+            this.clocks = [];
+        }    
+        this.clocks.push(entry);
+    }
 }
 export class Headline implements Parent {
     type:      OrgTypes = OrgTypes.Headline;
@@ -208,6 +237,7 @@ export class Headline implements Parent {
     nodes:     Node[];
     comments:  {[key: string]: Comment}
     properties:  PropertyDrawer;
+    logbook:     LogBook;
     root:      RootNode;
     
 
@@ -233,6 +263,26 @@ export class Headline implements Parent {
                 }
             }
             return val;
+        }
+        return undefined;
+    }
+
+    getProp(name: string, defaultVal: Property | undefined = undefined): Property | undefined {
+        let val = defaultVal;
+        if (this.properties) {
+            val = this.properties[name];
+            if (!val) {
+                if (this.parent) {
+                    val = this.parent.getProp(name, defaultVal);
+                }
+            }
+        }
+        return val;
+    }
+
+    getLogEntries(): string[] | undefined {
+        if (this.logbook) {
+            return this.logbook.entries;
         }
         return undefined;
     }
@@ -467,6 +517,71 @@ function* parseComments(gen) {
     }
 }
 
+function* parseLogbook(gen) {
+    let inDrawer = false;
+    let startPos;
+    let curEntry = null;
+    for (var lineData of gen) {
+        let [rootNode, curNode, offset, curLine, line] = lineData;
+        if (inDrawer) {
+            const endRegexp = /^\s*[:]END[:]\s*$/
+            const em = endRegexp.exec(line);
+            if (em) {
+                inDrawer = false;
+                const endPos              = new vscode.Position(curLine, em.index + em[0].length);
+                curNode.logbook.range  = new vscode.Range(startPos, endPos);
+                if (curEntry) {
+                    curNode.logbook.add(curEntry);
+                }
+            } else {
+                const logRegexp = /^\s*[-] (?<clock>CLOCK[:])?\s+(?<text>.*)$/
+                const lm = logRegexp.exec(line);
+                if (lm) {
+                    if (curEntry) {
+                        curNode.logbook.add(curEntry);
+                    }
+                    if (lm.groups.clock) {
+                        let r = new ClockEntry();
+                        r.parent = curNode;
+                        const startPos = new vscode.Position(curLine, lm.index);
+                        const endPos   = new vscode.Position(curLine, lm.index + lm[0].length);
+
+                        let dm = OrgDate.getRegex().exec(line);
+                        if (dm) {
+                            r.date     = OrgDate.parseFromRegex(dm);
+                        }
+                        r.range        = new vscode.Range(startPos, endPos);
+                        rootNode.nodes.push(r);
+                        curNode.logbook.addclock(r);
+                    } else {
+                        curEntry = lm.groups.txt;
+                    }
+                } else {
+                    if(curEntry) {
+                        curEntry += "\n" + line;
+                    }
+                }
+            }
+            continue;
+        } else {
+            const startRegexp = /^\s*[:]LOGBOOK[:]\s*$/
+            const sm          = startRegexp.exec(line);
+            if (sm) {
+                inDrawer = true;
+                let p: LogBook = new LogBook();
+                startPos = new vscode.Position(curLine, sm.index);
+                curNode.logbook = p;
+                rootNode.nodes.push(p);
+                p.parent = curNode;
+                continue;
+            }
+        }
+        yield lineData;
+    }
+}
+
+
+
 function* parseProperties(gen) {
     let inPropDrawer = false;
     let startPos;
@@ -598,6 +713,7 @@ export function parseFileContents(contents: string) {
     let gen = parseLines(root, contents);
     gen     = parseSDC(gen);
     gen     = parseProperties(gen);
+    gen     = parseLogbook(gen);
     gen     = parseComments(gen);
     gen     = parseLinks(gen);
     gen     = parseCheckList(gen);

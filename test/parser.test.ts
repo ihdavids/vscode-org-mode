@@ -112,6 +112,33 @@ suite("Parser Tests", () => {
             assert.equal(cmt.name, "STARTUP");
         }
     });
+    test("Properties", async () => {
+        const file = '* H1\n  :PROPERTIES:\n  :PROP: this is a value\n  :END:\nSome text\n** H2\n   :PROPERTIES:\n   :P2: another prop\n   :END:\n More text\n';
+        const val:par.RootNode   = par.parseFileContents(file);
+        assert.equal(val.children.length, 1);
+        assert.equal(val.nodes.length, 6);
+        if (val.nodes.length === 6) {
+            assert.equal(val.children[0].level, 1);
+            assert.equal(val.children[0].text,  "H1");
+            assert.equal(val.children[0].children.length,  1);
+            assert.equal(val.children[0].getProp("PROP").val,  "this is a value");
+            assert.equal(val.children[0].getProp("NOTTHERE"), undefined);
+            assert.equal(val.children[0].children[0].getProp("P2").val, "another prop");
+        }
+    });
+    test("Logbook", async () => {
+        const file = '* H1\n  :LOGBOOK:\n  - this is an entry\n  :END:\nSome text\n** H2\n   :LOGBOOK:\n   - another prop\n   with more data\n   :END:\n More text\n';
+        const val:par.RootNode   = par.parseFileContents(file);
+        assert.equal(val.children.length, 1);
+        assert.equal(val.nodes.length, 4);
+        if (val.nodes.length === 4) {
+            assert.equal(val.children[0].level, 1);
+            assert.equal(val.children[0].text,  "H1");
+            assert.equal(val.children[0].children.length,  1);
+            assert.equal(val.children[0].getLogEntries()[0],  "this is an entry");
+            assert.equal(val.children[0].children[0].getLogEntries()[0], "another prop\n   with more data");
+        }
+    });
 
 
 });
