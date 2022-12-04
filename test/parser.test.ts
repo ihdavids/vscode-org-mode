@@ -128,6 +128,7 @@ suite("Parser Tests", () => {
             assert.equal(p2, "another prop");
         }
     });
+    /*
     test("Logbook", async () => {
         const file = '* H1\n  :LOGBOOK:\n  - this is an entry\n  :END:\nSome text\n** H2\n   :LOGBOOK:\n   - another prop\n   with more data\n   :END:\n More text\n';
         const val:par.RootNode   = par.parseFileContents(file);
@@ -139,6 +140,26 @@ suite("Parser Tests", () => {
             assert.equal(val.children[0].children.length,  1);
             const l1 = val.children[0].getLogEntries()[0];
             assert.equal(l1,  "this is an entry");
+            const l2 = val.children[0].children[0].getLogEntries()[0];
+            assert.equal(l2, "another prop\n   with more data");
+        }
+    });
+    */
+    test("Clockbook", async () => {
+        const file = '* H1\n  :LOGBOOK:\n  - CLOCK: [2017-04-10 Mon 15:16]--[2017-04-10 Mon 15:17] =>  0:01\n  - CLOCK: [2017-04-07 Fri 16:05]--[2017-04-07 Fri 16:35] =>  0:30\n  - CLOCK: [2017-04-05 Wed 16:42]--[2017-04-05 Wed 16:52] =>  0:10\n  :END:\nSome text\n** H2\n   :LOGBOOK:\n   - another prop\n   with more data\n   :END:\n More text\n';
+        const val:par.RootNode   = par.parseFileContents(file);
+        assert.equal(val.children.length, 1);
+        assert.equal(val.nodes.length, 7);
+        if (val.nodes.length === 7) {
+            assert.equal(val.children[0].level, 1);
+            assert.equal(val.children[0].text,  "H1");
+            assert.equal(val.children[0].children.length,  1);
+            assert.equal(val.children[0].haveClockEntries(), true);
+            const clks = val.children[0].getClockEntries();
+            assert.equal(clks.length, 3);
+            assert.equal(clks[0].date.start.getDate(),  10);
+            assert.equal(clks[0].date.end.getDate(),  10);
+            assert.equal(val.children[0].children[0].haveClockEntries(), false);
             const l2 = val.children[0].children[0].getLogEntries()[0];
             assert.equal(l2, "another prop\n   with more data");
         }

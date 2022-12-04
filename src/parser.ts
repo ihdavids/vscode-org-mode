@@ -291,6 +291,20 @@ export class Headline implements Parent {
         return undefined;
     }
 
+    getClockEntries(): ClockEntry[] | undefined {
+        if (this.logbook) {
+            return this.logbook.clocks;
+        }
+        return undefined;
+    }
+
+    haveClockEntries(): boolean {
+        if (this.logbook) {
+            return this.logbook.clocks && this.logbook.clocks.length > 0;
+        }
+        return false;
+    }
+
     isType(type: OrgTypes):  boolean {
         if (type == OrgTypes.Headline) {
             return true;
@@ -539,7 +553,7 @@ function* parseLogbook(gen) {
                     curEntry = null;
                 }
             } else {
-                const logRegexp = /^\s*[-]\s+((?<clock>CLOCK[:])\s+)?(?<text>.*)$/
+                const logRegexp = /^\s*(([-]?\s*(?<clock>CLOCK[:])\s+)|([-]\s+))(?<text>.*)$/
                 const lm = logRegexp.exec(line);
                 if (lm) {
                     if (curEntry) {
