@@ -188,6 +188,10 @@ export class PropertyDrawer extends Drawer {
         }    
         this.properties[n.name] = n;
     }
+
+    get(n: string): Property | undefined {
+        return this.properties[n];
+    }
 }
 
 export class ClockEntry {
@@ -270,7 +274,7 @@ export class Headline implements Parent {
     getProp(name: string, defaultVal: Property | undefined = undefined): Property | undefined {
         let val = defaultVal;
         if (this.properties) {
-            val = this.properties[name];
+            val = this.properties.get(name);
             if (!val) {
                 if (this.parent) {
                     val = this.parent.getProp(name, defaultVal);
@@ -532,13 +536,15 @@ function* parseLogbook(gen) {
                 curNode.logbook.range  = new vscode.Range(startPos, endPos);
                 if (curEntry) {
                     curNode.logbook.add(curEntry);
+                    curEntry = null;
                 }
             } else {
-                const logRegexp = /^\s*[-] (?<clock>CLOCK[:])?\s+(?<text>.*)$/
+                const logRegexp = /^\s*[-]\s+((?<clock>CLOCK[:])\s+)?(?<text>.*)$/
                 const lm = logRegexp.exec(line);
                 if (lm) {
                     if (curEntry) {
                         curNode.logbook.add(curEntry);
+                        curEntry = null;
                     }
                     if (lm.groups.clock) {
                         let r = new ClockEntry();
@@ -554,7 +560,7 @@ function* parseLogbook(gen) {
                         rootNode.nodes.push(r);
                         curNode.logbook.addclock(r);
                     } else {
-                        curEntry = lm.groups.txt;
+                        curEntry = lm.groups.text;
                     }
                 } else {
                     if(curEntry) {

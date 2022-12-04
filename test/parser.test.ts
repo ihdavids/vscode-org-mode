@@ -121,9 +121,11 @@ suite("Parser Tests", () => {
             assert.equal(val.children[0].level, 1);
             assert.equal(val.children[0].text,  "H1");
             assert.equal(val.children[0].children.length,  1);
-            assert.equal(val.children[0].getProp("PROP").val,  "this is a value");
+            const p1 = val.children[0].getProp("PROP").val;
+            assert.equal(p1,  "this is a value");
             assert.equal(val.children[0].getProp("NOTTHERE"), undefined);
-            assert.equal(val.children[0].children[0].getProp("P2").val, "another prop");
+            const p2 = val.children[0].children[0].getProp("P2").val;
+            assert.equal(p2, "another prop");
         }
     });
     test("Logbook", async () => {
@@ -135,8 +137,10 @@ suite("Parser Tests", () => {
             assert.equal(val.children[0].level, 1);
             assert.equal(val.children[0].text,  "H1");
             assert.equal(val.children[0].children.length,  1);
-            assert.equal(val.children[0].getLogEntries()[0],  "this is an entry");
-            assert.equal(val.children[0].children[0].getLogEntries()[0], "another prop\n   with more data");
+            const l1 = val.children[0].getLogEntries()[0];
+            assert.equal(l1,  "this is an entry");
+            const l2 = val.children[0].children[0].getLogEntries()[0];
+            assert.equal(l2, "another prop\n   with more data");
         }
     });
 
