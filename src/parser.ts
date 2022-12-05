@@ -337,6 +337,10 @@ export class RootNode implements Parent {
         this.comments = {};
     }
 
+    getLinks(): Link[] {
+        return this.links;
+    }
+
     getComment(name: string, defaultVal: Comment | undefined = undefined): Comment | undefined {
         if (this.comments) {
             const val = this.comments[name] || defaultVal;
@@ -444,6 +448,7 @@ function* parseLines(rootNode: RootNode, content: string, state: ParserState) {
     const todoKeywords = Sets.keywords.join("|");
     const todoHeaderRegexp = new RegExp(`^\\s*(?<stars>\\*+)\\s+(?<status>${todoKeywords})?\\s*(?<text>[^:]+)\\s*(?<tags>[:][a-zA-Z0-9@#$!_]+[:])?`);
     const commentRegexp = /^\s*[#][+](?<name>[A-Za-z][A-Za-z0-9_]+)[:]\s*(?<val>.*)$/;
+    content = content.replace(/\r/gm,"");
     while((line = linere.exec(content)) && line.index < content.length) {
         const m = todoHeaderRegexp.exec(line);
         if(state.canParse(ParserPhase.Headline) && m) {
@@ -780,6 +785,25 @@ export function parseFileContents(contents: string) {
     for (var x of gen) {}
 
     return root;
+}
+
+
+export class Parser implements vscode.Disposable {
+    public doc: RootNode;
+
+	public async parse(): Promise<void> {
+		const editor = vscode.window.activeTextEditor;
+		if (!editor) {
+			return Promise.resolve();
+		}
+		const text = editor.document.getText();
+        this.doc = parseFileContents(text);
+        return Promise.resolve();
+    }
+
+    public dispose() {
+
+    }
 }
 
 

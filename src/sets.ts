@@ -34,5 +34,6 @@ export class Sets {
     public static get clockInOutSeparator(): string { return Sets.getProp<string>("clockInOutSeparator");    }
     public static get clockTotalSeparator(): string { return Sets.getProp<string>("clockTotalSeparator");    }
     public static get orgsConnection(): string      { return Sets.getProp<string>("orgsConnection", 'ws://localhost:8010/org');         }
+    public static get decoreUpdate(): number        { return Sets.getProp<number>("updateInterval",10000);    }
 
 }

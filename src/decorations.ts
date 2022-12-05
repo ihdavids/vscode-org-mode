@@ -1,3 +1,68 @@
+
+import * as vscode from 'vscode';
+import { Parser } from './parser';
+
+export class Decoration implements vscode.Disposable {
+	private parser: Parser;
+	private descRegex: RegExp;
+	private linkType: vscode.TextEditorDecorationType;
+	private hideType: vscode.TextEditorDecorationType;
+
+	constructor(parser: Parser) {
+		this.parser = parser;
+
+		// links
+		this.descRegex = new RegExp('\\]\\[', 'g');
+		this.linkType = vscode.window.createTextEditorDecorationType({
+			'light': {
+				'color': 'rgba(0, 128, 255, 1.0)'
+			},
+			'dark': {
+				'color': 'rgba(0, 128, 255, 1.0)'
+			}
+		});
+		this.hideType = vscode.window.createTextEditorDecorationType({
+			'light': {
+				'color': 'rgba(0, 128, 255, 0.0)',
+				'letterSpacing': '-256px'
+			},
+			'dark': {
+				'color': 'rgba(0, 128, 255, 0.0)',
+				'letterSpacing': '-256px'
+			}
+		});
+	}
+
+	dispose(): void {
+	}
+
+	async updateDecorations(): Promise<void> {
+		const editor = vscode.window.activeTextEditor;
+		if (!editor) {
+			return Promise.resolve();
+		}
+
+        console.log("LINKS: ",this.parser.doc.getLinks());
+		// links
+		const link: vscode.Range[] = [];
+		const hide: vscode.Range[] = [];
+		for (let l of this.parser.doc.getLinks()) {
+			const start = l.range.start;
+			const end = l.range.end;
+			const text = editor.document.getText(l.range);
+			const match = this.descRegex.exec(text);
+			const offset = (match) ? match.index + 2 : 2;
+			hide.push(new vscode.Range(start.line, start.character, start.line, start.character + offset))
+			hide.push(new vscode.Range(end.line, end.character - 2, end.line, end.character));
+			link.push(new vscode.Range(start.line, start.character + offset, end.line, end.character - 2));
+		}
+
+		editor.setDecorations(this.linkType, link);
+		editor.setDecorations(this.hideType, hide);
+	}
+
+}
+
 /*
 import * as vscode from 'vscode';
 import { Config } from './config';

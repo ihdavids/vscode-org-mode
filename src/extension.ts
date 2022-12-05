@@ -23,8 +23,9 @@ import * as CC from './cursor-context';
 import { Calendar, CalendarMode } from './calendar';
 
 
-//import { Parser } from './parser';
-//import { Decoration } from './decorations';
+import { Parser } from './parser';
+import { Decoration } from './decorations';
+import { Sets } from './sets';
 
 
 export class OrgExtension {
@@ -32,11 +33,13 @@ export class OrgExtension {
 
     context: vscode.ExtensionContext;    
     calendar: Calendar;
-    //parser: Parser;
-    //decore: Decoration;
+    parser: Parser;
+    decore: Decoration;
+    private updateTimer: NodeJS.Timer | undefined;
 
     constructor()
     {
+        this.startUpdate();
     }
 
     public static get(): OrgExtension
@@ -50,8 +53,8 @@ export class OrgExtension {
     public activate(context: vscode.ExtensionContext) {
         this.context  = context;
 		this.calendar = new Calendar(context);
-        //this.parser   = new Parser(context);
-        //this.decore   = new Decoration(this.parser);
+        this.parser   = new Parser();
+        this.decore   = new Decoration(this.parser);
     }
 
     async timestamp(mode: CalendarMode): Promise<void> {
@@ -59,6 +62,33 @@ export class OrgExtension {
         await x.writeToEditor();
         return Promise.resolve();
     }
+
+	dispose(): void {
+		this.stopUpdate();
+		this.decore.dispose();
+	}
+
+	async update(): Promise<void> {
+		await this.parser.parse();
+        console.log("UPDATE ATTEMPT");
+		this.decore.updateDecorations();
+	}
+
+	startUpdate(): void {
+		const delay: number = Sets.decoreUpdate;
+		if (this.updateTimer) {
+			clearTimeout(this.updateTimer);
+			this.updateTimer = undefined;
+		}
+		this.updateTimer = setTimeout(this.update, delay, this);
+	}
+
+	stopUpdate(): void {
+		if (this.updateTimer) {
+			clearTimeout(this.updateTimer);
+			this.updateTimer = undefined;
+		}
+	}
 } 
 
 export async function doDecorations(textEditor: vscode.TextEditor, edit: vscode.TextEditorEdit) {
@@ -169,7 +199,33 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.languages.registerDocumentSymbolProvider('org', provider);
     vscode.workspace.onDidOpenTextDocument(folding.autoFold);
     vscode.workspace.onDidSaveTextDocument(folding.autoFold);
+
+    		// open new document
+		vscode.window.onDidChangeActiveTextEditor(editor => {
+			if (editor && editor.document.languageId === 'org') {
+				OrgExtension.get().update();
+			}
+		}, null, context.subscriptions);
+
+		// modify current document
+		vscode.workspace.onDidChangeTextDocument(event => {
+			const editor = vscode.window.activeTextEditor;
+			if (editor && event.document === editor.document &&
+				editor.document.languageId === 'org') {
+					OrgExtension.get().update();
+			}
+		}, null, context.subscriptions);
+
+		// current document
+		if (vscode.window.activeTextEditor) {
+			const editor = vscode.window.activeTextEditor;
+			if (editor.document.languageId === 'org') {
+				OrgExtension.get().update();
+			}
+		}
 }
 
 // tslint:disable-next-line:no-empty
 export function deactivate() {}
+
+
