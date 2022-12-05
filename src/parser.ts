@@ -444,12 +444,15 @@ function* parseLines(rootNode: RootNode, content: string, state: ParserState) {
     var lastLine = 0;
     var curNode  = null;
     var start    = 0;
-    const linere = /^.*$/mg;
+    //const linere = /(^.*$)|(^\r?\n)/mg;
     const todoKeywords = Sets.keywords.join("|");
     const todoHeaderRegexp = new RegExp(`^\\s*(?<stars>\\*+)\\s+(?<status>${todoKeywords})?\\s*(?<text>[^:]+)\\s*(?<tags>[:][a-zA-Z0-9@#$!_]+[:])?`);
     const commentRegexp = /^\s*[#][+](?<name>[A-Za-z][A-Za-z0-9_]+)[:]\s*(?<val>.*)$/;
-    content = content.replace(/\r/gm,"");
-    while((line = linere.exec(content)) && line.index < content.length) {
+    //content = content.replace(/\r/gm,"");
+    const lines = content.split('\n');
+    //while((line = linere.exec(content)) && line.index < content.length) {
+    for(let line of lines) {
+        line = line.replace('\r','');
         const m = todoHeaderRegexp.exec(line);
         if(state.canParse(ParserPhase.Headline) && m) {
             if (curNode == null) {
