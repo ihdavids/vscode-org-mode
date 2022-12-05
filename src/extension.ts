@@ -69,9 +69,11 @@ export class OrgExtension {
 	}
 
 	async update(): Promise<void> {
-		await this.parser.parse();
-        console.log("UPDATE ATTEMPT");
-		this.decore.updateDecorations();
+        // Run the Decorator system to pretty up the buffer.
+        if (this.parser && this.decore) {
+		    await this.parser.parse();
+		    this.decore.updateDecorations();
+        }
 	}
 
 	startUpdate(): void {
