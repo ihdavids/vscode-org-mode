@@ -300,7 +300,9 @@ export class Headline implements Parent {
 
     haveClockEntries(): boolean {
         if (this.logbook) {
-            return this.logbook.clocks && this.logbook.clocks.length > 0;
+            if (this.logbook.clocks && this.logbook.clocks.length > 0) {
+                return true;
+            }
         }
         return false;
     }
@@ -401,8 +403,38 @@ function startHeadline(rootNode, m, curLine, last: Headline | null): Headline {
     return h;
 }
 
+enum ParserPhase {
+    None,
+    Comment,
+    Headline,
+    SDC,
+    Checklists,
+    NumberedLists,
+    Lists,
+    Properties,
+    LogBook,
+    Links,
+}
+
+class ParserState {
+    ownedBy: ParserPhase;
+
+    constructor() {
+        this.ownedBy = ParserPhase.None;
+    }
+
+    canParse(phase: ParserPhase): boolean {
+        return this.ownedBy === ParserPhase.None || this.ownedBy === phase;
+    }
+
+    setState(phase: ParserPhase) {
+        this.ownedBy = phase;
+    }
+}
+
 // const todoWords = "TODO|DONE";
-function* parseLines(rootNode: RootNode, content: string) {
+function* parseLines(rootNode: RootNode, content: string, state: ParserState) {
+    state.ownedBy = ParserPhase.None;
     let curLine  = 0;
     var line;
     var lastLine = 0;
@@ -414,7 +446,7 @@ function* parseLines(rootNode: RootNode, content: string) {
     const commentRegexp = /^\s*[#][+](?<name>[A-Za-z][A-Za-z0-9_]+)[:]\s*(?<val>.*)$/;
     while((line = linere.exec(content)) && line.index < content.length) {
         const m = todoHeaderRegexp.exec(line);
-        if(m) {
+        if(state.canParse(ParserPhase.Headline) && m) {
             if (curNode == null) {
                 start   = curLine;
                 curNode = startHeadline(rootNode, m, curLine, null);
@@ -441,12 +473,12 @@ function* parseLines(rootNode: RootNode, content: string) {
     } 
 }
 
-function* parseNumList(gen) {
+function* parseNumList(gen, state: ParserState) {
     const numRegexp = /^(?<num>\d+)(?<type>[.)])\s+(?<text>.*)/g
     for (var lineData of gen) {
         let [rootNode, curNode, offset, curLine, line] = lineData;
         let m = numRegexp.exec(line);
-        if (m) {
+        if (state.canParse(ParserPhase.NumberedLists) && m) {
             let r    = new NumList();
             r.parent = curNode;
             r.num    = parseInt(m.groups.num);
@@ -463,12 +495,12 @@ function* parseNumList(gen) {
         }
     }
 }
-function* parseList(gen) {
+function* parseList(gen, state: ParserState) {
     const listRegexp = /^\s*(?<pre>[+-]+)\s+(?<text>[^\[].*)/g
     for (var lineData of gen) {
         let [rootNode, curNode, offset, curLine, line] = lineData;
         let m = listRegexp.exec(line);
-        if (m) {
+        if (state.canParse(ParserPhase.Lists) && m) {
             let r = new List();
             r.parent = curNode;
             r.ltype = m.groups.pre;
@@ -484,12 +516,12 @@ function* parseList(gen) {
         }
     }
 }
-function* parseCheckList(gen) {
+function* parseCheckList(gen, state: ParserState) {
     const listRegexp = /^\s*(?<pre>[+-]+)\s+\[(?<state>[ x-])\]\s*(?<text>.*)/g
     for (var lineData of gen) {
         let [rootNode, curNode, offset, curLine, line] = lineData;
         let m = listRegexp.exec(line);
-        if (m) {
+        if (state.canParse(ParserPhase.Checklists) && m) {
             let r = new CheckList();
             r.parent = curNode;
             r.ltype = m.groups.pre;
@@ -523,19 +555,19 @@ function parseComment(m, rootNode: RootNode, curLine, curNode: Headline=null): C
     return cmnt;
 }
 
-function* parseComments(gen) {
+function* parseComments(gen, state: ParserState) {
     for (var lineData of gen) {
         const commentRegexp = /^\s*[#][+](?<name>[A-Za-z][A-Za-z0-9_]+)[:]\s*(?<val>.*)$/g
         let [rootNode, curNode, offset, curLine, line] = lineData;
         let m = commentRegexp.exec(line);
-        if (m) {
+        if (state.canParse(ParserPhase.Comment) && m) {
             parseComment(m, rootNode, curLine, curNode);
         }
         yield lineData;
     }
 }
 
-function* parseLogbook(gen) {
+function* parseLogbook(gen, state: ParserState) {
     let inDrawer = false;
     let startPos;
     let curEntry = null;
@@ -546,6 +578,7 @@ function* parseLogbook(gen) {
             const em = endRegexp.exec(line);
             if (em) {
                 inDrawer = false;
+                state.setState(ParserPhase.None);
                 const endPos              = new vscode.Position(curLine, em.index + em[0].length);
                 curNode.logbook.range  = new vscode.Range(startPos, endPos);
                 if (curEntry) {
@@ -566,7 +599,7 @@ function* parseLogbook(gen) {
                         const startPos = new vscode.Position(curLine, lm.index);
                         const endPos   = new vscode.Position(curLine, lm.index + lm[0].length);
 
-                        let dm = OrgDate.getRegex().exec(line);
+                        let dm = OrgDate.getClockRegex().exec(line);
                         if (dm) {
                             r.date     = OrgDate.parseFromRegex(dm);
                         }
@@ -586,7 +619,8 @@ function* parseLogbook(gen) {
         } else {
             const startRegexp = /^\s*[:]LOGBOOK[:]\s*$/
             const sm          = startRegexp.exec(line);
-            if (sm) {
+            if (state.canParse(ParserPhase.LogBook) && sm) {
+                state.setState(ParserPhase.LogBook);
                 inDrawer = true;
                 let p: LogBook = new LogBook();
                 startPos = new vscode.Position(curLine, sm.index);
@@ -602,7 +636,7 @@ function* parseLogbook(gen) {
 
 
 
-function* parseProperties(gen) {
+function* parseProperties(gen, state: ParserState) {
     let inPropDrawer = false;
     let startPos;
     for (var lineData of gen) {
@@ -612,6 +646,7 @@ function* parseProperties(gen) {
             const em = endRegexp.exec(line);
             if (em) {
                 inPropDrawer = false;
+                state.setState(ParserPhase.None);
                 const endPos              = new vscode.Position(curLine, em.index + em[0].length);
                 curNode.properties.range  = new vscode.Range(startPos, endPos);
             } else {
@@ -635,8 +670,9 @@ function* parseProperties(gen) {
         } else {
             const startRegexp = /^\s*[:]PROPERTIES[:]\s*$/
             const sm = startRegexp.exec(line);
-            if (sm) {
+            if (state.canParse(ParserPhase.Properties) && sm) {
                 inPropDrawer = true;
+                state.setState(ParserPhase.Properties);
                 let p = new PropertyDrawer();
                 startPos = new vscode.Position(curLine, sm.index);
                 curNode.properties = p;
@@ -650,12 +686,12 @@ function* parseProperties(gen) {
 }
 
 
-function* parseLinks(gen) {
+function* parseLinks(gen, state: ParserState) {
     for (var lineData of gen) {
         const linkRegexp = /\[\[(?<link>[^\]]+)\](\[(?<desc>[^\]]+)\])?\]/g
         let [rootNode, curNode, offset, curLine, line] = lineData;
         let m = linkRegexp.exec(line);
-        if (m) {
+        if (state.canParse(ParserPhase.Links) && m) {
             let link = new Link();
             link.href = m.groups.link;
             link.desc = m.groups.desc;
@@ -672,12 +708,12 @@ function* parseLinks(gen) {
     }
 }
 
-function* parseSDC(gen) {
+function* parseSDC(gen, state: ParserState) {
     for (var lineData of gen) {
         let [rootNode, curNode, offset, curLine, line] = lineData;
         if (offset < 3) {
             let m = OrgDate.getRegex().exec(line);
-            if (m) {
+            if (state.canParse(ParserPhase.SDC) && m) {
                 const date     = OrgDate.parseFromRegex(m);
                 const startPos = new vscode.Position(curLine, m.index);
                 const endPos   = new vscode.Position(curLine, m.index + m[0].length);
@@ -730,15 +766,16 @@ function* parseSDC(gen) {
 
 export function parseFileContents(contents: string) {
     let root: RootNode = new RootNode();
-    let gen = parseLines(root, contents);
-    gen     = parseSDC(gen);
-    gen     = parseProperties(gen);
-    gen     = parseLogbook(gen);
-    gen     = parseComments(gen);
-    gen     = parseLinks(gen);
-    gen     = parseCheckList(gen);
-    gen     = parseNumList(gen);
-    gen     = parseList(gen);
+    let state: ParserState = new ParserState();
+    let gen = parseLines(root, contents, state);
+    gen     = parseComments(gen,state);
+    gen     = parseSDC(gen,state);
+    gen     = parseProperties(gen,state);
+    gen     = parseLogbook(gen,state);
+    gen     = parseLinks(gen,state);
+    gen     = parseCheckList(gen,state);
+    gen     = parseNumList(gen,state);
+    gen     = parseList(gen,state);
 
     for (var x of gen) {}
 

@@ -223,6 +223,7 @@ export enum DateType {
     DEADLINE,
     CLOSED,
     TIMESTAMP,
+    CLOCK,
 }
 
 export class OrgDate {
@@ -240,6 +241,10 @@ export class OrgDate {
 
     public static getRegex() {
         return /\s*((?<scd>CLOSED|SCHEDULED|DEADLINE)[:])?\s*(?<active>[<\[])\s*(?<year>\d{4})-(?<month>\d{1,2})-(?<day>\d{1,2})\s*( \w{3})?\s*((?<shour>\d{1,2})[:](?<smins>\d{1,2}))?\s*(\s*--\s*(?<ehour>\d{1,2}):(?<emins>\d{1,2}))?\s*(\s*(?<repeatpre>[\.\+]{1,2})\s*(?<repeatnum>\d+)\s*(?<repeatdwmy>[dwmy]))?(\s*(?<warnpre>\-)\s*(?<warnnum>\d+)\s*(?<warndwmy>[dwmy]))?[>\]]/g;
+    }
+
+    public static getClockRegex() {
+        return /\s*((?<clock>CLOCK)[:])?\s*\[\s*(?<year>\d{4})-(?<month>\d{1,2})-(?<day>\d{1,2})\s*( \w{3})?\s*((?<shour>\d{1,2})[:](?<smins>\d{1,2}))?\s*\]\s*--\s*\[\s*(?<eyear>\d{4})-(?<emonth>\d{1,2})-(?<eday>\d{1,2})\s*( \w{3})?\s*((?<ehour>\d{1,2})[:](?<emins>\d{1,2}))?\s*\]/;
     }
 
     public toString(): string {
@@ -263,7 +268,52 @@ export class OrgDate {
         return r;
     }
 
+    public static parseFromClockRegex(m: RegExpExecArray): OrgDate{
+        const year     = parseInt(m.groups.year);
+        const month    = parseInt(m.groups.month) - 1; // Javascript month madness!
+        const day      = parseInt(m.groups.day);
+        const eyear     = parseInt(m.groups.eyear);
+        const emonth    = parseInt(m.groups.emonth) - 1; // Javascript month madness!
+        const eday      = parseInt(m.groups.eday);
+
+        let haveTime   = false;
+        if (m.groups.shour && m.groups.smins) {
+            haveTime = true
+        }
+        const shour    = parseInt(m.groups.shour);
+        const smins    = parseInt(m.groups.smins);
+        let ehour      = null;
+        let emins      = null;
+        if (m.groups.ehour) {
+            ehour    = parseInt(m.groups.ehour);
+            emins    = parseInt(m.groups.emins);
+        }
+        let dateType: DateType;
+        let r: OrgDate = new OrgDate();
+        r.dateType = DateType.CLOCK;
+        r.haveTime = haveTime;
+        let d: Date;
+        if (r.haveTime && shour !== null && !Number.isNaN(shour)) {
+            d = new Date(year,month,day,shour,smins);
+        } else {
+            d = new Date(year,month,day);
+        }
+        r.start = d;
+        if (r.haveTime && ehour !== null && !Number.isNaN(ehour)) {
+            d = new Date(eyear,emonth,eday,ehour,emins);
+        } else {
+            d = new Date(eyear,emonth,eday);
+        }
+        r.end = d;
+        r.brackets = '[';
+        return r;
+    }
+
     public static parseFromRegex(m: RegExpExecArray): OrgDate{
+        // It's a clock expression parse from there
+        if (m.groups.clock){
+            return OrgDate.parseFromClockRegex(m);
+        }
         const sdc      = m.groups.scd;
         const active   = m.groups.active;
         const year     = parseInt(m.groups.year);

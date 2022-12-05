@@ -4,7 +4,6 @@ import * as vscode from 'vscode';
 import * as par    from '../src/parser';
 
 suite("Parser Tests", () => {
-
     // Defines a Mocha unit test
     test("Headings", async () => {
         const file = '* H1\n** H2\n*** H3\n* H4\n';
@@ -128,7 +127,6 @@ suite("Parser Tests", () => {
             assert.equal(p2, "another prop");
         }
     });
-    /*
     test("Logbook", async () => {
         const file = '* H1\n  :LOGBOOK:\n  - this is an entry\n  :END:\nSome text\n** H2\n   :LOGBOOK:\n   - another prop\n   with more data\n   :END:\n More text\n';
         const val:par.RootNode   = par.parseFileContents(file);
@@ -144,7 +142,7 @@ suite("Parser Tests", () => {
             assert.equal(l2, "another prop\n   with more data");
         }
     });
-    */
+    
     test("Clockbook", async () => {
         const file = '* H1\n  :LOGBOOK:\n  - CLOCK: [2017-04-10 Mon 15:16]--[2017-04-10 Mon 15:17] =>  0:01\n  - CLOCK: [2017-04-07 Fri 16:05]--[2017-04-07 Fri 16:35] =>  0:30\n  - CLOCK: [2017-04-05 Wed 16:42]--[2017-04-05 Wed 16:52] =>  0:10\n  :END:\nSome text\n** H2\n   :LOGBOOK:\n   - another prop\n   with more data\n   :END:\n More text\n';
         const val:par.RootNode   = par.parseFileContents(file);
