@@ -57,7 +57,35 @@ declare global{ interface Date {
     addMins(m: number): Date;   
     addDuration(d: OrgDuration): Date;
     isToday(): boolean;
+    isSameDate(d: Date): boolean;
+    isWeekend(d: Date): boolean;
+    isAnotherMonth(d: Date): boolean;
+    clone(): Date;
 }}
+Date.prototype.addDays = function (days: number): Date {
+    if (!days) return this;
+    let date = this;
+    date.setDate(date.getDate() + days);
+ 
+    return date;
+ };
+ 
+ Date.prototype.isToday = function (): boolean{
+    let today = new Date();
+    return this.isSameDate(today);
+ };
+ Date.prototype.isAnotherMonth = function (date: Date): boolean {
+    return date && this.getMonth() !== date.getMonth();
+ };
+ Date.prototype.isWeekend = function (): boolean  {
+    return this.getDay() === 0 || this.getDay() === 6;
+ };
+ Date.prototype.isSameDate = function (date: Date): boolean  {
+    return date && this.getFullYear() === date.getFullYear() && this.getMonth() === date.getMonth() && this.getDate() === date.getDate();
+ };
+ Date.prototype.clone = function (): Date{
+    return new Date(+this);
+ };
 Date.prototype.addDays = function(d) {
     this.setTime(this.getTime() + (d*24*60*60*1000));
     return this;
