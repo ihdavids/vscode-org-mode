@@ -10,6 +10,7 @@ export class Decoration implements vscode.Disposable {
 	private hideType: vscode.TextEditorDecorationType;
 	private starTypes: vscode.TextEditorDecorationType[];
 	private prefixStarType: vscode.TextEditorDecorationType;
+	private headingType: vscode.TextEditorDecorationType;
 
 	constructor(parser: Parser) {
 		this.parser = parser;
@@ -36,6 +37,9 @@ export class Decoration implements vscode.Disposable {
   };
 */
 
+		this.headingType = vscode.window.createTextEditorDecorationType({
+			'textDecoration': 'underline wavy 1px'
+		});
 		// links
 		this.descRegex = new RegExp('\\]\\[');
 		this.linkType = vscode.window.createTextEditorDecorationType({
@@ -135,9 +139,13 @@ export class Decoration implements vscode.Disposable {
 		if (Sets.prettyBullets) {
 			const prefix: vscode.Range[][] = [];
 			const hidestar: vscode.Range[] = [];
+			const headings: vscode.Range[] = [];
 			const level = 0;
 			for (let l of this.parser.doc.children) {
 				this.addPrefix(hidestar, prefix, l, 0);
+				if (l && l.range && l.range.start && l.range.end) {
+					headings.push(new vscode.Range(new vscode.Position(l.range.start.line, l.range.start.character + 2), new vscode.Position(l.range.end.line, l.range.end.character)));
+				}
 			}
 			for (const [idx, _] of this.starTypes.entries()) {
 				if (idx < prefix.length) {
@@ -147,6 +155,7 @@ export class Decoration implements vscode.Disposable {
 				}
 			}
 			editor.setDecorations(this.prefixStarType, hidestar);
+			editor.setDecorations(this.headingType, headings);
 		}
 	}
 
