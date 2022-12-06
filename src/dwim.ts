@@ -23,24 +23,6 @@ export function addDoWhatIMean(doc: TextEditor, edit: vscode.TextEditorEdit)
             case OrgTypes.NumList:   list.appendNumberedListCommand(doc);        break;
         }
     }
-
-    /*
-    //let pos : Position = doc.selection.active;
-    //let line : string  = doc.document.lineAt(pos).text;
-    let ctx = getCursorContext(doc,edit, {includeTodo: false, includeLists: true});
-    if (!ctx) {
-        vscode.window.showErrorMessage("No context to modify");
-        return;
-    }
-
-    switch (ctx.dataLabel) {
-        case DATE: break; // TODO
-        case TODO: break; // TODO
-        case NODE: insertNewNode(ctx, doc, edit); break;
-        case LIST:  list.appendNumberedListCommand(doc); break;
-        case CHECK: checkbox.insertCheckboxCommand(doc, edit); break;
-    }
-    */
 }
 
 function insertNewNode(n: Headline, doc: TextEditor, edit: vscode.TextEditorEdit)
@@ -78,22 +60,4 @@ export function toggleDoWhatIMean(doc: TextEditor, edit: vscode.TextEditorEdit)
             case OrgTypes.CheckList: checkbox.toggleCheckboxCommand(doc, edit);  break;
         }
     }
-    /*
-    let ctx = getCursorContext(doc,edit, {includeTodo: false, includeLists: true});
-    if (!ctx) {
-        vscode.window.showErrorMessage("No context to modify");
-        return;
-    }
-
-    switch (ctx.dataLabel) {
-        case DATE: break; // TODO
-        case TODO: header.chooseAndChangeTodo(doc, edit, ctx); break;
-        case NODE:
-            const inode: INodeData = <INodeData>ctx;
-            header.chooseAndChangeTodo(doc, edit, inode.todo); 
-            break;
-        case LIST:  break;
-        case CHECK: checkbox.toggleCheckboxCommand(doc, edit);
-    }
-    */
 }
