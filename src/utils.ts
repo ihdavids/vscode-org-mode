@@ -12,7 +12,10 @@ export function getActiveTextEditorEdit() {
 }
 
 export function getLine(document: vscode.TextDocument, lineNum: vscode.Position) {
-    return document.lineAt(lineNum).text;
+    if (lineNum.line < document.lineCount) {
+        return document.lineAt(lineNum).text;
+    }
+    return "";
 }
 
 
@@ -340,10 +343,18 @@ export function prependTextToLine(textEditor: vscode.TextEditor, edit: vscode.Te
 
 // pos is a position anywhere on the target line
 export function moveToEndOfLine(editor: vscode.TextEditor, pos: vscode.Position) {
+    if (pos.line > editor.document.lineCount) {
+        pos = new Position(editor.document.lineCount, 0);
+    }
     const curLine = getLine(editor.document, pos);
-    const endOfLine = curLine.length;
-    const endOfLinePos = new vscode.Position(pos.line, endOfLine);
-    editor.selections = [new vscode.Selection(endOfLinePos, endOfLinePos)];
+    if (curLine) {
+        const endOfLine = curLine.length;
+        const endOfLinePos = new vscode.Position(pos.line, endOfLine);
+        editor.selections = [new vscode.Selection(endOfLinePos, endOfLinePos)];
+    } else {
+        const endOfLinePos = new vscode.Position(pos.line, 0);
+        editor.selections = [new vscode.Selection(endOfLinePos, endOfLinePos)];
+    }
 }
 
 export function lineLen(doc: vscode.TextDocument, pos: vscode.Position) {

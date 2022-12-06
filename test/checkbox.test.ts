@@ -67,9 +67,8 @@ suite('Checkbox', () => {
    - [ ] B`;
 
         await inTextEditor({ language: 'org', content: initial }, async (ed, document) => {
-            await delay(100);
+            await move(ed,0,0);
             await vscode.commands.executeCommand('org.insertCheckbox');
-            await delay(100);
             await vscode.commands.executeCommand('org.insertCheckbox');
             assert.equal(document.getText(), expected);
         });
