@@ -40,6 +40,22 @@ function modifyContext(textEditor: vscode.TextEditor, edit: vscode.TextEditorEdi
                     break;
                 }
                 break;
+            case OrgTypes.Timestamp:
+            case OrgTypes.Deadline:
+            case OrgTypes.Scheduled:
+            case OrgTypes.Deadline:
+                {
+                    const document = Util.getActiveTextEditorEdit();
+                    const cursorPos = Util.getCursorPosition();
+                    const curLine = Util.getLine(document, cursorPos);
+                    let ctx = parseTimestampContext(cursorPos, curLine);
+                    if (ctx) {
+                        const newDateString = Datetime.modifyDate(ctx.data, action);
+                        edit.replace(ctx.range, newDateString);
+                    }
+                }
+                break;
+
         }
     }
 }
