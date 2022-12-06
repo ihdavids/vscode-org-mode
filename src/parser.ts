@@ -228,6 +228,7 @@ export class LogBook extends Drawer {
 export class Headline implements Parent {
     type:      OrgTypes = OrgTypes.Headline;
     range:     vscode.Range;
+    fullLine:  vscode.Range;
     level:     number;
     status:    string;
     scheduled: Scheduled | undefined;
@@ -411,6 +412,12 @@ function startHeadline(rootNode, m, curLine, last: Headline | null): Headline {
     h.status = m.groups.status;
     h.text   = m.groups.text;
     h.tags   = m.groups.tags;
+
+    const startPos = new vscode.Position(curLine, m.index);
+    const endPos   = new vscode.Position(curLine, m.index + m[0].length);
+    const range    = new vscode.Range(startPos, endPos);
+    h.fullLine = range;
+
     if(h.level === 1) {
         rootNode.children.push(h);
     } 
@@ -511,6 +518,9 @@ function* parseLines(rootNode: RootNode, content: string, state: ParserState) {
         }
         curLine += 1;
     } 
+    if (curNode) {
+        finishHeadline(curNode, start, curLine);
+    }
 }
 
 function* parseNumList(gen, state: ParserState) {
@@ -598,7 +608,7 @@ function parseComment(m, rootNode: RootNode, curLine, curNode: Headline=null): C
 
 function* parseComments(gen, state: ParserState) {
     for (var lineData of gen) {
-        const commentRegexp = /^\s*[#][+](?<name>[A-Za-z][A-Za-z0-9_]+)[:]\s*(?<val>.*)$/g
+        const commentRegexp = /^\s*[#][+](?<name>[A-Za-z][A-Za-z0-9_]+)[:]\s*(?<val>.*)$/
         let [rootNode, curNode, offset, curLine, line] = lineData;
         let m = commentRegexp.exec(line);
         if (state.canParse(ParserPhase.Comment) && m) {

@@ -121,7 +121,7 @@ export class Decoration implements vscode.Disposable {
 			for (let l of this.parser.doc.children) {
 				this.addPrefix(hidestar, prefix, l, 0);
 				if (l && l.range && l.range.start && l.range.end) {
-					headings.push(new vscode.Range(new vscode.Position(l.range.start.line, l.range.start.character + 2), new vscode.Position(l.range.end.line, l.range.end.character)));
+					headings.push(new vscode.Range(new vscode.Position(l.fullLine.start.line, l.fullLine.start.character + 2), new vscode.Position(l.fullLine.end.line, l.fullLine.end.character)));
 				}
 			}
 			for (const [idx, _] of this.starTypes.entries()) {
