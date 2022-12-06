@@ -21,11 +21,11 @@ export class Decoration implements vscode.Disposable {
 		this.descRegex = new RegExp('\\]\\[');
 		this.linkType = vscode.window.createTextEditorDecorationType({
 			'light': {
-				'color': 'rgba(0, 128, 255, 1.0)',
+				'color': Sets.linkColoring,
       			'textDecoration': "underline;"
 			},
 			'dark': {
-				'color': 'rgba(0, 128, 255, 1.0)',
+				'color': Sets.linkColoring,
       			'textDecoration': "underline;"
 			}
 		});
@@ -93,6 +93,7 @@ export class Decoration implements vscode.Disposable {
 		if (!editor) {
 			return Promise.resolve();
 		}
+		const shouldUnderline = Sets.underlineTopHeading;
 
 		// Links
 		if (Sets.prettyLinks) {
@@ -120,7 +121,7 @@ export class Decoration implements vscode.Disposable {
 			const level = 0;
 			for (let l of this.parser.doc.children) {
 				this.addPrefix(hidestar, prefix, l, 0);
-				if (l && l.range && l.range.start && l.range.end) {
+				if (shouldUnderline && l && l.range && l.range.start && l.range.end) {
 					headings.push(new vscode.Range(new vscode.Position(l.fullLine.start.line, l.fullLine.start.character + 2), new vscode.Position(l.fullLine.end.line, l.fullLine.end.character)));
 				}
 			}
@@ -132,7 +133,9 @@ export class Decoration implements vscode.Disposable {
 				}
 			}
 			editor.setDecorations(this.prefixStarType, hidestar);
-			editor.setDecorations(this.headingType, headings);
+			if (shouldUnderline) {
+				editor.setDecorations(this.headingType, headings);
+			}
 		}
 	}
 

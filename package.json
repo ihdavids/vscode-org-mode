@@ -237,10 +237,46 @@
                 "org.todoKeywords": {
                     "type": "array",
                     "default": [
-                        "TODO",
-                        "DONE"
+                        "TODO"
                     ],
                     "description": "Specifies the types of TODO statuses available (for switching)."
+                },
+                "org.doneKeywords": {
+                    "type": "array",
+                    "default": [
+                        "DONE"
+                    ],
+                    "description": "Specifies the types of DONE statuses available (for switching)."
+                },
+                "org.underlineTopHeading": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Top level headings get an underline."
+                },
+                "org.bullets": {
+                    "type": "array",
+                    "default": ["◉","○","◇","◆","●","•","♦"],
+                    "description": "Bullets to use in pretty formatting of headings."
+                },
+                "org.linkColoring": {
+                    "type": "string",
+                    "default": "rgba(0, 128, 255, 1.0)",
+                    "description": "What color should links be colored when prettied up?"
+                },
+                "org.updateInterval": {
+                    "type": "integer",
+                    "default": 10000,
+                    "description": "Interval to update a buffers parsing."
+                },
+                "org.decorateLinks": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Should links be collapsed to pretty format?"
+                },
+                "org.decorateBullets": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Should headings have pretty bullets?"
                 },
                 "org.addLeftZero": {
                     "type": "boolean",
