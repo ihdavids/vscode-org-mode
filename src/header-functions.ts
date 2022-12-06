@@ -4,6 +4,7 @@ import * as context from './cursor-context';
 import { Sets } from './sets';
 import { window, Disposable } from 'vscode';
 import {Range, TextDocument, Position, TextEditor, TextEditorEdit, Selection} from "vscode";
+import { Headline } from './parser';
 
 export function insertHeadingRespectContent(textEditor: vscode.TextEditor, edit: vscode.TextEditorEdit) {
         const document = textEditor.document;
@@ -116,30 +117,30 @@ async function selectTodo(): Promise<string | undefined> {
 }
 
 // Dynamic TODO Selection from a menu rather than cycling.
-export async function chooseAndChangeTodo(doc: TextEditor, edit: vscode.TextEditorEdit, ctx) {
+export async function chooseAndChangeTodo(doc: TextEditor, edit: vscode.TextEditorEdit, ctx: Headline) {
     if (ctx == null || ctx === undefined) {
-        
+       return; 
     }
+    let range = ctx.statusRange;
     let newTodoString = await selectTodo();
     if (newTodoString !== undefined) {
         if (newTodoString === "" || newTodoString === "none") {
             newTodoString = "";
             // Check if I HAD a todo before.
-            if (ctx.data.length > 0) {
+            if (ctx.status.length > 0) {
                 // Must remove extra space
-                const oldEnd   = ctx.range.end
+                const oldEnd   = range.end
                 const newEnd   = oldEnd.with({ character: oldEnd.character + 1 });
-                const oldRange = ctx.range;
-                ctx.range = oldRange.with({ end: newEnd });
+                const oldRange = range;
+                range = oldRange.with({ end: newEnd });
             }
         }
         await doc.edit(async (editBuilder) => {
             // Append a space if we are inserting FROM none.
-            if (ctx.data.length == 0) {
+            if (!ctx.status || ctx.status.length == 0) {
                 newTodoString += " ";
             }
-            editBuilder.replace(ctx.range, newTodoString);
-            //editBuilder.insert(textEditor.selection.active, item.fsPath);
+            editBuilder.replace(range, newTodoString);
         });
     }
 }

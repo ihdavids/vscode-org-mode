@@ -71,6 +71,14 @@ export function toggleDoWhatIMean(doc: TextEditor, edit: vscode.TextEditorEdit)
         checkbox.toggleCheckboxCommand(doc);
     }
     */
+    const node = OrgExtension.get().parser.find();
+    if (node !== undefined) {
+        switch(node.type) {
+            case OrgTypes.Headline:  header.chooseAndChangeTodo(doc, edit, <Headline>node);   break;
+            case OrgTypes.CheckList: checkbox.toggleCheckboxCommand(doc, edit);  break;
+        }
+    }
+    /*
     let ctx = getCursorContext(doc,edit, {includeTodo: false, includeLists: true});
     if (!ctx) {
         vscode.window.showErrorMessage("No context to modify");
@@ -87,4 +95,5 @@ export function toggleDoWhatIMean(doc: TextEditor, edit: vscode.TextEditorEdit)
         case LIST:  break;
         case CHECK: checkbox.toggleCheckboxCommand(doc, edit);
     }
+    */
 }

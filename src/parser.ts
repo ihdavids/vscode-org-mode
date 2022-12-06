@@ -229,6 +229,7 @@ export class Headline implements Parent {
     type:      OrgTypes = OrgTypes.Headline;
     range:     vscode.Range;
     fullLine:  vscode.Range;
+    statusRange: vscode.Range;
     level:     number;
     status:    string;
     scheduled: Scheduled | undefined;
@@ -401,7 +402,7 @@ function finishHeadline(curNode, start, end) {
     curNode.range = new vscode.Range(new vscode.Position(start,0), new vscode.Position(end, 0));
 }
 
-function startHeadline(rootNode, m, curLine, last: Headline | null): Headline {
+function startHeadline(rootNode, m: RegExpExecArray, curLine, last: Headline | null): Headline {
     let h: Headline = new Headline();
     // Track our nodes from parent to child and child to parent.
     rootNode.nodes.push(h);
@@ -412,6 +413,9 @@ function startHeadline(rootNode, m, curLine, last: Headline | null): Headline {
     h.status = m.groups.status;
     h.text   = m.groups.text;
     h.tags   = m.groups.tags;
+    const statusOffset = h.level + 1; 
+    const statusLen = h.status ? h.status.length : 0;
+    h.statusRange = new vscode.Range(new vscode.Position(curLine,statusOffset),new vscode.Position(curLine,statusOffset + statusLen));
 
     const startPos = new vscode.Position(curLine, m.index);
     const endPos   = new vscode.Position(curLine, m.index + m[0].length);
