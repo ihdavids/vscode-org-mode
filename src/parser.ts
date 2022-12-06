@@ -192,6 +192,7 @@ export class PropertyDrawer extends Drawer {
     get(n: string): Property | undefined {
         return this.properties[n];
     }
+
 }
 
 export class ClockEntry {
@@ -239,11 +240,42 @@ export class Headline implements Parent {
     children:  Headline[];
     links:     Link[];
     nodes:     Node[];
-    comments:  {[key: string]: Comment}
+    comments:  {[key: string]: Comment};
     properties:  PropertyDrawer;
     logbook:     LogBook;
     root:      RootNode;
     
+    
+    public find(pos: vscode.Position | undefined = undefined): Node|undefined {
+		const editor = vscode.window.activeTextEditor;
+		if (!editor) {
+            return undefined;
+		}
+        if (pos === undefined) {
+            pos = editor.selection.active;
+        }
+        let cur = undefined;
+        if (this.range.contains(pos)) {
+            cur = this;
+        }
+        if (this.children) {
+            for (const h of this.children) {
+                const c = h.find(pos);
+                if (c !== undefined) {
+                    return c;
+                }
+            }
+        }
+        // Okay, now we have the headline, lets check the sub elements to try to find
+        // another element that might own this.
+        for (const n of this.nodes) {
+            if (n.range.contains(pos)) {
+                return n;
+            }
+        }
+        return cur;
+    }
+
 
     constructor() {
         this.children = [];
@@ -482,7 +514,7 @@ function* parseLines(rootNode: RootNode, content: string, state: ParserState) {
 }
 
 function* parseNumList(gen, state: ParserState) {
-    const numRegexp = /^(?<num>\d+)(?<type>[.)])\s+(?<text>.*)/g
+    const numRegexp = /^(?<num>\d+)(?<type>[.)])\s+(?<text>.*)/
     for (var lineData of gen) {
         let [rootNode, curNode, offset, curLine, line] = lineData;
         let m = numRegexp.exec(line);
@@ -504,7 +536,7 @@ function* parseNumList(gen, state: ParserState) {
     }
 }
 function* parseList(gen, state: ParserState) {
-    const listRegexp = /^\s*(?<pre>[+-]+)\s+(?<text>[^\[].*)/g
+    const listRegexp = /^\s*(?<pre>[+-]+)\s+(?<text>[^\[].*)/
     for (var lineData of gen) {
         let [rootNode, curNode, offset, curLine, line] = lineData;
         let m = listRegexp.exec(line);
@@ -525,7 +557,7 @@ function* parseList(gen, state: ParserState) {
     }
 }
 function* parseCheckList(gen, state: ParserState) {
-    const listRegexp = /^\s*(?<pre>[+-]+)\s+\[(?<state>[ x-])\]\s*(?<text>.*)/g
+    const listRegexp = /^\s*(?<pre>[+-]+)\s+\[(?<state>[ x-])\]\s*(?<text>.*)/
     for (var lineData of gen) {
         let [rootNode, curNode, offset, curLine, line] = lineData;
         let m = listRegexp.exec(line);
@@ -559,6 +591,7 @@ function parseComment(m, rootNode: RootNode, curLine, curNode: Headline=null): C
     rootNode.nodes.push(cmnt);
     if (curNode) {
         curNode.comments[cmnt.name] = cmnt;
+        curNode.nodes.push(cmnt);
     }
     return cmnt;
 }
@@ -613,6 +646,7 @@ function* parseLogbook(gen, state: ParserState) {
                         }
                         r.range        = new vscode.Range(startPos, endPos);
                         rootNode.nodes.push(r);
+                        curNode.nodes.push(r);
                         curNode.logbook.addclock(r);
                     } else {
                         curEntry = lm.groups.text;
@@ -634,6 +668,7 @@ function* parseLogbook(gen, state: ParserState) {
                 startPos = new vscode.Position(curLine, sm.index);
                 curNode.logbook = p;
                 rootNode.nodes.push(p);
+                curNode.nodes.push(p);
                 p.parent = curNode;
                 continue;
             }
@@ -670,6 +705,7 @@ function* parseProperties(gen, state: ParserState) {
                     r.range        = new vscode.Range(startPos, endPos);
                     rootNode.nodes.push(r);
                     if (curNode) {
+                        curNode.nodes.push(r);
                         curNode.properties.add(r);
                     }
                 }
@@ -685,6 +721,7 @@ function* parseProperties(gen, state: ParserState) {
                 startPos = new vscode.Position(curLine, sm.index);
                 curNode.properties = p;
                 rootNode.nodes.push(p);
+                curNode.nodes.push(p);
                 p.parent = curNode;
                 continue;
             }
@@ -711,6 +748,7 @@ function* parseLinks(gen, state: ParserState) {
             rootNode.nodes.push(link);
             rootNode.links.push(link);
             curNode.links.push(link);
+            curNode.nodes.push(link);
         }
         yield lineData;
     }
@@ -736,6 +774,7 @@ function* parseSDC(gen, state: ParserState) {
                         r.parent = curNode;
                         curNode.scheduled = r;
                         rootNode.nodes.push(r);
+                        curNode.nodes.push(r);
                     } break;
                     case DateType.DEADLINE:
                     {
@@ -745,6 +784,7 @@ function* parseSDC(gen, state: ParserState) {
                         r.parent = curNode;
                         curNode.deadline = r;
                         rootNode.nodes.push(r);
+                        curNode.nodes.push(r);
                     } break;
                     case DateType.CLOSED:
                     {
@@ -754,6 +794,7 @@ function* parseSDC(gen, state: ParserState) {
                         r.parent = curNode;
                         curNode.closed = r;
                         rootNode.nodes.push(r);
+                        curNode.nodes.push(r);
                     } break;
                     case DateType.TIMESTAMP:
                     {
@@ -763,6 +804,7 @@ function* parseSDC(gen, state: ParserState) {
                         r.parent = curNode;
                         curNode.timestamp = r;
                         rootNode.nodes.push(r);
+                        curNode.nodes.push(r);
                     } break;
                 }
                 continue;
@@ -802,6 +844,28 @@ export class Parser implements vscode.Disposable {
 		const text = editor.document.getText();
         this.doc = parseFileContents(text);
         return Promise.resolve();
+    }
+
+    public find(pos: vscode.Position | undefined = undefined): Node {
+		const editor = vscode.window.activeTextEditor;
+		if (!editor) {
+            return undefined;
+		}
+        if (pos === undefined) {
+            pos = editor.selection.active;
+        }
+        let cur = undefined;
+        if (this.doc && this.doc.children) {
+            for (const h of this.doc.children) {
+                if (h && h.range) {
+                    cur = h.find(pos);
+                    if (cur !== undefined) {
+                        break;
+                    }
+                }
+            }
+        }
+        return cur;
     }
 
     public dispose() {

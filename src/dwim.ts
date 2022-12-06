@@ -10,9 +10,21 @@ import { workspace } from 'vscode';
 import {Range, TextDocument, Position, TextEditor, TextEditorEdit, Selection} from "vscode";
 import getCursorContext, { DATE, TODO, LIST, CHECK, NODE, IContextData, INodeData } from './cursor-context';
 import * as header from './header-functions'
+import { OrgExtension  } from "./extension";
+import { Headline, OrgTypes } from "./parser";
 
 export function addDoWhatIMean(doc: TextEditor, edit: vscode.TextEditorEdit) 
 {
+    const node = OrgExtension.get().parser.find();
+    if (node !== undefined) {
+        switch(node.type) {
+            case OrgTypes.Headline:  insertNewNode(<Headline>node, doc, edit);   break;
+            case OrgTypes.CheckList: checkbox.insertCheckboxCommand(doc, edit);  break;
+            case OrgTypes.NumList:   list.appendNumberedListCommand(doc);        break;
+        }
+    }
+
+    /*
     //let pos : Position = doc.selection.active;
     //let line : string  = doc.document.lineAt(pos).text;
     let ctx = getCursorContext(doc,edit, {includeTodo: false, includeLists: true});
@@ -28,18 +40,24 @@ export function addDoWhatIMean(doc: TextEditor, edit: vscode.TextEditorEdit)
         case LIST:  list.appendNumberedListCommand(doc); break;
         case CHECK: checkbox.insertCheckboxCommand(doc, edit); break;
     }
+    */
 }
 
-function insertNewNode(ctx: IContextData, doc: TextEditor, edit: vscode.TextEditorEdit)
+function insertNewNode(n: Headline, doc: TextEditor, edit: vscode.TextEditorEdit)
 {
-    let stars: string = "*".repeat(ctx.info);
+    let stars: string = "*".repeat(n.level);
 
-    let lineCtx: string = utils.getLine(utils.getActiveTextEditorEdit(), ctx.range.end);
+    let endPos: vscode.Position =  new vscode.Position(n.range.end.line-1, 0);
+
+    endPos = utils.eatEmptyLines(doc, endPos, n.range.start);
+    let lineCtx: string = utils.getLine(utils.getActiveTextEditorEdit(), endPos);
+    endPos = new vscode.Position(endPos.line, lineCtx.length);
     if (lineCtx.length > 0) {
-        edit.insert(ctx.range.end,"\n" + stars + " ");
+        edit.insert(endPos,"\n" + stars + " ");
     } else {
-        edit.insert(ctx.range.end, stars + " ");
+        edit.insert(endPos, stars + " ");
     }
+    utils.moveToEndOfLine(doc,endPos);
 }
 
 export function toggleDoWhatIMean(doc: TextEditor, edit: vscode.TextEditorEdit)
