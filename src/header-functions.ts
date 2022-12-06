@@ -105,8 +105,10 @@ export function promoteLine(textEditor: vscode.TextEditor, edit: vscode.TextEdit
     }
 }
 
-async function selectTodo(): Promise<string | undefined> {
-    let keys = Sets.keywords;
+async function selectTodo(keys: string[] = null): Promise<string | undefined> {
+    if (!keys) {
+        keys = Sets.keywords;
+    }
     // Deep copy it. This is ANNOYING that there is no deep copy mechanism.
     keys = JSON.parse(JSON.stringify(keys));
     const idx = keys.indexOf("");
@@ -122,7 +124,8 @@ export async function chooseAndChangeTodo(doc: TextEditor, edit: vscode.TextEdit
        return; 
     }
     let range = ctx.statusRange;
-    let newTodoString = await selectTodo();
+    const todos = ctx.getTodos().concat(ctx.getDones())
+    let newTodoString = await selectTodo(todos);
     if (newTodoString !== undefined) {
         if (newTodoString === "" || newTodoString === "none") {
             newTodoString = "";

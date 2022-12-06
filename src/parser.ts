@@ -248,6 +248,7 @@ export class Headline implements Parent {
     root:      RootNode;
     todos:     string[];
     dones:     string[];
+    todoKeywords: string;
     
     
     public find(pos: vscode.Position | undefined = undefined): Node|undefined {
@@ -305,6 +306,12 @@ export class Headline implements Parent {
             return val;
         }
         return undefined;
+    }
+    getTodoKeywords(): string {
+        if (!this.todoKeywords) {
+            this.todoKeywords = this.getTodos().concat(this.getDones()).join("|");
+        }
+        return this.todoKeywords;
     }
 
     getTodos(): string[] {
@@ -395,6 +402,10 @@ export class RootNode implements Parent {
         this.children = [];
         this.links    = [];
         this.comments = {};
+    }
+
+    getTodoKeywords(): string {
+        return this.getTodos().concat(this.getDones()).join("|");
     }
 
     getTodos(): string[] {
@@ -546,14 +557,19 @@ function* parseLines(rootNode: RootNode, content: string, state: ParserState) {
     var curNode  = null;
     var start    = 0;
     //const linere = /(^.*$)|(^\r?\n)/mg;
-    const todoKeywords = Sets.keywords.join("|");
-    const todoHeaderRegexp = new RegExp(`^\\s*(?<stars>\\*+)\\s+(?<status>${todoKeywords})?\\s*(?<text>[^:]+)\\s*(?<tags>[:][a-zA-Z0-9@#$!_]+[:])?`);
     const commentRegexp = /^\s*[#][+](?<name>[A-Za-z][A-Za-z0-9_]+)[:]\s*(?<val>.*)$/;
     //content = content.replace(/\r/gm,"");
     const lines = content.split('\n');
     //while((line = linere.exec(content)) && line.index < content.length) {
     for(let line of lines) {
         line = line.replace('\r','');
+        let todoKeywords = null;
+        if (curNode) {
+            todoKeywords = curNode.getTodoKeywords();
+        } else {
+            todoKeywords = rootNode.getTodoKeywords();
+        }
+        const todoHeaderRegexp = new RegExp(`^\\s*(?<stars>\\*+)\\s+(?<status>${todoKeywords})?\\s*(?<text>[^:]+)\\s*(?<tags>[:][a-zA-Z0-9@#$!_]+[:])?`);
         const m = todoHeaderRegexp.exec(line);
         if(state.canParse(ParserPhase.Headline) && m) {
             if (curNode == null) {
