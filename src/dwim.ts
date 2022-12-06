@@ -4,11 +4,11 @@ import * as checkbox from "./checkbox";
 import * as list from "./lists";
 import * as vscode from "vscode";
 import { Sets } from './sets';
-import { Uri, window, Disposable } from 'vscode';
-import { QuickPickItem } from 'vscode';
-import { workspace } from 'vscode';
+//import { Uri, window, Disposable } from 'vscode';
+//import { QuickPickItem } from 'vscode';
+//import { workspace } from 'vscode';
 import {Range, TextDocument, Position, TextEditor, TextEditorEdit, Selection} from "vscode";
-import getCursorContext, { DATE, TODO, LIST, CHECK, NODE, IContextData, INodeData } from './cursor-context';
+//import getCursorContext, { DATE, TODO, LIST, CHECK, NODE, IContextData, INodeData } from './cursor-context';
 import * as header from './header-functions'
 import { OrgExtension  } from "./extension";
 import { Headline, OrgTypes } from "./parser";
