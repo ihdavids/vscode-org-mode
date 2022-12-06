@@ -246,6 +246,8 @@ export class Headline implements Parent {
     properties:  PropertyDrawer;
     logbook:     LogBook;
     root:      RootNode;
+    todos:     string[];
+    dones:     string[];
     
     
     public find(pos: vscode.Position | undefined = undefined): Node|undefined {
@@ -303,6 +305,28 @@ export class Headline implements Parent {
             return val;
         }
         return undefined;
+    }
+
+    getTodos(): string[] {
+        if (this.todos) {
+            return this.todos;
+        }
+        else if (this.parent) {
+            return this.parent.getTodos();
+        } else if (this.root) {
+            return this.root.getTodos();
+        }
+    }
+
+    getDones(): string[] {
+        if (this.dones) {
+            return this.dones;
+        }
+        else if (this.parent) {
+            return this.parent.getDones();
+        } else if (this.root) {
+            return this.root.getDones();
+        }
     }
 
     getProp(name: string, defaultVal: Property | undefined = undefined): Property | undefined {
@@ -363,12 +387,28 @@ export class RootNode implements Parent {
     nodes:    Node[];
     links:    Link[];
     comments: {[key: string]: Comment};
+    todos: string[];
+    dones: string[];
 
     constructor() {
         this.nodes    = [];
         this.children = [];
         this.links    = [];
         this.comments = {};
+    }
+
+    getTodos(): string[] {
+        if (this.todos) {
+            return this.todos;
+        }
+        return Sets.todos;
+    }
+
+    getDones(): string[] {
+        if (this.dones) {
+            return this.dones;
+        }
+        return Sets.dones;
     }
 
     getLinks(): Link[] {
@@ -395,6 +435,24 @@ export class RootNode implements Parent {
         }
         return undefined;
     }
+
+}
+
+function parseSpecialComments(cmt: Comment) {
+    const splits = cmt.val.split('|');
+    let todos = null; 
+    let dones = null;
+    if (splits.length > 0) {
+        todos = splits[0];
+        todos = todos.split(/\s+/);
+        todos = todos.map(x => { if(x) { return x.split('(')[0].trim(); } else { return x; }} );
+    } 
+    if (splits.length > 1) {
+        dones = splits[1];
+        dones = dones.split(/\s+/);
+        dones = dones.map(x => { if(x) { return x.split('(')[0].trim(); } else { return x; }} );
+    }
+    return [todos, dones];
 }
 
 
@@ -514,6 +572,9 @@ function* parseLines(rootNode: RootNode, content: string, state: ParserState) {
                 const cm = commentRegexp.exec(line);
                 if (cm) {
                     const comment: Comment = parseComment(cm, rootNode, curLine, null);
+                    if (comment.name === "TODO" || comment.name === "SEQ_TODO" || comment.name === "TYP_TODO") {
+                        [rootNode.todos, rootNode.dones] = parseSpecialComments(comment);
+                    }
                     rootNode.comments[comment.name] = comment;
                 }
             } else {
@@ -616,7 +677,13 @@ function* parseComments(gen, state: ParserState) {
         let [rootNode, curNode, offset, curLine, line] = lineData;
         let m = commentRegexp.exec(line);
         if (state.canParse(ParserPhase.Comment) && m) {
-            parseComment(m, rootNode, curLine, curNode);
+            const cmt = parseComment(m, rootNode, curLine, curNode);
+            if (cmt) {
+                if (curNode && (cmt.name == "TODO" || cmt.name == "SEQ_TODO")) {
+                    [curNode.todos, curNode.dones] = parseSpecialComments(cmt);
+                }
+                continue;
+            }
         }
         yield lineData;
     }
