@@ -428,11 +428,11 @@ export async function insertCheckboxCommand(doc: TextEditor, edit: vscode.TextEd
     {
         indent = indent + start + " [ ] ";
     }
-    let pos = new Position(row,line.length-1);
+    let pos = new Position(row,line.length);
     await edit.insert(pos, "\n" + indent);
     row = row + 1;
     pos = new Position(row, 0);
-    doc.selection = new Selection(pos, pos);
+    utils.moveToEndOfLine(doc,pos);
 }
 
 let cbslineInfoRe = /^(\s*)(.*)\[\s*[0-9]*\/[0-9]\s*\]\s*$/;
