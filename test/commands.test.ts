@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import * as assert from 'assert';
 import { deflateSync } from 'zlib';
+import { OrgExtension } from '../src/extension';
 
 interface TestEditorOptions {
     language?: string;
@@ -166,34 +167,34 @@ suite('Commands', () => {
 
     test('IncrementContext', async () => {
         const steps = [
-            '* Header',
-            '* TODO Header',
-            '* DONE Header',
+            '#+TODO: TODO | DONE\n* Header',
+            '#+TODO: TODO | DONE\n* TODO Header',
+            '#+TODO: TODO | DONE\n* DONE Header',
         ];
-
-        await inTextEditor({ language: 'org', content: steps[0] }, async (_, document) => {
+        await OrgExtension.get().update();
+        await inTextEditor({ language: 'org', content: steps[0] }, async (ed, document) => {
             for (let i = 1; i < steps.length; ++i) {
+                await move(ed, 1, 0);
                 await vscode.commands.executeCommand('org.incrementContext');
                 assert.equal(document.getText(), steps[i]);
             }
         });
     });
-
     test('DecrementContext', async () => {
         const steps = [
-            '* DONE Header',
-            '* TODO Header',
-            '* Header',
+            '#+TODO: TODO | DONE\n* DONE Header',
+            '#+TODO: TODO | DONE\n* TODO Header',
+            '#+TODO: TODO | DONE\n* Header',
         ];
 
         await inTextEditor({ language: 'org', content: steps[0] }, async (e, d) => {
             for (let i = 1; i < steps.length; ++i) {
+                await move(e, 1, 0);
                 await vscode.commands.executeCommand('org.decrementContext');
                 assert.equal(d.getText(), steps[i]);
             }
         });
     });
-
     test('DemoteSubtree', async () => {
         const initial = `* Header 1
 ** Subheader

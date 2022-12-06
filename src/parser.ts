@@ -314,6 +314,10 @@ export class Headline implements Parent {
         return this.todoKeywords;
     }
 
+    getAllTodos(): string[] {
+        return this.getTodos().concat(this.getDones());
+    }
+
     getTodos(): string[] {
         if (this.todos) {
             return this.todos;
@@ -449,6 +453,14 @@ export class RootNode implements Parent {
 
 }
 
+function notEmpty(str) {
+  if (str?.trim()) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
 function parseSpecialComments(cmt: Comment) {
     const splits = cmt.val.split('|');
     let todos = null; 
@@ -456,12 +468,12 @@ function parseSpecialComments(cmt: Comment) {
     if (splits.length > 0) {
         todos = splits[0];
         todos = todos.split(/\s+/);
-        todos = todos.map(x => { if(x) { return x.split('(')[0].trim(); } else { return x; }} );
+        todos = todos.map(x => { if(x) { return x.split('(')[0].trim(); } else { return x; }} ).filter(notEmpty);
     } 
     if (splits.length > 1) {
         dones = splits[1];
         dones = dones.split(/\s+/);
-        dones = dones.map(x => { if(x) { return x.split('(')[0].trim(); } else { return x; }} );
+        dones = dones.map(x => { if(x) { return x.split('(')[0].trim(); } else { return x; }} ).filter(notEmpty);
     }
     return [todos, dones];
 }

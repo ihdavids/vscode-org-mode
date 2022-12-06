@@ -124,7 +124,10 @@ export async function chooseAndChangeTodo(doc: TextEditor, edit: vscode.TextEdit
        return; 
     }
     let range = ctx.statusRange;
-    const todos = ctx.getTodos().concat(ctx.getDones())
+    let todos = ctx.getAllTodos();
+    if (todos.indexOf("") < 0) {
+        todos.splice(0,0,"");
+    }
     let newTodoString = await selectTodo(todos);
     if (newTodoString !== undefined) {
         if (newTodoString === "" || newTodoString === "none") {

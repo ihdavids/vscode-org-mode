@@ -148,7 +148,7 @@ export function getSubNodeCursorContext(textEditor: TextEditor, edit: TextEditor
 
 }
 
-export default function getCursorContext(textEditor: TextEditor, edit: TextEditorEdit, { includeTodo = true, includeLists = false} ): IContextData {
+export function getCursorContext(textEditor: TextEditor, edit: TextEditorEdit, { includeTodo = true, includeLists = false} ): IContextData {
     let ctx = getSubNodeCursorContext(textEditor, edit, {includeTodo: includeTodo, includeLists: includeLists});
     if (!ctx) {
         const document = Util.getActiveTextEditorEdit();
