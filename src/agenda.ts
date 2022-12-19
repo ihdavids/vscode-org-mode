@@ -175,8 +175,8 @@ function getCollisions (events) {
   if (events == null) {
     return;
   }
-
-  for (var i = 0; i < 24; i ++) {
+  // 26 because end + 60 + extra hour to be safe
+  for (var i = 0; i <= 26; i ++) {
     var time = [];
     for (var j = 0; j < events.length; j++) {
       time.push(0);
@@ -204,7 +204,7 @@ function getCollisions (events) {
         continue;
       }
       while (order < events.length) {
-        if (collisions[timeIndex].indexOf(order) === -1) {
+        if (timeIndex < collisions.length && collisions[timeIndex].indexOf(order) === -1) {
           break;
         }
         order ++;
