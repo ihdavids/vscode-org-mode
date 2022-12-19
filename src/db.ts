@@ -21,32 +21,7 @@ export class ODb
         console.log("CONNECTING TO: ", Sets.orgsConnection);
 
     }
-/*
-    function ping() {
-        ws.send('__ping__');
-        tm = setTimeout(function () {
 
-           /// ---connection closed ///
-
-
-    }, 5000);
-}
-
-function pong() {
-    clearTimeout(tm);
-}
-websocket_conn.onopen = function () {
-    setInterval(ping, 30000);
-}
-websocket_conn.onmessage = function (evt) {
-    var msg = evt.data;
-    if (msg == '__pong__') {
-        pong();
-        return;
-    }
-    //////-- other operation --//
-}    
-*/
     public async connect(): Promise<unknown> {
         this.ws = new RpcWebSocketClient();
         let onConnect = this.ws.connect(Sets.orgsConnection);
