@@ -21,7 +21,32 @@ export class ODb
         console.log("CONNECTING TO: ", Sets.orgsConnection);
 
     }
+/*
+    function ping() {
+        ws.send('__ping__');
+        tm = setTimeout(function () {
 
+           /// ---connection closed ///
+
+
+    }, 5000);
+}
+
+function pong() {
+    clearTimeout(tm);
+}
+websocket_conn.onopen = function () {
+    setInterval(ping, 30000);
+}
+websocket_conn.onmessage = function (evt) {
+    var msg = evt.data;
+    if (msg == '__pong__') {
+        pong();
+        return;
+    }
+    //////-- other operation --//
+}    
+*/
     public async connect(): Promise<unknown> {
         this.ws = new RpcWebSocketClient();
         let onConnect = this.ws.connect(Sets.orgsConnection);
@@ -29,6 +54,10 @@ export class ODb
         this.ws.onOpen(function(x) {
             console.log("Connection established on Org DB...")
         })
+        this.ws.onClose(function(x) {
+            console.log("Connection closed to Org DB...");
+            this.ws = null;
+        });
         return onConnect;
     }
 
@@ -36,6 +65,8 @@ export class ODb
     {
         if (!ODb.instance) {
             ODb.instance = new ODb();
+            await ODb.instance.connect();
+        } else if (!ODb.instance.ws) {
             await ODb.instance.connect();
         }
         return ODb.instance;
