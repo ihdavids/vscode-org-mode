@@ -129,6 +129,28 @@ export class Link implements Node {
     desc:     string;
     parent?:  Headline;
 
+    getFilesTypesToForceIntoVsCode() {
+        return ['*.txt', '*.org', '*.py', '*.rb',
+        '*.html', '*.css', '*.js', '*.php', '*.c', 
+        '*.cpp', '*.h', '*.png', '*.jpg', '*.gif', '*.cs']
+    }
+
+    getLinkParser(): RegExp {
+        let r = /(?<protocol>[a-zA-Z][a-zA-Z0-9]+)[:]\/\/(?<id>.*)/
+        //let r = new RegExp(`^(file:)?(?P<filepath>.+?)(((::(?P<row>\d+))(::(?P<col>\d+))?)|(::\#(?P<cid>[a-zA-Z0-9!$@%&_-]+))|(::\*(?P<heading>[a-zA-Z0-9!$@%&_-]+))|(::(?P<textmatch>[a-zA-Z0-9!$@%&_-]+)))?\s*$`)
+        return r;
+    }
+
+    // You get a dict of protocol and id values
+    getParse(): {[key:string]: string} {
+        let p = this.getLinkParser();
+        let r = p.exec(this.href);
+        if (!r) {
+            return {'protocol': 'file', 'id': this.href};
+        }
+        return r.groups;
+    }
+
     isType(type: OrgTypes):  boolean {
         if (type == this.type) {
             return true;

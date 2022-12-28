@@ -11,7 +11,8 @@ import {Range, TextDocument, Position, TextEditor, TextEditorEdit, Selection} fr
 //import getCursorContext, { DATE, TODO, LIST, CHECK, NODE, IContextData, INodeData } from './cursor-context';
 import * as header from './header-functions'
 import { OrgExtension  } from "./extension";
-import { Headline, OrgTypes } from "./parser";
+import { Headline, OrgTypes, Link } from "./parser";
+import * as links from "./links";
 
 export function addDoWhatIMean(doc: TextEditor, edit: vscode.TextEditorEdit) 
 {
@@ -21,6 +22,7 @@ export function addDoWhatIMean(doc: TextEditor, edit: vscode.TextEditorEdit)
             case OrgTypes.Headline:  insertNewNode(<Headline>node, doc, edit);   break;
             case OrgTypes.CheckList: checkbox.insertCheckboxCommand(doc, edit);  break;
             case OrgTypes.NumList:   list.appendNumberedListCommand(doc);        break;
+            case OrgTypes.Link:      links.jumpToLink(<Link>node,doc, edit);     break;
         }
     }
 }
