@@ -18,6 +18,7 @@ export enum OrgTypes {
     Property,
     Drawer,
     ClockEntry,
+    SourceBlock,
 };
 
 export type Primitive = string | number | boolean
@@ -202,6 +203,21 @@ export class Drawer implements Node {
 
 }
 
+export class SourceBlock implements Node {
+    type:     OrgTypes = OrgTypes.SourceBlock;
+    range:    vscode.Range;
+    name:     string;
+    language: string;
+    parent?:  Headline;
+
+    isType(type: OrgTypes):  boolean {
+        if (type == this.type) {
+            return true;
+        }
+        return false;
+    }
+}
+
 export class PropertyDrawer extends Drawer {
     properties:  {[key: string]: Property};
     add(n: Property) {
@@ -271,6 +287,7 @@ export class Headline implements Parent {
     todos:     string[];
     dones:     string[];
     todoKeywords: string;
+    sourceBlocks: SourceBlock[];
     
     
     public find(pos: vscode.Position | undefined = undefined): Node|undefined {
@@ -309,6 +326,11 @@ export class Headline implements Parent {
         this.links    = [];
         this.nodes    = [];
         this.comments = {};
+        this.sourceBlocks = [];
+    }
+
+    getSourceBlocks(): SourceBlock[] {
+        return this.sourceBlocks;
     }
 
     getComment(name: string, defaultVal: Comment | undefined = undefined): Comment | undefined {
@@ -564,6 +586,7 @@ enum ParserPhase {
     Properties,
     LogBook,
     Links,
+    SourceBlock,
 }
 
 class ParserState {
@@ -860,6 +883,42 @@ function* parseProperties(gen, state: ParserState) {
         yield lineData;
     }
 }
+function* parseSourceBlock(gen, state: ParserState) {
+    let inBlock = false;
+    let startPos;
+    for (var lineData of gen) {
+        let [rootNode, curNode, offset, curLine, line] = lineData;
+        if (inBlock) {
+            const endRegexp = /^\s*[#][+][Ee][Nn][Dd]_[Ss][Rr][Cc]\s*$/
+            const em = endRegexp.exec(line);
+            if (em) {
+                inBlock = false;
+                console.log("LEAVE BLOCK");
+                state.setState(ParserPhase.None);
+                const endPos              = new vscode.Position(curLine, em.index + em[0].length);
+                curNode.sourceBlocks[curNode.sourceBlocks.length-1].range  = new vscode.Range(startPos, endPos);
+            }
+            continue;
+        } else {
+            const startRegexp = /^\s*[#][+][Bb][Ee][Gg][Ii][Nn]_[Ss][Rr][Cc]\s*(?<language>[a-zA-Z0-9_-]+)?(\s.*)?$/
+            const sm = startRegexp.exec(line);
+            if (state.canParse(ParserPhase.SourceBlock) && sm) {
+                console.log("IN BLOCK");
+                inBlock = true;
+                state.setState(ParserPhase.SourceBlock);
+                let p = new SourceBlock();
+                startPos = new vscode.Position(curLine, sm.index);
+                curNode.sourceBlocks.push(p);
+                rootNode.nodes.push(p);
+                curNode.nodes.push(p);
+                p.parent = curNode;
+                continue;
+            }
+        }
+        yield lineData;
+    }
+}
+
 
 
 function* parseLinks(gen, state: ParserState) {
@@ -957,6 +1016,7 @@ export function parseFileContents(contents: string) {
     gen     = parseCheckList(gen,state);
     gen     = parseNumList(gen,state);
     gen     = parseList(gen,state);
+    gen     = parseSourceBlock(gen,state);
 
     for (var x of gen) {}
 

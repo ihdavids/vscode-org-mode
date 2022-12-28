@@ -11,11 +11,17 @@ export class Decoration implements vscode.Disposable {
 	private starTypes: vscode.TextEditorDecorationType[];
 	private prefixStarType: vscode.TextEditorDecorationType;
 	private headingType: vscode.TextEditorDecorationType;
+	private blockType: vscode.TextEditorDecorationType;
 
 	constructor(parser: Parser) {
 		this.parser = parser;
 		this.headingType = vscode.window.createTextEditorDecorationType({
 			'textDecoration': 'underline wavy 1px'
+		});
+		// Source block shading
+		this.blockType = vscode.window.createTextEditorDecorationType({
+			'backgroundColor': 'rgba(0, 0, 0, 1.0)',
+			'textDecoration': 'box-sizing: content-box !important;',
 		});
 		// links
 		this.descRegex = new RegExp('\\]\\[');
@@ -67,11 +73,16 @@ export class Decoration implements vscode.Disposable {
 	dispose(): void {
 	}
 
-	addPrefix(hidestar, prefs, h, level: number) {
+	addPrefix(hidestar, prefs, h, level: number, blocks) {
 		if (prefs.length == level) {
 			prefs.push([])
 		}
 		if (h && h.range) {
+
+			let blks = h.getSourceBlocks();
+			for (let b of blks) {
+				blocks.push(b.range);
+			}
 			if (level > 0) {
 				const start = h.range.start;
 				const end = new vscode.Position(h.range.start.line, h.range.start.character + level);
@@ -84,7 +95,7 @@ export class Decoration implements vscode.Disposable {
 			prefs[level].push(ran);
 		}
 		for(let c of h.children) {
-			this.addPrefix(hidestar, prefs, c, level + 1);
+			this.addPrefix(hidestar, prefs, c, level + 1, blocks);
 		}
 	}
 
@@ -118,9 +129,10 @@ export class Decoration implements vscode.Disposable {
 			const prefix: vscode.Range[][] = [];
 			const hidestar: vscode.Range[] = [];
 			const headings: vscode.Range[] = [];
+			const sourceBlocks: vscode.Range[] = [];
 			const level = 0;
 			for (let l of this.parser.doc.children) {
-				this.addPrefix(hidestar, prefix, l, 0);
+				this.addPrefix(hidestar, prefix, l, 0, sourceBlocks);
 				if (shouldUnderline && l && l.range && l.range.start && l.range.end) {
 					headings.push(new vscode.Range(new vscode.Position(l.fullLine.start.line, l.fullLine.start.character + 2), new vscode.Position(l.fullLine.end.line, l.fullLine.end.character)));
 				}
@@ -136,6 +148,7 @@ export class Decoration implements vscode.Disposable {
 			if (shouldUnderline) {
 				editor.setDecorations(this.headingType, headings);
 			}
+			editor.setDecorations(this.blockType, sourceBlocks);
 		}
 	}
 
