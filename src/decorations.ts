@@ -19,9 +19,25 @@ export class Decoration implements vscode.Disposable {
 			'textDecoration': 'underline wavy 1px'
 		});
 		// Source block shading
+
+				//border-radius: 30px;
+				//margin: -1px;
+				//'backgroundColor': 'rgba(0, 0, 0, 1.0)',
 		this.blockType = vscode.window.createTextEditorDecorationType({
-			'backgroundColor': 'rgba(0, 0, 0, 1.0)',
-			'textDecoration': 'box-sizing: content-box !important;',
+			'textDecoration': `;box-sizing: content-box !important;
+				width: calc(90% + 1px); 
+				height: calc(100% + 1px);
+				top: -1px;
+				left: calc(3%);
+				z-index: -10;
+				position: absolute;
+				background-origin: padding-box, border-box;
+				border-left: 1px solid transparent;
+				border-top: 1px solid transparent;
+				border-right: 1px solid transparent;				
+				border-bottom: 1px solid transparent;
+				background: black;
+				`,
 		});
 		// links
 		this.descRegex = new RegExp('\\]\\[');

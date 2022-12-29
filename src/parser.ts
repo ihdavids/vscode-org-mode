@@ -209,6 +209,7 @@ export class SourceBlock implements Node {
     name:     string;
     language: string;
     parent?:  Headline;
+    maxLen:   number;
 
     isType(type: OrgTypes):  boolean {
         if (type == this.type) {
@@ -886,6 +887,7 @@ function* parseProperties(gen, state: ParserState) {
 function* parseSourceBlock(gen, state: ParserState) {
     let inBlock = false;
     let startPos;
+    let maxLen = 0;
     for (var lineData of gen) {
         let [rootNode, curNode, offset, curLine, line] = lineData;
         if (inBlock) {
@@ -893,17 +895,20 @@ function* parseSourceBlock(gen, state: ParserState) {
             const em = endRegexp.exec(line);
             if (em) {
                 inBlock = false;
-                console.log("LEAVE BLOCK");
                 state.setState(ParserPhase.None);
                 const endPos              = new vscode.Position(curLine, em.index + em[0].length);
-                curNode.sourceBlocks[curNode.sourceBlocks.length-1].range  = new vscode.Range(startPos, endPos);
+                curNode.sourceBlocks[curNode.sourceBlocks.length-1].range   = new vscode.Range(startPos, endPos);
+                curNode.sourceBlocks[curNode.sourceBlocks.length-1].maxLen  = maxLen;
+            } else {
+                if (maxLen < line.length) {
+                    maxLen = line.length;
+                }
             }
             continue;
         } else {
             const startRegexp = /^\s*[#][+][Bb][Ee][Gg][Ii][Nn]_[Ss][Rr][Cc]\s*(?<language>[a-zA-Z0-9_-]+)?(\s.*)?$/
             const sm = startRegexp.exec(line);
             if (state.canParse(ParserPhase.SourceBlock) && sm) {
-                console.log("IN BLOCK");
                 inBlock = true;
                 state.setState(ParserPhase.SourceBlock);
                 let p = new SourceBlock();
@@ -912,6 +917,7 @@ function* parseSourceBlock(gen, state: ParserState) {
                 rootNode.nodes.push(p);
                 curNode.nodes.push(p);
                 p.parent = curNode;
+                maxLen = line.length;
                 continue;
             }
         }
