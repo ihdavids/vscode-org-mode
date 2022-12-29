@@ -210,6 +210,7 @@ export class SourceBlock implements Node {
     language: string;
     parent?:  Headline;
     maxLen:   number;
+    height:   number;
 
     isType(type: OrgTypes):  boolean {
         if (type == this.type) {
@@ -888,6 +889,7 @@ function* parseSourceBlock(gen, state: ParserState) {
     let inBlock = false;
     let startPos;
     let maxLen = 0;
+    let height = 0;
     for (var lineData of gen) {
         let [rootNode, curNode, offset, curLine, line] = lineData;
         if (inBlock) {
@@ -899,10 +901,12 @@ function* parseSourceBlock(gen, state: ParserState) {
                 const endPos              = new vscode.Position(curLine, em.index + em[0].length);
                 curNode.sourceBlocks[curNode.sourceBlocks.length-1].range   = new vscode.Range(startPos, endPos);
                 curNode.sourceBlocks[curNode.sourceBlocks.length-1].maxLen  = maxLen;
+                curNode.sourceBlocks[curNode.sourceBlocks.length-1].height  = height+1;
             } else {
                 if (maxLen < line.length) {
                     maxLen = line.length;
                 }
+                height += 1;
             }
             continue;
         } else {
@@ -918,6 +922,7 @@ function* parseSourceBlock(gen, state: ParserState) {
                 curNode.nodes.push(p);
                 p.parent = curNode;
                 maxLen = line.length;
+                height = 1;
                 continue;
             }
         }

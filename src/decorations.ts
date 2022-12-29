@@ -11,9 +11,10 @@ export class Decoration implements vscode.Disposable {
 	private starTypes: vscode.TextEditorDecorationType[];
 	private prefixStarType: vscode.TextEditorDecorationType;
 	private headingType: vscode.TextEditorDecorationType;
-	private blockType: vscode.TextEditorDecorationType;
+	private blockType: vscode.TextEditorDecorationType[];
 
 	constructor(parser: Parser) {
+		this.blockType = [];
 		this.parser = parser;
 		this.headingType = vscode.window.createTextEditorDecorationType({
 			'textDecoration': 'underline wavy 1px'
@@ -32,17 +33,24 @@ export class Decoration implements vscode.Disposable {
 				//top: -1px;
 				//left: 3%;
 				//z-index: -100;
+		/*
 		this.blockType = vscode.window.createTextEditorDecorationType({
+			'before': {
+			'contentText': '',
 			'textDecoration': `;box-sizing: content-box !important; display: inline-block;
-				width: 100px; 
-				position: relative;
-				border-left: 1px solid transparent;
-				border-top: 1px solid transparent;
-				border-right: 1px solid transparent;				
-				border-bottom: 1px solid transparent;
+				width: 90%;
+				height: 300%;
+				left: 3%;
+				border-radius: 5px;
+				position: absolute;
+				background-origin: padding-box, border-box;
 				background: black;
+				z-index: -100;
+				border-left: 3px solid grey;
 				`,
+			}
 		});
+		*/
 		// links
 		this.descRegex = new RegExp('\\]\\[');
 		this.linkType = vscode.window.createTextEditorDecorationType({
@@ -93,7 +101,7 @@ export class Decoration implements vscode.Disposable {
 	dispose(): void {
 	}
 
-	addPrefix(hidestar, prefs, h, level: number, blocks) {
+	addPrefix(hidestar, prefs, h, level: number, blocks, editor) {
 		if (prefs.length == level) {
 			prefs.push([])
 		}
@@ -101,7 +109,28 @@ export class Decoration implements vscode.Disposable {
 
 			let blks = h.getSourceBlocks();
 			for (let b of blks) {
-				blocks.push(b.range);
+				let height = b.height*100;
+				let level = b.parent.level;
+
+				let editorBackgroundFormula = 'var(--vscode-editor-background)';
+				let bgColor = `linear-gradient(to right, ${editorBackgroundFormula}, ${editorBackgroundFormula})`;
+				let id = this.blockType.push(vscode.window.createTextEditorDecorationType({
+					'before': {
+					'contentText': '',
+					'textDecoration': `;box-sizing: content-box !important; display: inline-block;
+						width: 90%;
+						height: ${height}%;
+						left: ${level}.5%;
+						border-radius: 5px;
+						position: absolute;
+						background-origin: padding-box, border-box;
+						background: linear-gradient(to right,rgba(0.1,0.1,.1,1.0),transparent 80%), ${bgColor};
+						z-index: -100;
+						border-left: 2px solid grey;
+						`,
+					}
+					}));
+				editor.setDecorations(this.blockType[id-1], [b.range]);
 			}
 			if (level > 0) {
 				const start = h.range.start;
@@ -115,7 +144,7 @@ export class Decoration implements vscode.Disposable {
 			prefs[level].push(ran);
 		}
 		for(let c of h.children) {
-			this.addPrefix(hidestar, prefs, c, level + 1, blocks);
+			this.addPrefix(hidestar, prefs, c, level + 1, blocks, editor);
 		}
 	}
 
@@ -126,6 +155,10 @@ export class Decoration implements vscode.Disposable {
 		}
 		const shouldUnderline = Sets.underlineTopHeading;
 
+		for (let x of this.blockType) {
+			editor.setDecorations(x, []);
+		}
+		this.blockType = []
 		// Links
 		if (Sets.prettyLinks) {
 			const link: vscode.Range[] = [];
@@ -152,7 +185,7 @@ export class Decoration implements vscode.Disposable {
 			const sourceBlocks: vscode.Range[] = [];
 			const level = 0;
 			for (let l of this.parser.doc.children) {
-				this.addPrefix(hidestar, prefix, l, 0, sourceBlocks);
+				this.addPrefix(hidestar, prefix, l, 0, sourceBlocks, editor);
 				if (shouldUnderline && l && l.range && l.range.start && l.range.end) {
 					headings.push(new vscode.Range(new vscode.Position(l.fullLine.start.line, l.fullLine.start.character + 2), new vscode.Position(l.fullLine.end.line, l.fullLine.end.character)));
 				}
@@ -168,7 +201,6 @@ export class Decoration implements vscode.Disposable {
 			if (shouldUnderline) {
 				editor.setDecorations(this.headingType, headings);
 			}
-			editor.setDecorations(this.blockType, sourceBlocks);
 		}
 	}
 
