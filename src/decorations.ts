@@ -23,15 +23,19 @@ export class Decoration implements vscode.Disposable {
 				//border-radius: 30px;
 				//margin: -1px;
 				//'backgroundColor': 'rgba(0, 0, 0, 1.0)',
+				//height: calc(100% + 1px);
+				//position: static;
+				//width: 100%; max-width: 100%; min-width: 100%;
+				//
+				//position: relative;
+				//background-origin: padding-box, border-box;
+				//top: -1px;
+				//left: 3%;
+				//z-index: -100;
 		this.blockType = vscode.window.createTextEditorDecorationType({
-			'textDecoration': `;box-sizing: content-box !important;
-				width: calc(90% + 1px); 
-				height: calc(100% + 1px);
-				top: -1px;
-				left: calc(3%);
-				z-index: -10;
-				position: absolute;
-				background-origin: padding-box, border-box;
+			'textDecoration': `;box-sizing: content-box !important; display: inline-block;
+				width: 100px; 
+				position: relative;
 				border-left: 1px solid transparent;
 				border-top: 1px solid transparent;
 				border-right: 1px solid transparent;				
