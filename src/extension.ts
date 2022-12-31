@@ -21,6 +21,7 @@ import * as odb from './db';
 import * as Util from './utils';
 import * as CC from './cursor-context';
 import { Calendar, CalendarMode } from './calendar';
+import { TodoList } from './todolist';
 
 
 import { Parser } from './parser';
@@ -32,6 +33,7 @@ export class OrgExtension {
     private static instance: OrgExtension;
 
     context: vscode.ExtensionContext;    
+    todolist: TodoList<boolean>;
     calendar: Calendar;
     parser: Parser;
     decore: Decoration;
@@ -53,6 +55,7 @@ export class OrgExtension {
     public activate(context: vscode.ExtensionContext) {
         this.context  = context;
 		this.calendar = new Calendar(context);
+        this.todolist = new TodoList<boolean>(context);
         this.parser   = new Parser();
         this.decore   = new Decoration(this.parser);
     }
@@ -75,6 +78,10 @@ export class OrgExtension {
 		    this.decore.updateDecorations();
         }
 	}
+
+    public async showTodoList(name: string) {
+        await this.todolist.open(name);
+    }
 
 	startUpdate(): void {
 		const delay: number = Sets.decoreUpdate;

@@ -54,4 +54,5 @@ export class Sets {
     //  ► • ★ ▸
     public static get decoreBullets(): string[]        { return Sets.getProp<string[]>("bullets",["◉","○","◇","◆","●","•","♦"]);    }
 
+    public static get todoConfigs(): object            { return Sets.getProp<object>("todoConfigs",{});    }
 }

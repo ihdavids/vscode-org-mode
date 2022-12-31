@@ -7,14 +7,18 @@ import * as CC from './cursor-context';
 import { OrgDuration } from './duration';
 import './duration';
 import * as Datetime from './simple-datetime';
+import { Sets } from './sets';
+import { ODb } from './db';
+import { OrgExtension  } from "./extension";
 
 
-export class PageProvider<RETURNTYPE> implements vscode.TextDocumentContentProvider {
+export class TodoList<RETURNTYPE> implements vscode.TextDocumentContentProvider {
     private page: Page;
 	private cursorType: vscode.TextEditorDecorationType;
 
 	private text: string;
     private uri: vscode.Uri;
+    private cfg: object;
 
 	private editor: vscode.TextEditor | undefined;
 
@@ -22,8 +26,8 @@ export class PageProvider<RETURNTYPE> implements vscode.TextDocumentContentProvi
 	private _onDidChange = new vscode.EventEmitter<vscode.Uri>();
 	public get onDidChange() { return this._onDidChange.event; }
 
-    private readonly _onDone    = new Signal<PageProvider<RETURNTYPE>, boolean>();
-    private readonly _onChanged = new Signal<PageProvider<RETURNTYPE>, RETURNTYPE>();
+    private readonly _onDone    = new Signal<TodoList<RETURNTYPE>, boolean>();
+    private readonly _onChanged = new Signal<TodoList<RETURNTYPE>, RETURNTYPE>();
 
     onEnterHandler() {
         //const state = new CalendarState(this, true);
@@ -109,7 +113,11 @@ export class PageProvider<RETURNTYPE> implements vscode.TextDocumentContentProvi
 		return this.text;
 	}
 
-	private regenContent() {
+	async regenContent() {
+        if (this.page.ok) {
+            let data = await ODb.query(this.cfg['query']);
+            console.log(data);
+        }
         /*
 		if (this.page.ok) {
 			const position = this.getPosition(this.date);
@@ -163,7 +171,22 @@ export class PageProvider<RETURNTYPE> implements vscode.TextDocumentContentProvi
 	}
 */
 
-    async open(): Promise<boolean> {
+    async open(name: string): Promise<boolean> {
+        let configs = Sets.todoConfigs;
+        this.cfg = null;
+        if (name in configs) {
+            this.cfg = configs[name];
+        } else {
+            return false;
+        }
+
+        this.page = new Page();
+        await this.page.create(this.uri);
+        await this.page.show();
+        this.regenContent();
+		await this.redraw();
+
+
         /*
         //Capture state before opening calendar so we can return it!
         this.effector = new CalendarEffector(mode);
@@ -226,3 +249,17 @@ export class PageProvider<RETURNTYPE> implements vscode.TextDocumentContentProvi
 	}
 }
 
+
+async function selectTodoView(): Promise<string | undefined> {
+    let configs = Sets.todoConfigs;
+    let names = [];
+    Object.entries(configs).forEach( ([key,value]) => names.push(key));
+    return vscode.window.showQuickPick(names);
+}
+
+export async function chooseTodoView(doc: vscode.TextEditor, edit: vscode.TextEditorEdit) {
+    let todoName = await selectTodoView();
+    if (todoName !== undefined) {
+        await OrgExtension.get().showTodoList(todoName);
+    }
+}

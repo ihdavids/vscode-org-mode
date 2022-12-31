@@ -255,6 +255,17 @@
                     "default": true,
                     "description": "Top level headings get an underline."
                 },
+                "org.todoConfigs": {
+                    "type": "object",
+                    "default": {
+                        "todos": {
+                            "query": "",
+                            "display": ""
+                        }
+                    },
+                    "description": "Defines TODO list views you would like to query from the orgs server and how to display them"
+
+                },
                 "org.bullets": {
                     "type": "array",
                     "default": ["◉","○","◇","◆","●","•","♦"],

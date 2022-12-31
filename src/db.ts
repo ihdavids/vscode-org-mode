@@ -54,6 +54,17 @@ export class ODb
         }
     }
 
+    public static async query(qry: string) {
+        try {
+            let db     = await ODb.get();
+            let result = await db.ws.call("Db.QueryTodosExp",[{ "Query": qry}])
+            return result;
+        } catch(e) {
+            vscode.window.showErrorMessage("QUERY: Cannot contact orgs database, please ensure DB is present");
+            return null;
+        }
+    }
+
     public static async daypage() {
         try {
             const now = new Date();
