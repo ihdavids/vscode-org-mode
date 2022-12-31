@@ -18,6 +18,7 @@ export class Decoration implements vscode.Disposable {
 		this.parser = parser;
 		this.headingType = [];
 		let formatting = Sets.headingFormatting;
+		// We allow per heading text decorations to make your documents more interesting to read
 		for (var i = 0; i < 8; i++) {
 			if (i < formatting.length) {
 				let f = formatting[i];
@@ -32,7 +33,7 @@ export class Decoration implements vscode.Disposable {
 					//font-size: 20px; 
 					//font-style: italic; 
 					//font-family: "Ink Free";
-					console.log("props: ",i,props);
+					//console.log("props: ",i,props);
 					this.headingType[i] = vscode.window.createTextEditorDecorationType({
 						'textDecoration': `; display: inline-block;
 						${props}
