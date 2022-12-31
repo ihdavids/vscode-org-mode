@@ -129,9 +129,9 @@ export class Decoration implements vscode.Disposable {
 		}
 		if (h && h.range) {
 
-			let hlevel = h.level;
+			let hlevel = h.level-1;
 			if (hlevel < headings.length && h.range.start && h.range.end) {
-				headings[hlevel].push(new vscode.Range(new vscode.Position(h.fullLine.start.line, h.fullLine.start.character + 2), new vscode.Position(h.fullLine.end.line, h.fullLine.end.character)));
+				headings[hlevel].push(new vscode.Range(new vscode.Position(h.fullLine.start.line, h.fullLine.start.character + hlevel + 2), new vscode.Position(h.fullLine.end.line, h.fullLine.end.character)));
 			}
 			let blks = h.getSourceBlocks();
 			for (let b of blks) {
