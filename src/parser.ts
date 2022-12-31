@@ -18,6 +18,7 @@ export enum OrgTypes {
     Property,
     Drawer,
     ClockEntry,
+    SourceBlock,
 };
 
 export type Primitive = string | number | boolean
@@ -129,6 +130,28 @@ export class Link implements Node {
     desc:     string;
     parent?:  Headline;
 
+    getFilesTypesToForceIntoVsCode() {
+        return ['*.txt', '*.org', '*.py', '*.rb',
+        '*.html', '*.css', '*.js', '*.php', '*.c', 
+        '*.cpp', '*.h', '*.png', '*.jpg', '*.gif', '*.cs']
+    }
+
+    getLinkParser(): RegExp {
+        let r = /(?<protocol>[a-zA-Z][a-zA-Z0-9]+)[:]\/\/(?<id>.*)/
+        //let r = new RegExp(`^(file:)?(?P<filepath>.+?)(((::(?P<row>\d+))(::(?P<col>\d+))?)|(::\#(?P<cid>[a-zA-Z0-9!$@%&_-]+))|(::\*(?P<heading>[a-zA-Z0-9!$@%&_-]+))|(::(?P<textmatch>[a-zA-Z0-9!$@%&_-]+)))?\s*$`)
+        return r;
+    }
+
+    // You get a dict of protocol and id values
+    getParse(): {[key:string]: string} {
+        let p = this.getLinkParser();
+        let r = p.exec(this.href);
+        if (!r) {
+            return {'protocol': 'file', 'id': this.href};
+        }
+        return r.groups;
+    }
+
     isType(type: OrgTypes):  boolean {
         if (type == this.type) {
             return true;
@@ -178,6 +201,23 @@ export class Drawer implements Node {
         return false;
     }
 
+}
+
+export class SourceBlock implements Node {
+    type:     OrgTypes = OrgTypes.SourceBlock;
+    range:    vscode.Range;
+    name:     string;
+    language: string;
+    parent?:  Headline;
+    maxLen:   number;
+    height:   number;
+
+    isType(type: OrgTypes):  boolean {
+        if (type == this.type) {
+            return true;
+        }
+        return false;
+    }
 }
 
 export class PropertyDrawer extends Drawer {
@@ -249,6 +289,7 @@ export class Headline implements Parent {
     todos:     string[];
     dones:     string[];
     todoKeywords: string;
+    sourceBlocks: SourceBlock[];
     
     
     public find(pos: vscode.Position | undefined = undefined): Node|undefined {
@@ -287,6 +328,11 @@ export class Headline implements Parent {
         this.links    = [];
         this.nodes    = [];
         this.comments = {};
+        this.sourceBlocks = [];
+    }
+
+    getSourceBlocks(): SourceBlock[] {
+        return this.sourceBlocks;
     }
 
     getComment(name: string, defaultVal: Comment | undefined = undefined): Comment | undefined {
@@ -542,6 +588,7 @@ enum ParserPhase {
     Properties,
     LogBook,
     Links,
+    SourceBlock,
 }
 
 class ParserState {
@@ -838,6 +885,51 @@ function* parseProperties(gen, state: ParserState) {
         yield lineData;
     }
 }
+function* parseSourceBlock(gen, state: ParserState) {
+    let inBlock = false;
+    let startPos;
+    let maxLen = 0;
+    let height = 0;
+    for (var lineData of gen) {
+        let [rootNode, curNode, offset, curLine, line] = lineData;
+        if (inBlock) {
+            const endRegexp = /^\s*[#][+][Ee][Nn][Dd]_[Ss][Rr][Cc]\s*$/
+            const em = endRegexp.exec(line);
+            if (em) {
+                inBlock = false;
+                state.setState(ParserPhase.None);
+                const endPos              = new vscode.Position(curLine, em.index + em[0].length);
+                curNode.sourceBlocks[curNode.sourceBlocks.length-1].range   = new vscode.Range(startPos, endPos);
+                curNode.sourceBlocks[curNode.sourceBlocks.length-1].maxLen  = maxLen;
+                curNode.sourceBlocks[curNode.sourceBlocks.length-1].height  = height+1;
+            } else {
+                if (maxLen < line.length) {
+                    maxLen = line.length;
+                }
+                height += 1;
+            }
+            continue;
+        } else {
+            const startRegexp = /^\s*[#][+][Bb][Ee][Gg][Ii][Nn]_[Ss][Rr][Cc]\s*(?<language>[a-zA-Z0-9_-]+)?(\s.*)?$/
+            const sm = startRegexp.exec(line);
+            if (state.canParse(ParserPhase.SourceBlock) && sm) {
+                inBlock = true;
+                state.setState(ParserPhase.SourceBlock);
+                let p = new SourceBlock();
+                startPos = new vscode.Position(curLine, sm.index);
+                curNode.sourceBlocks.push(p);
+                rootNode.nodes.push(p);
+                curNode.nodes.push(p);
+                p.parent = curNode;
+                maxLen = line.length;
+                height = 1;
+                continue;
+            }
+        }
+        yield lineData;
+    }
+}
+
 
 
 function* parseLinks(gen, state: ParserState) {
@@ -935,6 +1027,7 @@ export function parseFileContents(contents: string) {
     gen     = parseCheckList(gen,state);
     gen     = parseNumList(gen,state);
     gen     = parseList(gen,state);
+    gen     = parseSourceBlock(gen,state);
 
     for (var x of gen) {}
 

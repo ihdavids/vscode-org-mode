@@ -29,6 +29,10 @@ export class ODb
         this.ws.onOpen(function(x) {
             console.log("Connection established on Org DB...")
         })
+        this.ws.onClose(function(x) {
+            console.log("Connection closed to Org DB...");
+            this.ws = null;
+        });
         return onConnect;
     }
 
@@ -36,6 +40,8 @@ export class ODb
     {
         if (!ODb.instance) {
             ODb.instance = new ODb();
+            await ODb.instance.connect();
+        } else if (!ODb.instance.ws) {
             await ODb.instance.connect();
         }
         return ODb.instance;

@@ -53,6 +53,15 @@ export class Sets {
     //  ♥ ● ◇ ✚ ✜ ☯ ◆ ♠ ♣ ♦ ☢ ❀ ◆ ◖ ▶
     //  ► • ★ ▸
     public static get decoreBullets(): string[]        { return Sets.getProp<string[]>("bullets",["◉","○","◇","◆","●","•","♦"]);    }
+    public static get headingFormatting(): {[key:string]: string}[] { return Sets.getProp<{[key:string]: string}[]>("headingFormatting",
+                [{}
+                ,{}
+                ,{}
+                ,{}
+                ,{}
+                ,{}
+                ,{}
+                ,{}]);    }
 
     public static get todoConfigs(): object            { return Sets.getProp<object>("todoConfigs",{});    }
 }

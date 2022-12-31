@@ -271,6 +271,22 @@
                     "default": ["◉","○","◇","◆","●","•","♦"],
                     "description": "Bullets to use in pretty formatting of headings."
                 },
+                "org.headingFormatting": {
+                    "type": "array",
+                    "default": [{
+                        "font-size": "20px",
+                        "font-family": "\"Ink Free\""
+                    },{
+                        "font-size": "19px"
+                    },{
+                    },{
+                    },{
+                    },{
+                    },{
+                    },{
+                    }],
+                    "description": "Styles setting per heading level, up to 8"
+                },
                 "org.linkColoring": {
                     "type": "string",
                     "default": "rgba(0, 128, 255, 1.0)",

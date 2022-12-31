@@ -10,13 +10,69 @@ export class Decoration implements vscode.Disposable {
 	private hideType: vscode.TextEditorDecorationType;
 	private starTypes: vscode.TextEditorDecorationType[];
 	private prefixStarType: vscode.TextEditorDecorationType;
-	private headingType: vscode.TextEditorDecorationType;
+	private headingType: vscode.TextEditorDecorationType[];
+	private blockType: vscode.TextEditorDecorationType[];
 
 	constructor(parser: Parser) {
+		this.blockType = [];
 		this.parser = parser;
-		this.headingType = vscode.window.createTextEditorDecorationType({
-			'textDecoration': 'underline wavy 1px'
+		this.headingType = [];
+		let formatting = Sets.headingFormatting;
+		for (var i = 0; i < 8; i++) {
+			if (i < formatting.length) {
+				let f = formatting[i];
+				if (Object.keys(f).length <= 0) {
+					this.headingType[i] = vscode.window.createTextEditorDecorationType({'textDecoration': ``,});
+				} else {
+					let props = '';
+					for (let k in f) {
+						let v = f[k];
+						props += k + ": " + v + ";";
+					}
+					//font-size: 20px; 
+					//font-style: italic; 
+					//font-family: "Ink Free";
+					console.log("props: ",i,props);
+					this.headingType[i] = vscode.window.createTextEditorDecorationType({
+						'textDecoration': `; display: inline-block;
+						${props}
+						`,
+					});
+				}
+			}
+		}
+		// Source block shading
+
+				//border-radius: 30px;
+				//margin: -1px;
+				//'backgroundColor': 'rgba(0, 0, 0, 1.0)',
+				//height: calc(100% + 1px);
+				//position: static;
+				//width: 100%; max-width: 100%; min-width: 100%;
+				//
+				//position: relative;
+				//background-origin: padding-box, border-box;
+				//top: -1px;
+				//left: 3%;
+				//z-index: -100;
+		/*
+		this.blockType = vscode.window.createTextEditorDecorationType({
+			'before': {
+			'contentText': '',
+			'textDecoration': `;box-sizing: content-box !important; display: inline-block;
+				width: 90%;
+				height: 300%;
+				left: 3%;
+				border-radius: 5px;
+				position: absolute;
+				background-origin: padding-box, border-box;
+				background: black;
+				z-index: -100;
+				border-left: 3px solid grey;
+				`,
+			}
 		});
+		*/
 		// links
 		this.descRegex = new RegExp('\\]\\[');
 		this.linkType = vscode.window.createTextEditorDecorationType({
@@ -67,11 +123,41 @@ export class Decoration implements vscode.Disposable {
 	dispose(): void {
 	}
 
-	addPrefix(hidestar, prefs, h, level: number) {
+	addPrefix(hidestar, prefs, h, level: number, blocks, editor, headings) {
 		if (prefs.length == level) {
 			prefs.push([])
 		}
 		if (h && h.range) {
+
+			let hlevel = h.level;
+			if (hlevel < headings.length && h.range.start && h.range.end) {
+				headings[hlevel].push(new vscode.Range(new vscode.Position(h.fullLine.start.line, h.fullLine.start.character + 2), new vscode.Position(h.fullLine.end.line, h.fullLine.end.character)));
+			}
+			let blks = h.getSourceBlocks();
+			for (let b of blks) {
+				let height = b.height*100;
+				let level = b.parent.level;
+
+				let editorBackgroundFormula = 'var(--vscode-editor-background)';
+				let bgColor = `linear-gradient(to right, ${editorBackgroundFormula}, ${editorBackgroundFormula})`;
+				let id = this.blockType.push(vscode.window.createTextEditorDecorationType({
+					'before': {
+					'contentText': '',
+					'textDecoration': `;box-sizing: content-box !important; display: inline-block;
+						width: 90%;
+						height: ${height}%;
+						left: ${level}.5%;
+						border-radius: 5px;
+						position: absolute;
+						background-origin: padding-box, border-box;
+						background: linear-gradient(to right,rgba(0.1,0.1,.1,1.0),transparent 80%), ${bgColor};
+						z-index: -100;
+						border-left: 2px solid grey;
+						`,
+					}
+					}));
+				editor.setDecorations(this.blockType[id-1], [b.range]);
+			}
 			if (level > 0) {
 				const start = h.range.start;
 				const end = new vscode.Position(h.range.start.line, h.range.start.character + level);
@@ -84,7 +170,7 @@ export class Decoration implements vscode.Disposable {
 			prefs[level].push(ran);
 		}
 		for(let c of h.children) {
-			this.addPrefix(hidestar, prefs, c, level + 1);
+			this.addPrefix(hidestar, prefs, c, level + 1, blocks, editor, headings);
 		}
 	}
 
@@ -95,6 +181,10 @@ export class Decoration implements vscode.Disposable {
 		}
 		const shouldUnderline = Sets.underlineTopHeading;
 
+		for (let x of this.blockType) {
+			editor.setDecorations(x, []);
+		}
+		this.blockType = []
 		// Links
 		if (Sets.prettyLinks) {
 			const link: vscode.Range[] = [];
@@ -117,13 +207,11 @@ export class Decoration implements vscode.Disposable {
 		if (Sets.prettyBullets) {
 			const prefix: vscode.Range[][] = [];
 			const hidestar: vscode.Range[] = [];
-			const headings: vscode.Range[] = [];
+			const headings: vscode.Range[][] = [[],[],[],[],[],[],[],[]];
+			const sourceBlocks: vscode.Range[] = [];
 			const level = 0;
 			for (let l of this.parser.doc.children) {
-				this.addPrefix(hidestar, prefix, l, 0);
-				if (shouldUnderline && l && l.range && l.range.start && l.range.end) {
-					headings.push(new vscode.Range(new vscode.Position(l.fullLine.start.line, l.fullLine.start.character + 2), new vscode.Position(l.fullLine.end.line, l.fullLine.end.character)));
-				}
+				this.addPrefix(hidestar, prefix, l, 0, sourceBlocks, editor, headings);
 			}
 			for (const [idx, _] of this.starTypes.entries()) {
 				if (idx < prefix.length) {
@@ -134,7 +222,9 @@ export class Decoration implements vscode.Disposable {
 			}
 			editor.setDecorations(this.prefixStarType, hidestar);
 			if (shouldUnderline) {
-				editor.setDecorations(this.headingType, headings);
+				for (let i in headings) {
+					editor.setDecorations(this.headingType[i], headings[i]);
+				}
 			}
 		}
 	}
