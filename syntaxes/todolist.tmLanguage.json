@@ -1,0 +1,129 @@
+{
+	"name": "todolist",
+	"scopeName": "source.todolist",
+	"patterns": [
+		{
+			"comment": "month",
+			"name": "constant.numeric.todolist",
+			"match": "\\b(January|February|March|April|May|June|July|August|September|October|November|December)\\s+[\\d]{1,4}\\b"
+		},
+		{
+			"comment": "weekend",
+			"name": "invalid.illegal.todolist",
+			"match": "\\b(Su|Sa)\\b"
+		},
+		{
+			"comment": "weekday",
+			"name": "keyword.control.todolist",
+			"match": "\\b(Mo|Tu|We|Th|Fr)\\b"
+		},
+		{
+			"comment": "filename and line location",
+			"name": "string.quoted.todolist.filename",
+			"match": "(^[a-zA-Z0-9_]+:)"
+		},
+		{
+			"comment": "time separator",
+			"name": "comment todolist.timeseparator",
+			"match": "[0-9]+:[0-9]+(\\.)+ (\\-)+"
+		},
+		{
+			"comment": "deadline marker",
+			"name": "region.yellowish orgmode.deadline.warning",
+			"match": "(D:@)\\d+-\\d+-\\d+",
+            "captures": {
+                "1": {
+                    "name": "orgmode.preamble"
+                }
+			}
+		},
+		{
+			"comment": "overdue marker",
+			"name": "region.redish orgmode.deadline.overdue",
+			"match": "(D: )Overdue",
+            "captures": {
+                "1": {
+                    "name": "orgmode.preamble"
+                }
+			}
+		},
+		{
+			"comment": "today duedate",
+			"name": "region.greenish orgmode.deadline.due",
+			"match": "(D: )Due Today",
+            "captures": {
+                "1": {
+                    "name": "orgmode.preamble"
+                }
+			}
+		},
+		{
+    		"match": "^[a-zA-Z][^=>:]+$",
+      		"name": "keyword orgagenda.header"
+		},
+		{
+    		"match": "(\\d{4,4}-\\d{2,2}-\\d{2,2} \\d{2,2}:\\d{2,2}:\\d{2,2})",
+      		"name": "markup.italic orgagenda.datetime"
+		},
+		{
+    		"match": "^\\s*now =>.*",
+      		"name": "variable.parameter orgagenda.now"
+		},
+		{
+    		"match": "(DONE)",
+      		"name": "orgmode.state.done orgagenda.done"
+		},
+    	{ 
+			"match": "(TODO)",
+      		"name": "orgmode.state.todo orgagenda.todo"
+		},
+    	{ 
+			"match": "(DOING)",
+      		"name": "orgmode.state.doing orgagenda.doing"
+		},
+    	{ 
+			"match": "(BLOCKED)",
+      		"name": "orgmode.state.blocked orgagenda.blocked"
+		},
+    	{ 
+			"match": "(WAITING)",
+      		"name": "orgmode.state.waiting orgagenda.waiting"
+		},
+    	{ 
+			"match": "(CANCELLED)",
+      		"name": "orgmode.state.cancelled orgagenda.cancelled"
+		},
+    	{ 
+			"match": "(IN-PROGRESS)",
+      		"name": "orgmode.state.inprogress orgagenda.inprogress"
+		},
+    	{ 
+			"match": "(CLEANUP)",
+      		"name": "orgmode.state.cleanup orgagenda.cleanup"
+		},
+    	{ 
+			"match": "(FIXED)",
+      		"name": "orgmode.state.fixed orgagenda.fixed"
+		},
+    	{ 
+			"match": "(FLAG)",
+      		"name": "orgmode.state.flag orgagenda.flag"
+		},
+    	{ 
+			"match": "(NEXT)",
+      		"name": "orgmode.state.next orgagenda.next"
+		},
+    	{ 
+			"match": "\\s+-------\\s+.*",
+      		"name": "comment orgagenda.projecttitle"
+		},
+    	{ 
+			"match": "^=====+",
+      		"name": "comment orgagenda.blockseparator"
+		},
+    	{
+			"match": "^== \\[.*\\] ==$",
+      		"name": "keyword orgagenda.header orgagenda.projecttitle"
+		}
+	]
+}

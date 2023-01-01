@@ -218,7 +218,17 @@
 				"aliases": [
 					"Calendar"
 				]
+			},
+			{
+				"id": "todolist",
+				"extensions": [
+					".todolist"
+				],
+				"aliases": [
+					"TodoList"
+				]
 			}
+
         ],
         "grammars": [
             {
@@ -230,7 +240,13 @@
 				"language": "calendar",
 				"scopeName": "source.calendar",
 				"path": "./syntaxes/calendar.tmLanguage.json"
+			},
+			{
+				"language": "todolist",
+				"scopeName": "source.todolist",
+				"path": "./syntaxes/todolist.tmLanguage.json"
 			}
+
         ],
         "configuration": {
             "type": "object",
