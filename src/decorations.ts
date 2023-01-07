@@ -125,19 +125,20 @@ export class Decoration implements vscode.Disposable {
 	}
 
 	addPrefix(hidestar, prefs, h, level: number, blocks, editor, headings) {
-		if (prefs.length == level) {
+		while (prefs.length <= level) {
 			prefs.push([])
 		}
 		if (h && h.range) {
 
+			let clevel = h.level
 			let hlevel = h.level-1;
 			if (hlevel < headings.length && h.range.start && h.range.end) {
-				headings[hlevel].push(new vscode.Range(new vscode.Position(h.fullLine.start.line, h.fullLine.start.character + hlevel + 2), new vscode.Position(h.fullLine.end.line, h.fullLine.end.character)));
-			}
+				headings[hlevel].push(new vscode.Range(new vscode.Position(h.fullLine.start.line, h.fullLine.start.character + hlevel + 2), new vscode.Position(h.fullLine.end.line, h.fullLine.end.character + hlevel)));
+			} 
 			let blks = h.getSourceBlocks();
 			for (let b of blks) {
 				let height = b.height*100;
-				let level = b.parent.level;
+				let clevel = b.parent.level*10;
 
 				let editorBackgroundFormula = 'var(--vscode-editor-background)';
 				let bgColor = `linear-gradient(to right, ${editorBackgroundFormula}, ${editorBackgroundFormula})`;
@@ -147,7 +148,7 @@ export class Decoration implements vscode.Disposable {
 					'textDecoration': `;box-sizing: content-box !important; display: inline-block;
 						width: 90%;
 						height: ${height}%;
-						left: ${level}.5%;
+						left: ${clevel}px;
 						border-radius: 5px;
 						position: absolute;
 						background-origin: padding-box, border-box;
@@ -171,7 +172,7 @@ export class Decoration implements vscode.Disposable {
 			prefs[level].push(ran);
 		}
 		for(let c of h.children) {
-			this.addPrefix(hidestar, prefs, c, level + 1, blocks, editor, headings);
+			this.addPrefix(hidestar, prefs, c, c.level-1, blocks, editor, headings);
 		}
 	}
 
