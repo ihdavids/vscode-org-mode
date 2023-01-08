@@ -64,4 +64,7 @@ export class Sets {
                 ,{}]);    }
 
     public static get todoConfigs(): object            { return Sets.getProp<object>("todoConfigs",{});    }
+    public static get gantts(): {[key:string]: string} { return Sets.getProp<{[key:string]: string}>("gantts", {
+        "default": "HasProperty(\"EFFORT\")"
+    });}
 }

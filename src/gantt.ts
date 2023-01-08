@@ -3,25 +3,40 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import {ODb} from "./db"
 import {OrgExtension} from "./extension"
+import { Sets } from './sets';
+import { listenerCount } from 'stream';
 
 async function getWebviewContent(name) {
 
 }
 
+async function selectGantt(): Promise<string | undefined> {
+    let gantts = Sets.gantts;
+    let keys = Object.keys(gantts);
+    if (keys !== null && keys !== undefined && keys.length > 0) { 
+
+    }
+
+    // Deep copy it. This is ANNOYING that there is no deep copy mechanism.
+    keys = JSON.parse(JSON.stringify(keys));
+    let k = await vscode.window.showQuickPick(keys);
+    return Sets.gantts[k];
+}
+
 export async function showGantt(doc: vscode.TextEditor) {
 
-    let name = "default";
+    let qry = await selectGantt();
       const panel = vscode.window.createWebviewPanel(
         'gantt',
-        'Gantt',
+        'Gantt: ' + qry,
         vscode.ViewColumn.Two,
         {enableScripts: true}
       );
 
       let iteration = 0;
       const updateWebview = async () => {
-        let agd = await ODb.gantt("HasProperty(\"EFFORT\")");
-        panel.title = 'Gantt: ' + "EFFORT";
+        let agd = await ODb.gantt(qry);
+        panel.title = 'Gantt: ' + qry;
         if (agd["Ok"] === true) {
           panel.webview.html = agd["Msg"];
         }
