@@ -5,6 +5,7 @@ import * as vscode from 'vscode';
 import { Sets } from './sets'
 
 import { RpcWebSocketClient } from 'rpc-websocket-client';
+import { stringify } from 'querystring';
 
 function pad2(num: number): string {
     return String(num).padStart(2, '0');
@@ -56,6 +57,20 @@ export class ODb
             return result;
         } catch(e) {
             vscode.window.showErrorMessage("AGENDA: Cannot contact orgs database, please ensure DB is present");
+            return null;
+        }
+    }
+    public static async gantt(query: string) {
+        try {
+	        let qry: string = `!IsProject() && !IsArchived() && IsTodo()`;
+            if (query !== "") {
+                qry += ` && ${query}`
+            }
+            let db     = await ODb.get();
+            let result = await db.ws.call("Db.ExportToString",[{ "Name": "gantt", "Query": qry, "Filename": "", "Opts": ""}])
+            return result;
+        } catch(e) {
+            vscode.window.showErrorMessage("GANTT: Cannot contact orgs database, please ensure DB is present");
             return null;
         }
     }

@@ -30,6 +30,7 @@
     "activationEvents": [
         "onLanguage:org",
         "onCommand:org.showAgenda",
+        "onCommand:org.showGantt",
         "onCommand:org.connectToOrgs",
         "onCommand:org.showDayPageToday"
     ],
@@ -67,6 +68,10 @@
             {
                 "command": "org.showAgenda",
                 "title": "Org: Show Agenda"
+            },
+            {
+                "command": "org.showGantt",
+                "title": "Org: Show Gantt"
             },
             {
                 "command": "org.connectToOrgs",

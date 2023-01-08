@@ -16,6 +16,7 @@ import * as dwim from './dwim';
 import * as props from './properties';
 import * as folding from './folding';
 import * as agenda from './agenda';
+import * as gantt from './gantt';
 import * as daypage from './daypage';
 import * as odb from './db';
 import * as Util from './utils';
@@ -150,6 +151,7 @@ export function activate(context: vscode.ExtensionContext) {
     const tablHandlerCmd = vscode.commands.registerTextEditorCommand('org.tabHandler', folding.tabHandler);
 
     const showAgendaCmd = vscode.commands.registerTextEditorCommand('org.showAgenda', agenda.showAgenda);
+    const showGanttCmd = vscode.commands.registerTextEditorCommand('org.showGantt', gantt.showGantt);
     const connectToOrgsCmd = vscode.commands.registerTextEditorCommand('org.connectToOrgs', odb.connectToOrgs);
 
     const showDayPageCmd = vscode.commands.registerTextEditorCommand('org.showDayPageToday', daypage.showDayPageToday);
@@ -165,6 +167,7 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(prevDayPageCmd);
     context.subscriptions.push(showDayPageCmd);
     context.subscriptions.push(showAgendaCmd);
+    context.subscriptions.push(showGanttCmd);
     context.subscriptions.push(connectToOrgsCmd);
     context.subscriptions.push(tablHandlerCmd);
     context.subscriptions.push(insertPropertyDrawerCmd);
