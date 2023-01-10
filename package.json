@@ -317,6 +317,13 @@
                     }],
                     "description": "Styles setting per heading level, up to 8"
                 },
+                "org.gantts": {
+                    "type": "object",
+                    "default": {
+                        "default": "HasProperty(\"EFFORT\")"
+                    },
+                    "description": "Named gantt heading querries"
+                },
                 "org.linkColoring": {
                     "type": "string",
                     "default": "rgba(0, 128, 255, 1.0)",
