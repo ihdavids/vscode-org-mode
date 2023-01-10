@@ -61,7 +61,7 @@ export async function showGantt(doc: vscode.TextEditor) {
     }, undefined, undefined); 
   
       // And schedule updates to the content every second
-      const interval = setInterval(updateWebview, 1000*30);
+      const interval = setInterval(updateWebview, 1000*3);
 
       panel.onDidDispose(
         () => {
