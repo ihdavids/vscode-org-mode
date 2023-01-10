@@ -160,6 +160,34 @@
   border-radius: 5px;
 }
 
+.agd-event-t1 {
+  border-left-color: #f70906;
+}
+.agd-event-t2 {
+  border-left-color: #07a9a6;
+}
+.agd-event-t3 {
+  border-left-color: #0709f6;
+}
+.agd-event-t4 {
+  border-left-color: #a709a6;
+}
+.agd-event-t5 {
+  border-left-color: #d7d906;
+}
+.agd-event-t6 {
+  border-left-color: #f76906;
+}
+.agd-event-t7 {
+  border-left-color: #f76966;
+}
+.agd-event-t8 {
+  border-left-color: #076966;
+}
+.agd-event-t9 {
+  border-left-color: #070906;
+}
+
 .agd-event .agd-title {
   margin: 0;
   padding: 0;

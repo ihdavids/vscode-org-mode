@@ -114,6 +114,16 @@ function createEvent(evt, height, top, left, units): hnode {
   console.log(filename);
   let linenum  = evt.LineNum;
   node.className = "agd-event";
+  let num = 0
+  evt.Tags.forEach(element => {
+    let x = Number(element)
+    if (x !== Number.NaN) {
+      num = x
+    }
+  });
+  if (num > 0 && num < 10) {
+    node.className = ("agd-event agd-event-t" + num);
+  }
   node.attribs['onclick'] = `itemClicked(\"${filename}\",${linenum})`;
   // border-left-color: #57b986;
   if (evt.Headline.length > 40) {
