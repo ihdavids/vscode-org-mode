@@ -189,7 +189,7 @@ function getCollisions (events) {
     let end = getInMinutes(event.Date.End);
     let start = getInMinutes(event.Date.Start);
     if (end == 0) {
-      end = start + 59;
+      end = start + 29;
     }
     // out of range
     if (start < 0) {
