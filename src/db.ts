@@ -47,8 +47,11 @@ export class ODb
         }
         return ODb.instance;
     } 
+    public static reset() {
+        ODb.instance = null
+    }
 
-    public static async agenda() {
+    public static async agenda(retry: boolean = false) {
         try {
             const now = new Date();
 	        let qry: string = `!IsProject() && !IsArchived() && IsTodo() && OnDate("${now.getFullYear()} ${pad2(now.getDate())} ${pad2(now.getMonth()+1)}")`;
@@ -57,10 +60,14 @@ export class ODb
             return result;
         } catch(e) {
             vscode.window.showErrorMessage("AGENDA: Cannot contact orgs database, please ensure DB is present");
+            ODb.reset();
+            if (!retry) {
+                return await ODb.agenda(true);
+            }
             return null;
         }
     }
-    public static async gantt(query: string) {
+    public static async gantt(query: string, retry: boolean = false) {
         try {
 	        let qry: string = `!IsProject() && !IsArchived() && IsTodo()`;
             if (query !== "") {
@@ -71,6 +78,10 @@ export class ODb
             return result;
         } catch(e) {
             vscode.window.showErrorMessage("GANTT: Cannot contact orgs database, please ensure DB is present");
+            ODb.reset();
+            if (!retry) {
+                return ODb.gantt(query, true);
+            }
             return null;
         }
     }
