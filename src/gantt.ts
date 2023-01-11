@@ -56,7 +56,10 @@ export async function showGantt(doc: vscode.TextEditor) {
                   doc.revealRange(new vscode.Range(new vscode.Position(line,0), new vscode.Position(line,0)));
                 });
             });
-        return;
+          return;
+        case 'close': 
+            console.log("CLOSE");
+          return;
       }
     }, undefined, undefined); 
   
@@ -67,10 +70,11 @@ export async function showGantt(doc: vscode.TextEditor) {
         () => {
           // When the panel is closed, cancel any future updates to the webview content
           clearInterval(interval);
+          console.log("CLOSE GANTT");
         },
         null,
         OrgExtension.get().context.subscriptions
       );
 
-    console.log("SHOW AGENDA SHOWN");
+    console.log("SHOW GANTT SHOWN");
 }
