@@ -17,6 +17,7 @@ import * as props from './properties';
 import * as folding from './folding';
 import * as agenda from './agenda';
 import * as gantt from './gantt';
+import * as web from './web';
 import * as daypage from './daypage';
 import * as odb from './db';
 import * as Util from './utils';
@@ -152,6 +153,7 @@ export function activate(context: vscode.ExtensionContext) {
 
     const showAgendaCmd = vscode.commands.registerTextEditorCommand('org.showAgenda', agenda.showAgenda);
     const showGanttCmd = vscode.commands.registerTextEditorCommand('org.showGantt', gantt.showGantt);
+    const showGanttWeb = vscode.commands.registerTextEditorCommand('org.showWeb', web.showWeb);
     const connectToOrgsCmd = vscode.commands.registerTextEditorCommand('org.connectToOrgs', odb.connectToOrgs);
 
     const showDayPageCmd = vscode.commands.registerTextEditorCommand('org.showDayPageToday', daypage.showDayPageToday);

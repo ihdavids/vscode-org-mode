@@ -74,6 +74,10 @@
                 "title": "Org: Show Gantt"
             },
             {
+                "command": "org.showWeb",
+                "title": "Org: Show Web"
+            },
+            {
                 "command": "org.connectToOrgs",
                 "title": "Org: Connect To Orgs"
             },
