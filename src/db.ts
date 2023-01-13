@@ -93,7 +93,7 @@ export class ODb
             let result = await db.ws.call("Db.ExportToString",[{ "Name": "html", "Query": qry, "Filename": "", "Opts": ""}])
             return result;
         } catch(e) {
-            vscode.window.showErrorMessage("WEB: Cannot contact orgs database, please ensure DB is present");
+            vscode.window.showErrorMessage("WEB: Cannot contact orgs database, please ensure DB is present: " + e);
             ODb.reset();
             if (!retry) {
                 return ODb.html(query, true);
