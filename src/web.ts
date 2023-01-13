@@ -33,10 +33,12 @@ export async function showWeb(doc: vscode.TextEditor) {
 
       let iteration = 0;
       const updateWebview = async () => {
-        let agd = await ODb.html(qry);
-        panel.title = 'Web: ' + qry;
-        if (agd["Ok"] === true) {
-          panel.webview.html = agd["Msg"];
+        if (panel.active) {
+            let agd = await ODb.html(qry);
+            panel.title = 'Web: ' + qry;
+            if (agd["Ok"] === true) {
+                panel.webview.html = agd["Msg"];
+            }
         }
       };
 
