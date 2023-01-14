@@ -38,6 +38,10 @@
     "contributes": {
         "commands": [
             {
+                "command": "org.chooseTodoView",
+                "title": "Org: Todo View"
+            },
+            {
                 "command": "org.chooseTodo",
                 "title": "Org: Choose Todo"
             },

@@ -116,7 +116,15 @@ export class TodoList<RETURNTYPE> implements vscode.TextDocumentContentProvider 
 	async regenContent() {
         if (this.page.ok) {
             let data = await ODb.query(this.cfg['query']);
-            console.log(data);
+            if (data !== null) {
+                this.text = "" 
+                for (var evt of data) {
+                    this.text += evt.Headline + "\n"
+                }
+            } else {
+                this.text = "ERROR: Unable to query data for todolist..."
+            }
+            console.log('DATA: ', data);
         }
         /*
 		if (this.page.ok) {

@@ -105,6 +105,7 @@ export class ODb
     public static async query(qry: string, retry: boolean = false) {
         try {
             let db     = await ODb.get();
+            console.log("QUERY: ", qry)
             let result = await db.ws.call("Db.QueryTodosExp",[{ "Query": qry}])
             return result;
         } catch(e) {

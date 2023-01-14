@@ -23,7 +23,7 @@ import * as odb from './db';
 import * as Util from './utils';
 import * as CC from './cursor-context';
 import { Calendar, CalendarMode } from './calendar';
-import { TodoList } from './todolist';
+import { TodoList, chooseTodoView } from './todolist';
 
 
 import { Parser } from './parser';
@@ -102,10 +102,6 @@ export class OrgExtension {
 	}
 } 
 
-export async function doDecorations(textEditor: vscode.TextEditor, edit: vscode.TextEditorEdit) {
-    //OrgExtension.get().parser.parse();
-	//OrgExtension.get().decore.updateDecorations();
-}
 export function activate(context: vscode.ExtensionContext) {
     OrgExtension.get().activate(context);
 
@@ -163,7 +159,7 @@ export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(vscode.commands.registerCommand('org.deadlineNode',  async () => OrgExtension.get().timestamp(CalendarMode.deadline)));
 	context.subscriptions.push(vscode.commands.registerCommand('org.timestampNode', async () => OrgExtension.get().timestamp(CalendarMode.timestamp)));
 	context.subscriptions.push(vscode.commands.registerCommand('org.chooseTodo', HeaderFunctions.chooseAndChangeTodo));
-	context.subscriptions.push(vscode.commands.registerCommand('org.decoreTemp', doDecorations));
+	context.subscriptions.push(vscode.commands.registerCommand('org.chooseTodoView', chooseTodoView));
 
     context.subscriptions.push(nextDayPageCmd);
     context.subscriptions.push(prevDayPageCmd);
