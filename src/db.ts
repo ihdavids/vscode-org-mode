@@ -7,6 +7,7 @@ import { Sets } from './sets'
 import { RpcWebSocketClient } from 'rpc-websocket-client';
 import { stringify } from 'querystring';
 
+
 function pad2(num: number): string {
     return String(num).padStart(2, '0');
 }
@@ -14,6 +15,7 @@ function pad2(num: number): string {
 export class ODb
 {
     private static instance: ODb;
+    private static amConnecting: Promise<unknown>;
     ws: RpcWebSocketClient;
     
     constructor()
@@ -25,7 +27,7 @@ export class ODb
 
     public async connect(): Promise<unknown> {
         this.ws = new RpcWebSocketClient();
-        let onConnect = this.ws.connect(Sets.orgsConnection);
+        let onConnect = await this.ws.connect(Sets.orgsConnection);
 
         this.ws.onOpen(function(x) {
             console.log("Connection established on Org DB...")
@@ -41,14 +43,16 @@ export class ODb
     {
         if (!ODb.instance) {
             ODb.instance = new ODb();
-            await ODb.instance.connect();
+            ODb.amConnecting = ODb.instance.connect();
         } else if (!ODb.instance.ws) {
-            await ODb.instance.connect();
+            ODb.amConnecting = ODb.instance.connect();
         }
+        await ODb.amConnecting;
         return ODb.instance;
     } 
     public static reset() {
-        ODb.instance = null
+        ODb.amConnecting = null;
+        ODb.instance     = null
     }
 
     public static async agenda(retry: boolean = false) {
@@ -110,6 +114,7 @@ export class ODb
             return result;
         } catch(e) {
             vscode.window.showErrorMessage("QUERY: Cannot contact orgs database, please ensure DB is present");
+            console.log("QUERY: Cannot contact orgs database, please ensure DB is present: " + e);
             ODb.reset();
             if (!retry) {
                 return ODb.query(qry, true);

@@ -113,29 +113,30 @@ export class TodoList<RETURNTYPE> implements vscode.TextDocumentContentProvider 
 		return this.text;
 	}
 
+    formatContent(evt): string {
+        return evt.Headline + "\n"
+    }
+
 	async regenContent() {
-        if (this.page.ok) {
+        try {
+        if (this.page) {
             let data = await ODb.query(this.cfg['query']);
             if (data !== null) {
-                this.text = "" 
+                this.text = "";
                 for (var evt of data) {
-                    this.text += evt.Headline + "\n"
+                    if (evt && evt.Headline) {
+                        this.text += this.formatContent(evt)
+                    }
                 }
             } else {
                 this.text = "ERROR: Unable to query data for todolist..."
             }
-            console.log('DATA: ', data);
+        } else {
+            console.log("NOTHING");
         }
-        /*
-		if (this.page.ok) {
-			const position = this.getPosition(this.date);
-            if (position) {
-                this.page.moveToPos(position);
-			    const range = new vscode.Range(position.line, position.character, position.line, position.character + 2);
-			    this.page.setDecorations(this.cursorType, [range]);
-            }
+        } catch(eh) {
+            console.log("EXCEPTION: ", eh);
         }
-        */
 	}
 
     /*
@@ -190,8 +191,8 @@ export class TodoList<RETURNTYPE> implements vscode.TextDocumentContentProvider 
 
         this.page = new Page();
         await this.page.create(this.uri);
+        await this.regenContent();
         await this.page.show();
-        this.regenContent();
 		await this.redraw();
 
 
@@ -266,6 +267,7 @@ async function selectTodoView(): Promise<string | undefined> {
 }
 
 export async function chooseTodoView(doc: vscode.TextEditor, edit: vscode.TextEditorEdit) {
+    await ODb.get();
     let todoName = await selectTodoView();
     if (todoName !== undefined) {
         await OrgExtension.get().showTodoList(todoName);
