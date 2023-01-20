@@ -10,7 +10,16 @@ import * as Datetime from './simple-datetime';
 import { Sets } from './sets';
 import { ODb } from './db';
 import { OrgExtension  } from "./extension";
+import { format } from 'date-fns';
+import { mainModule } from 'process';
 
+function limitLen(name, len) {
+    name = name.padStart(name, len);
+    if (name.length > len) {
+        name = name.slice(0, len);
+    }
+    return name
+}
 
 export class TodoList<RETURNTYPE> implements vscode.TextDocumentContentProvider {
     private page: Page;
@@ -28,6 +37,9 @@ export class TodoList<RETURNTYPE> implements vscode.TextDocumentContentProvider 
 
     private readonly _onDone    = new Signal<TodoList<RETURNTYPE>, boolean>();
     private readonly _onChanged = new Signal<TodoList<RETURNTYPE>, RETURNTYPE>();
+
+    private showFilename = 15;
+    private showHeadline = 15;
 
     onEnterHandler() {
         //const state = new CalendarState(this, true);
@@ -113,8 +125,35 @@ export class TodoList<RETURNTYPE> implements vscode.TextDocumentContentProvider 
 		return this.text;
 	}
 
+    formatFilename(fn: string): string {
+        let rv = ""
+        return parse(fn).name;
+    }
+
+    getF(len: number, name: string): string {
+        if (len > 0) {
+            return "${limitLen(" + name + "," + len + ")}"
+        }
+        return "";
+    }
+
+    buildFormatString(): string {
+        let formatstr = ""
+        formatstr += this.getF(this.showFilename,"filename");
+        return formatstr;
+        //formatstr += self.GetF(self.showstatus,"status")
+        //formatstr += self.GetF(self.showduration,"duration")
+        //formatstr += self.GetF(self.showdate,"date")
+        //formatstr += self.GetF(self.showtime,"time")
+        //formatstr += self.GetF(self.showeffort,"effort")
+        //formatstr += self.GetF(self.showafter,"after")
+        //formatstr += self.GetF(self.showid,"id")
+        //formatstr += self.GetF(self.showassigned,"assigned")
+    }
+
     formatContent(evt): string {
-        return evt.Headline + "\n"
+        let fmt = this.buildFormatString()
+        return this.formatFilename(evt.Filename) + evt.Headline + "\n"
     }
 
 	async regenContent() {
