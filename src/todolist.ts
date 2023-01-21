@@ -50,6 +50,7 @@ export class TodoList<RETURNTYPE> implements vscode.TextDocumentContentProvider 
 
     private showFilename = 15;
     private showHeadline = 25;
+    private showStatus   = 10;
 
     onEnterHandler() {
         //const state = new CalendarState(this, true);
@@ -157,6 +158,7 @@ export class TodoList<RETURNTYPE> implements vscode.TextDocumentContentProvider 
         return ""
     }
 
+    /*
     buildFormatString(): string {
         let formatstr = ""
         //formatstr += this.getF(this.showFilename,"filename");
@@ -170,14 +172,15 @@ export class TodoList<RETURNTYPE> implements vscode.TextDocumentContentProvider 
         //formatstr += self.GetF(self.showid,"id")
         //formatstr += self.GetF(self.showassigned,"assigned")
     }
+    */
 
     formatHeadline(): string {
-        let r =    `${limitLenRight('Filename',this.showFilename)} ${limitLenRight("Heading",this.showHeadline)} ${limitLen("Status",5)}\n`
-        return r + `${limitLenRight('--------',this.showFilename)} ${limitLenRight("-------",this.showHeadline)} ${limitLen("------",5)}`
+        let r =    `${limitLenRight('Filename',this.showFilename)}${limitLenRight("Status",this.showStatus)} ${limitLenRight("Heading",this.showHeadline)} ${limitLen("Efrt",5)}\n`
+        return r + `${limitLenRight('--------',this.showFilename)}${limitLenRight("------",this.showStatus)} ${limitLenRight("-------",this.showHeadline)} ${limitLen("----",5)}`
     }
 
     formatContent(evt): string {
-        return `${this.formatFilename(evt.Filename)} ${limitLenRight(evt.Headline, this.showHeadline)} ${this.formatProperty('EFFORT',5,evt)}\n`
+        return `${this.formatFilename(evt.Filename)}${limitLenRight(evt.Status,this.showStatus)} ${limitLenRight(evt.Headline, this.showHeadline)} ${this.formatProperty('EFFORT',5,evt)}\n`
     }
 
 	async regenContent() {
@@ -186,7 +189,7 @@ export class TodoList<RETURNTYPE> implements vscode.TextDocumentContentProvider 
             let query = this.cfg['query'];
             let data = await ODb.query(query);
             if (data !== null) {
-                this.text = `QUERY:  ${query}\n`;
+                this.text = `QUERY:  ${query}\n\n`;
                 this.text += `${this.formatHeadline()}\n`;
                 for (var evt of data) {
                     if (evt && evt.Headline) {
@@ -204,47 +207,6 @@ export class TodoList<RETURNTYPE> implements vscode.TextDocumentContentProvider 
         }
 	}
 
-    /*
-    regenCalendars(resetBaseDate: boolean = true) {
-		if (this.calendars === null || this.calendars.length <= 0 || this.findMonth(this.date) < 0) {
-            if (resetBaseDate) {
-			    this.baseDate = this.date;
-            }
-			const year    = this.baseDate.getFullYear();
-			const month   = this.date.getMonth();
-			this.genCalendars(new Date(year, month, 1), this.numberMonth);
-        }
-    }
-    */
-
-/*
-	async openCalendarPage() {
-        this.page = new Page();
-        await this.page.create(this.uri);
-        await this.page.show();
-        this.regenCalendars();
-		await this.redraw();
-		this.showCurrDate();
-	}
-
-	async goDate(date: number) {
-		this.date = new Date(this.date.getTime() + date * 24 * 60 * 60 * 1000);
-        this.regenCalendars(false);
-		await this.redraw();
-		this.showCurrDate();
-        this.onChanged.trigger(this, this.date);
-	}
-
-	async setDate(dt: Date) {
-        if (dt !== this.date) {
-		    this.date = dt;
-            this.regenCalendars();
-		    await this.redraw();
-		    this.showCurrDate();
-        }
-	}
-*/
-
     async open(name: string): Promise<boolean> {
         let configs = Sets.todoConfigs;
         this.cfg = null;
@@ -260,60 +222,6 @@ export class TodoList<RETURNTYPE> implements vscode.TextDocumentContentProvider 
         await this.page.show();
 		await this.redraw();
 
-
-        /*
-        //Capture state before opening calendar so we can return it!
-        this.effector = new CalendarEffector(mode);
-        // Set context so keybindings will work now.
-        await vscode.commands.executeCommand('setContext', 'hasOrgCalFocus', true);
-        // Open up the page with the calendar on it!
-		await this.openCalendarPage();
-        //vscode.window.showInputBox();
-        let box = vscode.window.createInputBox();
-        box.onDidChangeValue((strLine: string) => {
-            let dt = OrgDuration.parse(strLine);
-            if(dt && dt.mins > 0) {
-                let cdate: Date = new Date();
-                this.setDate(cdate.addDuration(dt));
-            } else {
-                let sd = Datetime.parseDateTime(strLine);
-                if (sd && sd.year !== undefined) {
-                    let d = Datetime.simpleDateTimeToDate(sd);
-                    if (d) {
-                        this.setDate(d);
-                    }
-                }
-            }
-            //console.log(strLine);
-        })
-        box.ignoreFocusOut = true;
-       
-        this.onChanged.on((cal,dt) => {
-            box.value = Datetime.dateToRawString(dt,Datetime.hasTime(box.value));
-        });
-        const curDate = this.getDate();
-        box.value = curDate.toISOString().slice(0, 10);
-        const promise = new Promise<[Date|undefined,boolean]>((resolve, reject) =>{
-        let accept = false;
-        box.onDidAccept(() => {
-            accept = true;
-            box.hide();
-        })
-        box.onDidHide(async () => {
-            await vscode.commands.executeCommand('setContext', 'hasOrgCalFocus', false);
-            let calVal: Date | undefined = undefined;
-            if (accept) {
-                calVal = this.date;    
-            }
-            await this.page.close();
-            resolve([calVal, accept]);
-        });
-        box.show();
-        });
-        const [calVal, ok] = await promise;
-
-        const state = new CalendarState(this, ok);
-        */
         return Promise.resolve(true);
 	}
 
