@@ -6,6 +6,7 @@ import { Sets } from './sets'
 
 import { RpcWebSocketClient } from 'rpc-websocket-client';
 import { stringify } from 'querystring';
+import { NumList } from './parser';
 
 
 function pad2(num: number): string {
@@ -39,8 +40,9 @@ export class ODb
         return onConnect;
     }
 
-    public static async get(): Promise<ODb>
+    public static async get(retry: boolean = false): Promise<ODb>
     {
+        try {
         if (!ODb.instance) {
             ODb.instance = new ODb();
             ODb.amConnecting = ODb.instance.connect();
@@ -48,6 +50,14 @@ export class ODb
             ODb.amConnecting = ODb.instance.connect();
         }
         await ODb.amConnecting;
+        } catch {
+            this.reset();
+            if (!retry) {
+                return this.get(true);
+            } else {
+                return null;
+            }
+        }
         return ODb.instance;
     } 
     public static reset() {
