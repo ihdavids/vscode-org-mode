@@ -21,6 +21,14 @@ function limitLen(name, len) {
     return name
 }
 
+function limitLenRight(name, len) {
+    name = name.padEnd(name, len);
+    if (name.length > len) {
+        name = name.slice(0, len);
+    }
+    return name
+}
+
 export class TodoList<RETURNTYPE> implements vscode.TextDocumentContentProvider {
     private page: Page;
 	private cursorType: vscode.TextEditorDecorationType;
@@ -126,20 +134,26 @@ export class TodoList<RETURNTYPE> implements vscode.TextDocumentContentProvider 
 	}
 
     formatFilename(fn: string): string {
-        let rv = ""
-        return parse(fn).name;
+        if (this.showFilename > 0) {
+            return `${limitLenRight(`${parse(fn).name}`, this.showFilename)}: `;
+        }
+        return ""
     }
 
-    getF(len: number, name: string): string {
+    formatProperty(name: string, len: number, evt): string {
         if (len > 0) {
-            return "${limitLen(" + name + "," + len + ")}"
+            if (name in evt.Props) {
+                return `${limitLen(evt.Props[name], len)} `
+            } else {
+                return `${limitLen("", len)} `
+            }
         }
-        return "";
+        return ""
     }
 
     buildFormatString(): string {
         let formatstr = ""
-        formatstr += this.getF(this.showFilename,"filename");
+        //formatstr += this.getF(this.showFilename,"filename");
         return formatstr;
         //formatstr += self.GetF(self.showstatus,"status")
         //formatstr += self.GetF(self.showduration,"duration")
@@ -152,8 +166,7 @@ export class TodoList<RETURNTYPE> implements vscode.TextDocumentContentProvider 
     }
 
     formatContent(evt): string {
-        let fmt = this.buildFormatString()
-        return this.formatFilename(evt.Filename) + evt.Headline + "\n"
+        return `${this.formatFilename(evt.Filename)}${limitLen(evt.Headline,15)}${this.formatProperty('EFFORT',5,evt)}\n`
     }
 
 	async regenContent() {
