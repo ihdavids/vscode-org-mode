@@ -14,17 +14,19 @@ import { format } from 'date-fns';
 import { mainModule } from 'process';
 
 function limitLen(name, len) {
-    name = name.padStart(name, len);
-    if (name.length > len) {
+    if (name.length > len) { 
         name = name.slice(0, len);
+    } else {
+        name = name.padStart(len, ' ');
     }
     return name
 }
 
 function limitLenRight(name, len) {
-    name = name.padEnd(name, len);
     if (name.length > len) {
         name = name.slice(0, len);
+    } else {
+        name = name.padEnd(len, ' ');
     }
     return name
 }
@@ -47,7 +49,7 @@ export class TodoList<RETURNTYPE> implements vscode.TextDocumentContentProvider 
     private readonly _onChanged = new Signal<TodoList<RETURNTYPE>, RETURNTYPE>();
 
     private showFilename = 15;
-    private showHeadline = 15;
+    private showHeadline = 25;
 
     onEnterHandler() {
         //const state = new CalendarState(this, true);
@@ -135,7 +137,11 @@ export class TodoList<RETURNTYPE> implements vscode.TextDocumentContentProvider 
 
     formatFilename(fn: string): string {
         if (this.showFilename > 0) {
-            return `${limitLenRight(`${parse(fn).name}`, this.showFilename)}: `;
+            let r = `${limitLenRight(`${parse(fn).name}: `, this.showFilename)} `;
+            if (r.indexOf(":") < 0) {
+                r =  limitLenRight(r.trim() + ": ", this.showFilename + 1);
+            }
+            return r;
         }
         return ""
     }
@@ -165,16 +171,23 @@ export class TodoList<RETURNTYPE> implements vscode.TextDocumentContentProvider 
         //formatstr += self.GetF(self.showassigned,"assigned")
     }
 
+    formatHeadline(): string {
+        let r =    `${limitLenRight('Filename',this.showFilename)} ${limitLenRight("Heading",this.showHeadline)} ${limitLen("Status",5)}\n`
+        return r + `${limitLenRight('--------',this.showFilename)} ${limitLenRight("-------",this.showHeadline)} ${limitLen("------",5)}`
+    }
+
     formatContent(evt): string {
-        return `${this.formatFilename(evt.Filename)}${limitLen(evt.Headline,15)}${this.formatProperty('EFFORT',5,evt)}\n`
+        return `${this.formatFilename(evt.Filename)} ${limitLenRight(evt.Headline, this.showHeadline)} ${this.formatProperty('EFFORT',5,evt)}\n`
     }
 
 	async regenContent() {
         try {
         if (this.page) {
-            let data = await ODb.query(this.cfg['query']);
+            let query = this.cfg['query'];
+            let data = await ODb.query(query);
             if (data !== null) {
-                this.text = "";
+                this.text = `QUERY:  ${query}\n`;
+                this.text += `${this.formatHeadline()}\n`;
                 for (var evt of data) {
                     if (evt && evt.Headline) {
                         this.text += this.formatContent(evt)
