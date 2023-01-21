@@ -1,10 +1,10 @@
 # VS Code Org Mode
-[![Version](https://vsmarketplacebadge.apphb.com/version/vscode-org-mode.org-mode.svg)](https://marketplace.visualstudio.com/items?itemName=vscode-org-mode.org-mode)
-[![Installs](https://vsmarketplacebadge.apphb.com/installs/vscode-org-mode.org-mode.svg)](https://marketplace.visualstudio.com/items?itemName=vscode-org-mode.org-mode)
-[![Ratings](https://vsmarketplacebadge.apphb.com/rating/vscode-org-mode.org-mode.svg)](https://marketplace.visualstudio.com/items?itemName=vscode-org-mode.org-mode)
-[![Travis](https://img.shields.io/travis/com/vscode-org-mode/vscode-org-mode.svg)](https://travis-ci.com/vscode-org-mode/vscode-org-mode)
-[![codecov](https://codecov.io/gh/vscode-org-mode/vscode-org-mode/branch/master/graph/badge.svg)](https://codecov.io/gh/vscode-org-mode/vscode-org-mode)
-[![License](https://img.shields.io/github/license/vscode-org-mode/vscode-org-mode.svg)](./LICENSE.txt)
+[![Version](https://vsmarketplacebadge.apphb.com/version/vscode-org-mode.org-mode.png)](https://marketplace.visualstudio.com/items?itemName=vscode-org-mode.org-mode)
+[![Installs](https://vsmarketplacebadge.apphb.com/installs/vscode-org-mode.org-mode.png)](https://marketplace.visualstudio.com/items?itemName=vscode-org-mode.org-mode)
+[![Ratings](https://vsmarketplacebadge.apphb.com/rating/vscode-org-mode.org-mode.png)](https://marketplace.visualstudio.com/items?itemName=vscode-org-mode.org-mode)
+[![Travis](https://img.shields.io/travis/com/vscode-org-mode/vscode-org-mode.png)](https://travis-ci.com/vscode-org-mode/vscode-org-mode)
+[![codecov](https://codecov.io/gh/vscode-org-mode/vscode-org-mode/branch/master/graph/badge.png)](https://codecov.io/gh/vscode-org-mode/vscode-org-mode)
+[![License](https://img.shields.io/github/license/vscode-org-mode/vscode-org-mode.png)](./LICENSE.txt)
 
 :warning: The publisher name was changed, **tootone/org-mode has become vscode-org-mode/org-mode** :warning:
 
