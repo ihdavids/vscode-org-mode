@@ -223,25 +223,24 @@
                 ],
                 "configuration": "./org.configuration.json"
             },
-			{
-				"id": "calendar",
-				"extensions": [
-					".calendar"
-				],
-				"aliases": [
-					"Calendar"
-				]
-			},
-			{
-				"id": "todolist",
-				"extensions": [
-					".todolist"
-				],
-				"aliases": [
-					"TodoList"
-				]
-			}
-
+            {
+                "id": "calendar",
+                "extensions": [
+                    ".calendar"
+                ],
+                "aliases": [
+                    "Calendar"
+                ]
+            },
+            {
+                "id": "todolist",
+                "extensions": [
+                    ".todolist"
+                ],
+                "aliases": [
+                    "TodoList"
+                ]
+            }
         ],
         "grammars": [
             {
@@ -249,17 +248,16 @@
                 "scopeName": "source.org",
                 "path": "./syntaxes/org.tmLanguage.json"
             },
-			{
-				"language": "calendar",
-				"scopeName": "source.calendar",
-				"path": "./syntaxes/calendar.tmLanguage.json"
-			},
-			{
-				"language": "todolist",
-				"scopeName": "source.todolist",
-				"path": "./syntaxes/todolist.tmLanguage.json"
-			}
-
+            {
+                "language": "calendar",
+                "scopeName": "source.calendar",
+                "path": "./syntaxes/calendar.tmLanguage.json"
+            },
+            {
+                "language": "todolist",
+                "scopeName": "source.todolist",
+                "path": "./syntaxes/todolist.tmLanguage.json"
+            }
         ],
         "configuration": {
             "type": "object",
@@ -293,36 +291,49 @@
                         }
                     },
                     "description": "Defines TODO list views you would like to query from the orgs server and how to display them"
-
                 },
                 "org.bullets": {
                     "type": "array",
-                    "default": ["◉","○","◇","◆","●","•","♦"],
+                    "default": [
+                        "◉",
+                        "○",
+                        "◇",
+                        "◆",
+                        "●",
+                        "•",
+                        "♦"
+                    ],
                     "description": "Bullets to use in pretty formatting of headings."
                 },
                 "org.headingFormatting": {
                     "type": "array",
-                    "default": [{
-                        "font-size": "23px",
-                        "font-weight": "bold",
-                        "font-family": "\"Century Gothic\""
-                    },{
-                        "font-size": "20px",
-                        "font-weight": "bold",
-                        "font-family": "\"Ink Free\""
-                    },{
-                        "font-size": "18px",
-                        "font-weight": "bold"
-                    },{
-                        "font-size": "18px",
-                        "font-style": "italic"
-                    },{
-                        "font-size": "18px",
-                        "font-style": "italic"
-                    },{
-                    },{
-                    },{
-                    }],
+                    "default": [
+                        {
+                            "font-size": "23px",
+                            "font-weight": "bold",
+                            "font-family": "\"Century Gothic\""
+                        },
+                        {
+                            "font-size": "20px",
+                            "font-weight": "bold",
+                            "font-family": "\"Ink Free\""
+                        },
+                        {
+                            "font-size": "18px",
+                            "font-weight": "bold"
+                        },
+                        {
+                            "font-size": "18px",
+                            "font-style": "italic"
+                        },
+                        {
+                            "font-size": "18px",
+                            "font-style": "italic"
+                        },
+                        {},
+                        {},
+                        {}
+                    ],
                     "description": "Styles setting per heading level, up to 8"
                 },
                 "org.gantts": {
@@ -481,36 +492,36 @@
                 "key": "ctrl+tab",
                 "when": "editorLangId == 'org'"
             },
-			{
-				"command": "workbench.action.closeActiveEditor",
-				"key": "escape",
-				"when": "editorTextFocus && editorLangId == 'calendar'"
-			},
-			{
-				"command": "org.calendar.prevDate",
-				"key": ",",
-				"when": "hasOrgCalFocus"
-			},
-			{
-				"command": "org.calendar.nextDate",
-				"key": ".",
-				"when": "hasOrgCalFocus"
-			},
-			{
-				"command": "org.calendar.prevWeek",
-				"key": "<",
-				"when": "hasOrgCalFocus"
-			},
-			{
-				"command": "org.calendar.nextWeek",
-				"key": ">",
-				"when": "hasOrgCalFocus"
-			},
-			{
-				"command": "org.calendar.setDate",
-				"key": "enter",
-				"when": "hasOrgCalFocus"
-			}
+            {
+                "command": "workbench.action.closeActiveEditor",
+                "key": "escape",
+                "when": "editorTextFocus && editorLangId == 'calendar'"
+            },
+            {
+                "command": "org.calendar.prevDate",
+                "key": ",",
+                "when": "hasOrgCalFocus"
+            },
+            {
+                "command": "org.calendar.nextDate",
+                "key": ".",
+                "when": "hasOrgCalFocus"
+            },
+            {
+                "command": "org.calendar.prevWeek",
+                "key": "<",
+                "when": "hasOrgCalFocus"
+            },
+            {
+                "command": "org.calendar.nextWeek",
+                "key": ">",
+                "when": "hasOrgCalFocus"
+            },
+            {
+                "command": "org.calendar.setDate",
+                "key": "enter",
+                "when": "hasOrgCalFocus"
+            }
         ]
     },
     "scripts": {
@@ -525,12 +536,12 @@
     "devDependencies": {
         "@types/mocha": "^2.2.48",
         "@types/node": "^6.14.13",
+        "vscode": "^1.1.x",
         "codecov": "^3.1.0",
-        "mocha": "^6.0.1",
+        "mocha": "^6.2.3",
         "tslint": "^5.14.0",
         "tslint-config-prettier": "^1.18.0",
         "typescript": "^3.9.10",
-        "vscode": "^1.1.x",
         "vscode-coverage-test-runner": "^1.0.0"
     },
     "dependencies": {
