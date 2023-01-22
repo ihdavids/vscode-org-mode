@@ -85,6 +85,10 @@ export class OrgExtension {
         await this.todolist.open(name);
     }
 
+    public getTodoList(): TodoList<boolean> {
+        return this.todolist;
+    }
+
 	startUpdate(): void {
 		const delay: number = Sets.decoreUpdate;
 		if (this.updateTimer) {

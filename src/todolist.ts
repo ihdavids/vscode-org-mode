@@ -38,6 +38,7 @@ export class TodoList<RETURNTYPE> implements vscode.TextDocumentContentProvider 
 	private text: string;
     private uri: vscode.Uri;
     private cfg: object;
+    private latestData;
 
 	private editor: vscode.TextEditor | undefined;
 
@@ -71,11 +72,12 @@ export class TodoList<RETURNTYPE> implements vscode.TextDocumentContentProvider 
 
 	constructor(context: vscode.ExtensionContext) {
 
-	    //context.subscriptions.push(vscode.commands.registerCommand('org.calendar.prevDate', () => this.goDate(-1)));
 	    //context.subscriptions.push(vscode.commands.registerCommand('org.calendar.nextDate', () => this.goDate(1)));
 	    //context.subscriptions.push(vscode.commands.registerCommand('org.calendar.prevWeek', () => this.goDate(-7)));
 	    //context.subscriptions.push(vscode.commands.registerCommand('org.calendar.nextWeek', () => this.goDate(7)));
 	    //context.subscriptions.push(vscode.commands.registerCommand('org.calendar.setDate', async () => this.onEnterHandler()));
+
+	    context.subscriptions.push(vscode.commands.registerTextEditorCommand('org.todo.goto', gotoTodoInView));
 
 		this.uri = vscode.Uri.parse('TodoList:TodoList.todolist');
         context.subscriptions.push(vscode.workspace.registerTextDocumentContentProvider('TodoList', this));
@@ -183,17 +185,32 @@ export class TodoList<RETURNTYPE> implements vscode.TextDocumentContentProvider 
         return `${this.formatFilename(evt.Filename)}${limitLenRight(evt.Status,this.showStatus)} ${limitLenRight(evt.Headline, this.showHeadline)} ${this.formatProperty('EFFORT',5,evt)}\n`
     }
 
+    findSelection(line: number) {
+        for (var evt of this.latestData) {
+            if (evt && evt.Headline) {
+                if (evt.todoLine === line) {
+                    return evt;
+                }
+            }
+        } 
+        return null;
+    }
+
 	async regenContent() {
         try {
         if (this.page) {
             let query = this.cfg['query'];
             let data = await ODb.query(query);
             if (data !== null) {
+                this.latestData = data;
                 this.text = `QUERY:  ${query}\n\n`;
                 this.text += `${this.formatHeadline()}\n`;
+                let line = 3;
                 for (var evt of data) {
                     if (evt && evt.Headline) {
+                        line += 1;
                         this.text += this.formatContent(evt)
+                        evt.todoLine = line;
                     }
                 }
             } else {
@@ -244,5 +261,23 @@ export async function chooseTodoView(doc: vscode.TextEditor, edit: vscode.TextEd
     let todoName = await selectTodoView();
     if (todoName !== undefined) {
         await OrgExtension.get().showTodoList(todoName);
+    }
+}
+
+export async function gotoTodoInView(doc: vscode.TextEditor, edit: vscode.TextEditorEdit) {
+    if (doc && doc.selection) {
+        let sline = doc.selection.active.line;
+        //console.log("SELECTED: ", sline);
+        let evt = OrgExtension.get().getTodoList().findSelection(sline);
+        console.log(evt);
+        let openPath = evt.Filename;
+        await vscode.workspace.openTextDocument(openPath).then(async textDoc => {
+                await vscode.window.showTextDocument(textDoc).then( nDoc => {
+                  let line = evt.LineNum;
+                  nDoc.revealRange(new vscode.Range(new vscode.Position(line,0), new vscode.Position(line,0)));
+                });
+            });
+    } else {
+        console.log("NO SELECTION!");
     }
 }

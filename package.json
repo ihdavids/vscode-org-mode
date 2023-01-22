@@ -521,6 +521,11 @@
                 "command": "org.calendar.setDate",
                 "key": "enter",
                 "when": "hasOrgCalFocus"
+            },
+            {
+                "command": "org.todo.goto",
+                "key": "enter",
+                "when": "editorLangId == todolist"
             }
         ]
     },
