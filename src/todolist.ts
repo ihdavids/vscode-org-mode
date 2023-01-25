@@ -125,7 +125,7 @@ export class TodoList<RETURNTYPE> implements vscode.TextDocumentContentProvider 
 			const date = parseInt(this.calendars[monthIndex][line].trim().split(/\s+/g)[dateIndex]);
 			this.date.setDate(date);
             */
-			this.regenContent();
+			//this.regenContent();
 		});
 	}
 
@@ -239,6 +239,14 @@ export class TodoList<RETURNTYPE> implements vscode.TextDocumentContentProvider 
         await this.page.show();
 		await this.redraw();
 
+		let clearSelection = setTimeout(function (self) {
+            // Change the selection: start and end position of the new
+            // selection is same, so it is not to select replaced text;
+            var postion = self.page.editor.selection.end; 
+            self.page.editor.selection = new vscode.Selection(postion, postion);
+            //self.page.editor.selection.active = self.editor.selection.anchor;
+        }, 100, this);
+
         return Promise.resolve(true);
 	}
 
@@ -269,12 +277,16 @@ export async function gotoTodoInView(doc: vscode.TextEditor, edit: vscode.TextEd
         let sline = doc.selection.active.line;
         //console.log("SELECTED: ", sline);
         let evt = OrgExtension.get().getTodoList().findSelection(sline);
-        console.log(evt);
+        //console.log(evt);
         let openPath = evt.Filename;
-        await vscode.workspace.openTextDocument(openPath).then(async textDoc => {
-                await vscode.window.showTextDocument(textDoc).then( nDoc => {
+        await vscode.workspace.openTextDocument(openPath).then(textDoc => {
+                vscode.window.showTextDocument(textDoc).then( nDoc => {
                   let line = evt.LineNum;
-                  nDoc.revealRange(new vscode.Range(new vscode.Position(line,0), new vscode.Position(line,0)));
+                  //console.log("JUMPING TO: ", line)
+
+                  let pos = new vscode.Position(line,0);
+                  nDoc.selection = new vscode.Selection(pos, pos);
+                  nDoc.revealRange(new vscode.Range(pos, pos),vscode.TextEditorRevealType.InCenter);
                 });
             });
     } else {
