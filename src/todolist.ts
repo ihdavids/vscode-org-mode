@@ -53,6 +53,8 @@ export class TodoList<RETURNTYPE> implements vscode.TextDocumentContentProvider 
     private showHeadline = 25;
     private showStatus   = 10;
 
+    private filter: string = null;
+
     onEnterHandler() {
         //const state = new CalendarState(this, true);
         //this._onDone.trigger(this, state);
@@ -78,6 +80,7 @@ export class TodoList<RETURNTYPE> implements vscode.TextDocumentContentProvider 
 	    //context.subscriptions.push(vscode.commands.registerCommand('org.calendar.setDate', async () => this.onEnterHandler()));
 
 	    context.subscriptions.push(vscode.commands.registerTextEditorCommand('org.todo.goto', gotoTodoInView));
+	    context.subscriptions.push(vscode.commands.registerTextEditorCommand('org.todo.filter', searchTodosInView));
 
 		this.uri = vscode.Uri.parse('TodoList:TodoList.todolist');
         context.subscriptions.push(vscode.workspace.registerTextDocumentContentProvider('TodoList', this));
@@ -206,8 +209,12 @@ export class TodoList<RETURNTYPE> implements vscode.TextDocumentContentProvider 
                 this.text = `QUERY:  ${query}\n\n`;
                 this.text += `${this.formatHeadline()}\n`;
                 let line = 3;
+                let re = null;
+                if (this.filter && this.filter.trim() !== "") {
+                    re = new RegExp(this.filter);
+                }
                 for (var evt of data) {
-                    if (evt && evt.Headline) {
+                    if (evt && evt.Headline && (!re || re.exec(evt.Headline))) {
                         line += 1;
                         this.text += this.formatContent(evt)
                         evt.todoLine = line;
@@ -250,6 +257,12 @@ export class TodoList<RETURNTYPE> implements vscode.TextDocumentContentProvider 
         return Promise.resolve(true);
 	}
 
+    async filterTo(val: string) {
+        this.filter = val;
+        await this.regenContent();
+		await this.redraw();
+    }
+
 
 	async redraw() {
         this._onDidChange.fire(this.uri);
@@ -272,24 +285,50 @@ export async function chooseTodoView(doc: vscode.TextEditor, edit: vscode.TextEd
     }
 }
 
+export async function searchTodosInView(doc: vscode.TextEditor, edit: vscode.TextEditorEdit) {
+    let box = vscode.window.createInputBox();
+    box.value = "";
+    box.onDidChangeValue(async (strLine: string) => {
+            console.log(strLine);
+            await (OrgExtension.get().getTodoList()).filterTo(box.value);
+    });
+    box.ignoreFocusOut = true;
+    const promise = new Promise<[string|undefined,boolean]>((resolve, reject) =>{
+        let accept = false;
+        box.onDidAccept(() => {
+            accept = true;
+            box.hide();
+        });
+        box.onDidHide(async () => {
+            //await vscode.commands.executeCommand('setContext', 'hasOrgCalFocus', false);
+            //let calVal: Date | undefined = undefined;
+            if (accept) {
+                //calVal = this.date;    
+            }
+            //await this.page.close();
+            resolve([box.value, accept]);
+        });
+        box.show();
+        });
+        const [searchVal, ok] = await promise;
+        await (OrgExtension.get().getTodoList()).filterTo(searchVal);
+}
+
 export async function gotoTodoInView(doc: vscode.TextEditor, edit: vscode.TextEditorEdit) {
     if (doc && doc.selection) {
         let sline = doc.selection.active.line;
-        //console.log("SELECTED: ", sline);
         let evt = OrgExtension.get().getTodoList().findSelection(sline);
         //console.log(evt);
         let openPath = evt.Filename;
         await vscode.workspace.openTextDocument(openPath).then(textDoc => {
                 vscode.window.showTextDocument(textDoc).then( nDoc => {
                   let line = evt.LineNum;
-                  //console.log("JUMPING TO: ", line)
-
                   let pos = new vscode.Position(line,0);
                   nDoc.selection = new vscode.Selection(pos, pos);
                   nDoc.revealRange(new vscode.Range(pos, pos),vscode.TextEditorRevealType.InCenter);
                 });
             });
     } else {
-        console.log("NO SELECTION!");
+        console.log("NO SELECTION!, not jumping anywhere");
     }
 }

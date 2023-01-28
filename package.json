@@ -526,6 +526,11 @@
                 "command": "org.todo.goto",
                 "key": "enter",
                 "when": "editorLangId == todolist"
+            },
+            {
+                "command": "org.todo.filter",
+                "key": "f3",
+                "when": "editorLangId == todolist"
             }
         ]
     },
