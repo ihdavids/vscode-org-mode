@@ -287,7 +287,14 @@
                     "default": {
                         "todos": {
                             "query": "",
-                            "display": ""
+                            "display": {
+                                "filename" : 15,
+                                "status": 25,
+                                "headline": 25,
+                                "properties": {
+                                    "EFFORT": 5
+                                }
+                            }
                         }
                     },
                     "description": "Defines TODO list views you would like to query from the orgs server and how to display them"

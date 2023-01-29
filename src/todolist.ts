@@ -179,13 +179,54 @@ export class TodoList<RETURNTYPE> implements vscode.TextDocumentContentProvider 
     }
     */
 
+    setupFormatDefaults() {
+        const dsp = this.cfg['display'];
+        if (dsp) {
+            this.showFilename   = dsp["filename"] ?? 15;
+            this.showStatus     = dsp["status"]   ?? 10;
+            this.showHeadline   = dsp["headline"] ?? 25;
+        }
+    }
+
     formatHeadline(): string {
-        let r =    `${limitLenRight('Filename',this.showFilename)}${limitLenRight("Status",this.showStatus)} ${limitLenRight("Heading",this.showHeadline)} ${limitLen("Efrt",5)}\n`
-        return r + `${limitLenRight('--------',this.showFilename)}${limitLenRight("------",this.showStatus)} ${limitLenRight("-------",this.showHeadline)} ${limitLen("----",5)}`
+        const dsp = this.cfg['display'];
+        this.setupFormatDefaults();
+        let r =    `${limitLenRight('Filename',this.showFilename)}${limitLenRight("Status",this.showStatus)} ${limitLenRight("Heading",this.showHeadline)} `
+        let lns = "";
+        if (dsp) {
+            let prop = dsp['properties']
+            if (prop) {
+                for (const k in prop) {
+                    let v = prop[k];
+                    if (v) {
+                        r += `${limitLen(k,v)}`;
+                        lns += `${limitLen('-'.repeat(v),v)}`;
+                    }
+                }
+            }
+        }
+        r += '\n';
+        r += `${limitLenRight('--------',this.showFilename)}${limitLenRight("------",this.showStatus)} ${limitLenRight("-------",this.showHeadline)} `;
+        r += lns;
+        return r;
     }
 
     formatContent(evt): string {
-        return `${this.formatFilename(evt.Filename)}${limitLenRight(evt.Status,this.showStatus)} ${limitLenRight(evt.Headline, this.showHeadline)} ${this.formatProperty('EFFORT',5,evt)}\n`
+        const dsp = this.cfg['display'];
+        let r = `${this.formatFilename(evt.Filename)}${limitLenRight(evt.Status,this.showStatus)} ${limitLenRight(evt.Headline, this.showHeadline)} `;
+        if (dsp) {
+            let prop = dsp['properties']
+            if (prop) {
+                for (const k in prop) {
+                    let v = prop[k];
+                    if (v) {
+                        r += `${this.formatProperty(k,v,evt)}`;
+                    }
+                }
+            }
+        }
+        r += '\n';
+        return r;
     }
 
     findSelection(line: number) {
