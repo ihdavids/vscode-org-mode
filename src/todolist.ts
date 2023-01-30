@@ -23,6 +23,9 @@ function limitLen(name, len) {
 }
 
 function limitLenRight(name, len) {
+    if (name === null || name === undefined) {
+        name = "";
+    }
     if (name.length > len) {
         name = name.slice(0, len);
     } else {
@@ -52,6 +55,7 @@ export class TodoList<RETURNTYPE> implements vscode.TextDocumentContentProvider 
     private showFilename = 15;
     private showHeadline = 25;
     private showStatus   = 10;
+    private showDate     = 10;
 
     private filter: string = null;
 
@@ -185,6 +189,7 @@ export class TodoList<RETURNTYPE> implements vscode.TextDocumentContentProvider 
             this.showFilename   = dsp["filename"] ?? 15;
             this.showStatus     = dsp["status"]   ?? 10;
             this.showHeadline   = dsp["headline"] ?? 25;
+            this.showDate       = dsp["date"]     ?? 10;
         }
     }
 
@@ -192,6 +197,7 @@ export class TodoList<RETURNTYPE> implements vscode.TextDocumentContentProvider 
         const dsp = this.cfg['display'];
         this.setupFormatDefaults();
         let r =    `${limitLenRight('Filename',this.showFilename)}${limitLenRight("Status",this.showStatus)} ${limitLenRight("Heading",this.showHeadline)} `
+        r += `${limitLenRight("Date",this.showDate)}`;
         let lns = "";
         if (dsp) {
             let prop = dsp['properties']
@@ -207,6 +213,7 @@ export class TodoList<RETURNTYPE> implements vscode.TextDocumentContentProvider 
         }
         r += '\n';
         r += `${limitLenRight('--------',this.showFilename)}${limitLenRight("------",this.showStatus)} ${limitLenRight("-------",this.showHeadline)} `;
+        r += `${limitLenRight("----",this.showDate)}`;
         r += lns;
         return r;
     }
@@ -214,6 +221,11 @@ export class TodoList<RETURNTYPE> implements vscode.TextDocumentContentProvider 
     formatContent(evt): string {
         const dsp = this.cfg['display'];
         let r = `${this.formatFilename(evt.Filename)}${limitLenRight(evt.Status,this.showStatus)} ${limitLenRight(evt.Headline, this.showHeadline)} `;
+        let d = "";
+        if (evt.Date) {
+            d = evt.Date.Start;
+        }
+        r += `${limitLenRight(d,this.showDate)}`;
         if (dsp) {
             let prop = dsp['properties']
             if (prop) {
