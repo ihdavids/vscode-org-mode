@@ -13,7 +13,7 @@ import { OrgExtension  } from "./extension";
 import { format } from 'date-fns';
 import { mainModule } from 'process';
 
-function limitLen(name, len) {
+export function limitLen(name, len) {
     if (name.length > len) { 
         name = name.slice(0, len);
     } else {
@@ -22,7 +22,7 @@ function limitLen(name, len) {
     return name
 }
 
-function limitLenRight(name, len) {
+export function limitLenRight(name, len) {
     if (name === null || name === undefined) {
         name = "";
     }

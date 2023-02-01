@@ -4,7 +4,8 @@ import * as context from './cursor-context';
 import { Sets } from './sets';
 import { window, Disposable } from 'vscode';
 import {Range, TextDocument, Position, TextEditor, TextEditorEdit, Selection} from "vscode";
-import { Headline } from './parser';
+import { Headline, OrgTypes, Node, Parent } from './parser';
+import { OrgExtension  } from "./extension";
 
 export function insertHeadingRespectContent(textEditor: vscode.TextEditor, edit: vscode.TextEditorEdit) {
         const document = textEditor.document;
@@ -148,5 +149,24 @@ export async function chooseAndChangeTodo(doc: TextEditor, edit: vscode.TextEdit
             }
             editBuilder.replace(range, newTodoString);
         });
+    }
+}
+
+function insertTag(node: Headline, doc: TextEditor, edit: TextEditorEdit, name: string) {
+    if (node && !node.tags.some( x => x === name)) {
+        node.tags.push(name);
+        let headlineText = node.getHeadline();
+        edit.replace(node.range, headlineText + "\n");
+    }
+}
+
+export async function insertTagCommand(doc: TextEditor, edit: TextEditorEdit, name: string) {
+    name = "TESTING";
+    const node = OrgExtension.get().parser.find();
+    if (node !== undefined) {
+        switch(node.type) {
+            case OrgTypes.Headline:  insertTag(<Headline>node, doc, edit, name);   break;
+            default: insertTag(<Headline>(<Parent>node).parent, doc, edit, name ); break;
+        }
     }
 }

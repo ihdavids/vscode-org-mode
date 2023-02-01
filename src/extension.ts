@@ -114,6 +114,7 @@ export function activate(context: vscode.ExtensionContext) {
     const insertChildCmd = vscode.commands.registerTextEditorCommand('org.insertSubheading', HeaderFunctions.insertChild);
     const demoteLineCmd = vscode.commands.registerTextEditorCommand('org.doDemote', HeaderFunctions.demoteLine);
     const promoteLineCmd = vscode.commands.registerTextEditorCommand('org.doPromote', HeaderFunctions.promoteLine);
+    const insertTagCmd = vscode.commands.registerTextEditorCommand('org.insertTag', HeaderFunctions.insertTagCommand);
     const promoteSubtreeCmd = vscode.commands.registerTextEditorCommand('org.promoteSubtree', SubtreeFunctions.promoteSubtree);
     const demoteSubtreeCmd = vscode.commands.registerTextEditorCommand('org.demoteSubtree', SubtreeFunctions.demoteSubtree);
 
@@ -175,6 +176,7 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(insertPropertyDrawerCmd);
     context.subscriptions.push(insertLogbookDrawerCmd);
     context.subscriptions.push(insertPropertyCmd);
+    context.subscriptions.push(insertTagCmd);
 
     context.subscriptions.push(addDwimCmd);
     context.subscriptions.push(toggleDwimCmd);

@@ -2,6 +2,8 @@ import * as vscode from 'vscode';
 import { Sets } from './sets';
 import { isHeaderLine } from './utils';
 import { DateType, OrgDate } from './simple-datetime'
+import { listenerCount } from 'stream';
+import * as tt from "./todolist";
 
 export enum OrgTypes {
     Root,
@@ -277,7 +279,7 @@ export class Headline implements Parent {
     closed:    Closed | undefined;
     timestamp: Timestamp | undefined;
     text:      string;
-    tags:      string;
+    tags:      string[];
     parent?:   Headline;
     children:  Headline[];
     links:     Link[];
@@ -291,7 +293,17 @@ export class Headline implements Parent {
     todoKeywords: string;
     sourceBlocks: SourceBlock[];
     
-    
+    public getHeadline(): string {
+        let tags = "";
+        if (this.tags.length > 0) {
+            tags = `:${this.tags.join(':')}:`;
+            tags = `${tt.limitLenRight(this.text, 60)}${tags}`
+        } else {
+            tags = `${this.text}`
+        }
+        return `${"*".repeat(this.level)} ${this.status} ${tags}`;
+    } 
+
     public find(pos: vscode.Position | undefined = undefined): Node|undefined {
 		const editor = vscode.window.activeTextEditor;
 		if (!editor) {
@@ -539,7 +551,11 @@ function startHeadline(rootNode, m: RegExpExecArray, curLine, last: Headline | n
     h.level = stars.length;
     h.status = m.groups.status;
     h.text   = m.groups.text;
-    h.tags   = m.groups.tags;
+    if (m.groups.tags) {
+        h.tags   = m.groups.tags.split(':').filter(e=>e);
+    } else {
+        h.tags = [];
+    }
     const statusOffset = h.level + 1; 
     const statusLen = h.status ? h.status.length : 0;
     h.statusRange = new vscode.Range(new vscode.Position(curLine,statusOffset),new vscode.Position(curLine,statusOffset + statusLen));
