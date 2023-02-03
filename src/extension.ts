@@ -115,6 +115,10 @@ export function activate(context: vscode.ExtensionContext) {
     const demoteLineCmd = vscode.commands.registerTextEditorCommand('org.doDemote', HeaderFunctions.demoteLine);
     const promoteLineCmd = vscode.commands.registerTextEditorCommand('org.doPromote', HeaderFunctions.promoteLine);
     const insertTagCmd = vscode.commands.registerTextEditorCommand('org.insertTag', HeaderFunctions.insertTagCommand);
+
+	context.subscriptions.push(vscode.commands.registerTextEditorCommand('org.insertProjectTag',  HeaderFunctions.insertProjectTagCommand));
+	context.subscriptions.push(vscode.commands.registerTextEditorCommand('org.insertWorkTag',  HeaderFunctions.insertWorkTagCommand));
+
     const promoteSubtreeCmd = vscode.commands.registerTextEditorCommand('org.promoteSubtree', SubtreeFunctions.promoteSubtree);
     const demoteSubtreeCmd = vscode.commands.registerTextEditorCommand('org.demoteSubtree', SubtreeFunctions.demoteSubtree);
 

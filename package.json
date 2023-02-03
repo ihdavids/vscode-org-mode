@@ -38,6 +38,18 @@
     "contributes": {
         "commands": [
             {
+                "command": "org.insertProjectTag",
+                "title": "Org: Tag Project"
+            },
+            {
+                "command": "org.insertWorkTag",
+                "title": "Org: Tag Work"
+            },
+            {
+                "command": "org.insertTag",
+                "title": "Org: Insert Tag"
+            },
+            {
                 "command": "org.chooseTodoView",
                 "title": "Org: Todo View"
             },
@@ -342,6 +354,12 @@
                         {}
                     ],
                     "description": "Styles setting per heading level, up to 8"
+                },
+                "org.tagOffset": {
+                    "type": "integer",
+                    "default": 65,
+                    "description": "How far (characters) out should tags be indented on a headline?"
+
                 },
                 "org.gantts": {
                     "type": "object",

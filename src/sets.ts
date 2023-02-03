@@ -67,4 +67,5 @@ export class Sets {
     public static get gantts(): {[key:string]: string} { return Sets.getProp<{[key:string]: string}>("gantts", {
         "default": "HasProperty(\"EFFORT\")"
     });}
+    public static get tagOffset(): number              { return Sets.getProp<number>("tagOffset",60);         }
 }

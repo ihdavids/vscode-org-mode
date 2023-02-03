@@ -297,7 +297,7 @@ export class Headline implements Parent {
         let tags = "";
         if (this.tags.length > 0) {
             tags = `:${this.tags.join(':')}:`;
-            tags = `${tt.limitLenRight(this.text, 60)}${tags}`
+            tags = `${tt.limitLenRight(this.text, Sets.tagOffset)}${tags}`
         } else {
             tags = `${this.text}`
         }
