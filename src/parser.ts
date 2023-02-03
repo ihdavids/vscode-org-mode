@@ -267,6 +267,17 @@ export class LogBook extends Drawer {
         this.clocks.push(entry);
     }
 }
+
+
+export function padPreHeadline(name, len) {
+    if (name === null || name === undefined) {
+        name = "";
+    }
+    if (name.length < len) {
+        name = name.padEnd(len, ' ');
+    }
+    return name
+}
 export class Headline implements Parent {
     type:      OrgTypes = OrgTypes.Headline;
     range:     vscode.Range;
@@ -295,13 +306,14 @@ export class Headline implements Parent {
     
     public getHeadline(): string {
         let tags = "";
+        let txt = `${"*".repeat(this.level)} ${this.status} ${this.text.trim()}`
         if (this.tags.length > 0) {
             tags = `:${this.tags.join(':')}:`;
-            tags = `${tt.limitLenRight(this.text, Sets.tagOffset)}${tags}`
+            tags = `${padPreHeadline(txt, Sets.tagOffset)} ${tags}`
         } else {
-            tags = `${this.text}`
+            tags = txt;
         }
-        return `${"*".repeat(this.level)} ${this.status} ${tags}`;
+        return tags;
     } 
 
     public find(pos: vscode.Position | undefined = undefined): Node|undefined {
