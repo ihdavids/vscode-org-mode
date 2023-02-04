@@ -306,7 +306,11 @@ export class Headline implements Parent {
     
     public getHeadline(): string {
         let tags = "";
-        let txt = `${"*".repeat(this.level)} ${this.status} ${this.text.trim()}`
+        let status = "";
+        if (this.status) {
+            status = `${this.status} `;
+        }
+        let txt = `${"*".repeat(this.level)} ${status}${this.text.trim()}`
         if (this.tags.length > 0) {
             tags = `:${this.tags.join(':')}:`;
             tags = `${padPreHeadline(txt, Sets.tagOffset)} ${tags}`
