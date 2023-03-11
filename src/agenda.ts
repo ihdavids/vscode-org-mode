@@ -114,13 +114,15 @@ function createEvent(evt, height, top, left, units): hnode {
   console.log(filename);
   let linenum  = evt.LineNum;
   node.className = "agd-event";
-  let num = 0
-  evt.Tags.forEach(element => {
-    let x = Number(element)
-    if (x !== Number.NaN) {
-      num = x
-    }
-  });
+  let num = 0;
+  if (evt.Tags !== null && evt.Tags !== undefined) {
+    evt.Tags.forEach(element => {
+      let x = Number(element)
+      if (x !== Number.NaN) {
+        num = x
+      }
+    });
+  }
   if (num > 0 && num < 10) {
     node.className = ("agd-event agd-event-t" + num);
   }
@@ -457,7 +459,8 @@ export async function showAgenda(doc: vscode.TextEditor) {
       const updateWebview = async () => {
         let agd = await ODb.agenda();
         panel.title = 'Agenda';
-        panel.webview.html = getWebviewContent(panel.webview, 'Agenda', agd);
+        let cont = getWebviewContent(panel.webview, 'Agenda', agd);
+        panel.webview.html = cont;
       };
 
       // Set initial content
