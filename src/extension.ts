@@ -64,7 +64,7 @@ export class OrgExtension {
 
     async timestamp(mode: CalendarMode): Promise<void> {
         let x = await this.calendar.openCalendarEditor(mode);
-        await x.writeToEditor();
+        await x.writeToEditor(this.calendar.hasTimestamp());
         return Promise.resolve();
     }
 

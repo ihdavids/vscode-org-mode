@@ -45,6 +45,12 @@ export class CalendarEffector {
     }
 }
 
+function SimpleTime(dt: Date): string {
+	let DS: string = ' ' + ('0' + dt.getHours()).slice(-2)
+				   + ':' + ('0' + dt.getMinutes()).slice(-2)
+	return DS
+}
+
 export class CalendarState {
     public effector:  CalendarEffector;
     public date:      Date;
@@ -55,7 +61,7 @@ export class CalendarState {
         this.date      = cal.getDate();
     }
 
-    public async writeToEditor() {
+    public async writeToEditor(includeTime: boolean = false) {
         // This is annoying, I would rather use the editor we got from the effector
         // but it seems it got closed?
         if (!this.ok) {
@@ -73,11 +79,7 @@ export class CalendarState {
 				const editor = vscode.window.visibleTextEditors.find(
 					(editor) => { return editor.document === this.effector.document }
 		 		);
-				if (editor === undefined || editor === null) {
-					await setTimeout(this.writeToEditor, 500);
-				} else {
-					this.effector.editor = editor;
-				}
+				this.effector.editor = editor;
 			} else {
         		this.effector.editor = vscode.window.activeTextEditor;
 			}
@@ -131,7 +133,11 @@ export class CalendarState {
 
         var tzoffset = (new Date()).getTimezoneOffset() * 60000; //offset in milliseconds
         var tdate = (new Date(this.date.getTime() - tzoffset));
-		const text = prefix + this.effector.mode + '<' + tdate.toISOString().slice(0, 10) + ' ' + tdate.toLocaleString('en-US', { weekday: 'short' }) + '>' + space + newline;
+		var dtinfo = "";
+		if (includeTime) {
+			dtinfo = SimpleTime(this.date);
+		}
+		const text = prefix + this.effector.mode + '<' + tdate.toISOString().slice(0, 10) + ' ' + tdate.toLocaleString('en-US', { weekday: 'short' }) + dtinfo + '>' + space + newline;
 		await this.effector.editor.edit((editBuilder) => {
 			editBuilder.insert(new vscode.Position(line, idt), text);
 		});
@@ -149,6 +155,8 @@ export class Calendar implements vscode.TextDocumentContentProvider {
 	private calendars: string[][];
 	private text: string;
     private uri: vscode.Uri;
+	private showTime: boolean;
+	private box: vscode.InputBox;
 
 	private editor: vscode.TextEditor | undefined;
     public effector: CalendarEffector;
@@ -179,14 +187,21 @@ export class Calendar implements vscode.TextDocumentContentProvider {
         return this._onChanged;
     }
 
+	hasTimestamp() {
+		return Datetime.hasTime(this.box.value);
+	}
+
 	constructor(context: vscode.ExtensionContext) {
 
+	    context.subscriptions.push(vscode.commands.registerCommand('org.calendar.today',    () => this.setDate(new Date())));
+	    context.subscriptions.push(vscode.commands.registerCommand('org.calendar.toggleTime',  () => this.toggleTime()));
 	    context.subscriptions.push(vscode.commands.registerCommand('org.calendar.prevDate', () => this.goDate(-1)));
 	    context.subscriptions.push(vscode.commands.registerCommand('org.calendar.nextDate', () => this.goDate(1)));
 	    context.subscriptions.push(vscode.commands.registerCommand('org.calendar.prevWeek', () => this.goDate(-7)));
 	    context.subscriptions.push(vscode.commands.registerCommand('org.calendar.nextWeek', () => this.goDate(7)));
 	    context.subscriptions.push(vscode.commands.registerCommand('org.calendar.setDate', async () => this.onEnterHandler()));
 
+		this.showTime = false;
 		this.uri = vscode.Uri.parse('Calendar:Calendar.calendar');
         context.subscriptions.push(vscode.workspace.registerTextDocumentContentProvider('Calendar', this));
 
@@ -345,6 +360,7 @@ export class Calendar implements vscode.TextDocumentContentProvider {
 		this.baseDate = date;
 		this.calendars = [];
 		this.text = this.getCalendars(date, count);
+		this.text += "\n\n==================================\nt - jump to today\nc - toggle clock\n. - next day\n, - prev day\n==================================\n";
 	}
 
 
@@ -444,7 +460,17 @@ export class Calendar implements vscode.TextDocumentContentProvider {
             this.regenCalendars();
 		    await this.redraw();
 		    this.showCurrDate();
+        	this.onChanged.trigger(this, this.date);
         }
+	}
+
+	async toggleTime() {
+		this.box.value = "";
+		this.showTime = !this.showTime;
+        this.regenCalendars();
+		await this.redraw();
+		this.showCurrDate();
+        this.onChanged.trigger(this, this.date);
 	}
 
 
@@ -476,10 +502,11 @@ export class Calendar implements vscode.TextDocumentContentProvider {
         box.ignoreFocusOut = true;
        
         this.onChanged.on((cal,dt) => {
-            box.value = Datetime.dateToRawString(dt,Datetime.hasTime(box.value));
+            box.value = Datetime.dateToRawString(dt,this.showTime || Datetime.hasTime(box.value));
         });
         const curDate = this.getDate();
         box.value = curDate.toISOString().slice(0, 10);
+		this.box = box;
         const promise = new Promise<[Date|undefined,boolean]>((resolve, reject) =>{
         let accept = false;
         box.onDidAccept(() => {
