@@ -65,7 +65,25 @@ export class CalendarState {
             // console.log("EFFECTOR NOT SETUP ABORT!");
             return;
         }
-        this.effector.editor = vscode.window.activeTextEditor;
+		if (vscode.window.activeTextEditor === undefined || vscode.window.activeTextEditor === null) {
+			// This happens we do not have the active editor yet so...
+        	await vscode.window.showTextDocument(this.effector.document);
+			if (vscode.window.activeTextEditor === undefined || vscode.window.activeTextEditor === null) {
+				// Crap still no active editor, try manually searching for it
+				const editor = vscode.window.visibleTextEditors.find(
+					(editor) => { return editor.document === this.effector.document }
+		 		);
+				if (editor === undefined || editor === null) {
+					await setTimeout(this.writeToEditor, 500);
+				} else {
+					this.effector.editor = editor;
+				}
+			} else {
+        		this.effector.editor = vscode.window.activeTextEditor;
+			}
+		} else {
+        	this.effector.editor = vscode.window.activeTextEditor;
+		}
 		let line = this.effector.node.line + 1;
 		let column = 0;
 		let length = 0;
