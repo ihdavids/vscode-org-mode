@@ -188,7 +188,7 @@ export class Calendar implements vscode.TextDocumentContentProvider {
     }
 
 	hasTimestamp() {
-		return Datetime.hasTime(this.box.value);
+		return this.box && Datetime.hasTime(this.box.value);
 	}
 
 	constructor(context: vscode.ExtensionContext) {
@@ -360,6 +360,16 @@ export class Calendar implements vscode.TextDocumentContentProvider {
 		this.baseDate = date;
 		this.calendars = [];
 		this.text = this.getCalendars(date, count);
+		/*
+		var clocks = "🕐🕑🕒🕓🕔🕕🕖🕗🕘🕙🕚🕛🕜🕝🕞🕟🕠🕡🕢🕣🕤🕥🕦🕧";
+		if (this.hasTimestamp()) {
+			var h = this.date.getHours();
+			if (h > 12) {
+				h = h - 12;
+			}
+			this.text += "\n\nTime: " + clocks[(h*2) + Math.floor(this.date.getMinutes()/30)] + "\n\n";
+		}
+		*/
 		this.text += "\n\n==================================\nt - jump to today\nc - toggle clock\n. - next day\n, - prev day\n==================================\n";
 	}
 
@@ -454,13 +464,15 @@ export class Calendar implements vscode.TextDocumentContentProvider {
         this.onChanged.trigger(this, this.date);
 	}
 
-	async setDate(dt: Date) {
+	async setDate(dt: Date, updateTextBox:boolean = true) {
         if (dt !== this.date) {
 		    this.date = dt;
             this.regenCalendars();
 		    await this.redraw();
 		    this.showCurrDate();
-        	this.onChanged.trigger(this, this.date);
+			if (updateTextBox) {
+        		this.onChanged.trigger(this, this.date);
+			}
         }
 	}
 
@@ -487,13 +499,13 @@ export class Calendar implements vscode.TextDocumentContentProvider {
             let dt = OrgDuration.parse(strLine);
             if(dt && dt.mins > 0) {
                 let cdate: Date = new Date();
-                this.setDate(cdate.addDuration(dt));
+                this.setDate(cdate.addDuration(dt), false);
             } else {
                 let sd = Datetime.parseDateTime(strLine);
                 if (sd && sd.year !== undefined) {
                     let d = Datetime.simpleDateTimeToDate(sd);
                     if (d) {
-                        this.setDate(d);
+                        this.setDate(d, false);
                     }
                 }
             }
