@@ -7,7 +7,9 @@ import { Sets } from './sets'
 import { RpcWebSocketClient } from 'rpc-websocket-client';
 import { stringify } from 'querystring';
 import { NumList } from './parser';
-
+import { URL } from 'url';
+var got = require('got');
+//import got from 'got';
 
 function pad2(num: number): string {
     return String(num).padStart(2, '0');
@@ -81,6 +83,77 @@ export class ODb
             return null;
         }
     }
+
+    public static async doGet<T>(url: any): Promise<T> {
+        // We can use the `Headers` constructor to create headers
+        // and assign it as the type of the `headers` variable
+        //const headers: Headers = new Headers()
+        // Add a few headers
+        //headers.set('Content-Type', 'application/json')
+        //headers.set('Accept', 'application/json')
+        // Add a custom header, which we can use to check
+        //headers.set('X-Custom-Header', 'CustomValue')
+        // Create the request object, which will be a RequestInfo type. 
+        // Here, we will pass in the URL as well as the options object as parameters.
+        if(url instanceof String) {
+            url = new URL(Sets.orgsConnection + url);
+        }
+        return got.get(url).json() as T;
+        /*
+        const request: RequestInfo = new Request(url, {
+            method: 'GET',
+            headers: headers
+        });
+        // Pass in the request object to the `fetch` API
+        return fetch(request)
+            .then(res => res.json())
+            .then(res => {
+                return res as T
+            });
+            */
+    }
+
+    public static async doPost<T>(url: any, payload: any): Promise<T> {
+        /*
+        // We can use the `Headers` constructor to create headers
+        // and assign it as the type of the `headers` variable
+        const headers: Headers = new Headers()
+        // Add a few headers
+        headers.set('Content-Type', 'application/json')
+        // We also need to set the `Accept` header to `application/json`
+        // to tell the server that we expect JSON in response
+        headers.set('Accept', 'application/json')
+
+        const request: RequestInfo = new Request('/users', {
+            // We need to set the `method` to `POST` and assign the headers
+            method: 'POST',
+            headers: headers,
+            // Convert the user object to JSON and pass it as the body
+            body: JSON.stringify(payload)
+        });
+
+        // Send the request and print the response
+        return fetch(request)
+            .then(res => res.json())
+            .then(res => {
+                return res as T
+            });
+        */
+        if(url instanceof String) {
+            url = new URL(Sets.orgsConnection + url);
+        }
+       return got.post(url,
+            {json: JSON.stringify(payload)}
+        ).json() as T;
+    }
+
+    public static async agendaRest<T>(): Promise<T> {
+        console.log("HERE GETTING REST")
+        var url: URL = new URL(Sets.orgsConnection + "/search");
+        url.searchParams.append('query',`!IsProject() && !IsArchived() && IsTodo()`);
+        return await this.doGet(url);
+    }
+
     public static async gantt(query: string, retry: boolean = false) {
         try {
 	        let qry: string = `!IsProject() && !IsArchived() && IsTodo()`;

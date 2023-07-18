@@ -42,7 +42,7 @@ export class Sets {
     public static get leftZero(): boolean           { return Sets.getProp<boolean>("addLeftZero");                 }
     public static get clockInOutSeparator(): string { return Sets.getProp<string>("clockInOutSeparator");          }
     public static get clockTotalSeparator(): string { return Sets.getProp<string>("clockTotalSeparator");          }
-    public static get orgsConnection(): string      { return Sets.getProp<string>("orgsConnection", 'ws://localhost:8010/org');         }
+    public static get orgsConnection(): string      { return Sets.getProp<string>("orgsConnection", 'https://localhost:443');         }
     public static get decoreUpdate(): number        { return Sets.getProp<number>("updateInterval",10000);         }
     public static get prettyLinks(): boolean        { return Sets.getProp<boolean>("decorateLinks",true);          }
     public static get prettyBullets(): boolean      { return Sets.getProp<boolean>("decorateBullets",true);        }

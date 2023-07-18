@@ -300,7 +300,7 @@
                         "todos": {
                             "query": "",
                             "display": {
-                                "filename" : 15,
+                                "filename": 15,
                                 "status": 10,
                                 "headline": 25,
                                 "properties": {
@@ -359,7 +359,6 @@
                     "type": "integer",
                     "default": 65,
                     "description": "How far (characters) out should tags be indented on a headline?"
-
                 },
                 "org.gantts": {
                     "type": "object",
@@ -571,16 +570,17 @@
     "devDependencies": {
         "@types/mocha": "^2.2.48",
         "@types/node": "^6.14.13",
-        "vscode": "^1.1.x",
         "codecov": "^3.1.0",
         "mocha": "^6.2.3",
         "tslint": "^5.14.0",
         "tslint-config-prettier": "^1.18.0",
         "typescript": "^3.9.10",
+        "vscode": "^1.1.x",
         "vscode-coverage-test-runner": "^1.0.0"
     },
     "dependencies": {
         "date-fns": "^1.28.3",
+        "got": "^13.0.0",
         "isomorphic-ws": "^5.0.0",
         "p-event": "^4.2.0",
         "rpc-websocket-client": "^1.1.4",

@@ -447,7 +447,7 @@ ${scrStr}
 
 
 export async function showAgenda(doc: vscode.TextEditor) {
-
+      console.log("SHOWING AGENDA");
       const panel = vscode.window.createWebviewPanel(
         'agenda',
         'Agenda',
@@ -457,7 +457,7 @@ export async function showAgenda(doc: vscode.TextEditor) {
 
       let iteration = 0;
       const updateWebview = async () => {
-        let agd = await ODb.agenda();
+        let agd = await ODb.agendaRest();
         panel.title = 'Agenda';
         let cont = getWebviewContent(panel.webview, 'Agenda', agd);
         panel.webview.html = cont;
