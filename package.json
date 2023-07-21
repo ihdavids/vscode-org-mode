@@ -579,9 +579,11 @@
         "vscode-coverage-test-runner": "^1.0.0"
     },
     "dependencies": {
+        "@types/got": "^9.6.12",
         "date-fns": "^1.28.3",
         "got": "^13.0.0",
         "isomorphic-ws": "^5.0.0",
+        "node-fetch": "^2.6.12",
         "p-event": "^4.2.0",
         "rpc-websocket-client": "^1.1.4",
         "rpc-websockets": "^7.5.0",

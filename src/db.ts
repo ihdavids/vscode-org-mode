@@ -8,8 +8,12 @@ import { RpcWebSocketClient } from 'rpc-websocket-client';
 import { stringify } from 'querystring';
 import { NumList } from './parser';
 import { URL } from 'url';
-var got = require('got');
+import {Request, RequestInfo, Headers} from 'node-fetch';
+import * as https from 'https';
+//var got = require('got');
 //import got from 'got';
+
+const fetch = (url,...args) => import('node-fetch').then(({default: fetch}) => fetch(url,...args));
 
 function pad2(num: number): string {
     return String(num).padStart(2, '0');
@@ -87,10 +91,10 @@ export class ODb
     public static async doGet<T>(url: any): Promise<T> {
         // We can use the `Headers` constructor to create headers
         // and assign it as the type of the `headers` variable
-        //const headers: Headers = new Headers()
+        const headers: Headers = new Headers()
         // Add a few headers
-        //headers.set('Content-Type', 'application/json')
-        //headers.set('Accept', 'application/json')
+        headers.set('Content-Type', 'application/json')
+        headers.set('Accept', 'application/json')
         // Add a custom header, which we can use to check
         //headers.set('X-Custom-Header', 'CustomValue')
         // Create the request object, which will be a RequestInfo type. 
@@ -98,19 +102,22 @@ export class ODb
         if(url instanceof String) {
             url = new URL(Sets.orgsConnection + url);
         }
-        return got.get(url).json() as T;
-        /*
+        //const got = await import("got");
+        //var res = await got.get(url);
+        //return JSON.parse(res.body) as T;
+       
+        const httpsAgent = new https.Agent({
+            rejectUnauthorized: false,
+          });
+      
         const request: RequestInfo = new Request(url, {
             method: 'GET',
-            headers: headers
+            headers: headers,
+            agent: httpsAgent,
         });
         // Pass in the request object to the `fetch` API
-        return fetch(request)
-            .then(res => res.json())
-            .then(res => {
-                return res as T
-            });
-            */
+        var res = await fetch(request);
+        return res.json() as T;
     }
 
     public static async doPost<T>(url: any, payload: any): Promise<T> {
@@ -142,15 +149,18 @@ export class ODb
         if(url instanceof String) {
             url = new URL(Sets.orgsConnection + url);
         }
-       return got.post(url,
-            {json: JSON.stringify(payload)}
-        ).json() as T;
+        const got = await import('got');
+        var res = await got.post(url,
+            {json: payload}
+        );
+        return JSON.parse(res.body) as T;
     }
 
     public static async agendaRest<T>(): Promise<T> {
-        console.log("HERE GETTING REST")
         var url: URL = new URL(Sets.orgsConnection + "/search");
-        url.searchParams.append('query',`!IsProject() && !IsArchived() && IsTodo()`);
+
+        const now = new Date();
+        url.searchParams.append('query',`!IsProject() && !IsArchived() && IsTodo() && OnDate("${now.getFullYear()} ${pad2(now.getDate())} ${pad2(now.getMonth()+1)}")`);
         return await this.doGet(url);
     }
 

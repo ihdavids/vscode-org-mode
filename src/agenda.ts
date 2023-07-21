@@ -198,6 +198,9 @@ function getCollisions (events) {
 
   let didClamp = false;
   events.forEach((event, id) => {
+    if (event.Date === null) {
+      return;
+    }
     let end = getInMinutes(event.Date.End);
     let start = getInMinutes(event.Date.Start);
     if (end == 0) {
@@ -386,7 +389,11 @@ function getWebviewContent(webview, title: string, agd) {
     let scrStr = scr.render();
     var time = createTimeBlocks();
     var evts = time.findById('events');
+    if (agd !== null) {
     for (var item of agd) {
+      if (item.Date === null) {
+        continue;
+      }
       let s = getInMinutes(item.Date.Start);
       let e = getInMinutes(item.Date.End);
       if (s < 0) {
@@ -402,7 +409,7 @@ function getWebviewContent(webview, title: string, agd) {
         evts.append(createEvent(item,height,top,left,units));
       }
       id += 1;
-    }
+    }}
     const now   = new Date();
     let nowMins = getInMinutes(now);
     let height = 2;
