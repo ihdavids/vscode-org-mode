@@ -220,6 +220,11 @@ export class ODb
         return await this.doGet(url);
     }
 
+    public static async getdaypageIncrement(): Promise<any> {
+        var url: URL = new URL(Sets.orgsConnection + `/daypage/increment/`);
+        return await this.doGet(url);
+    }
+
 };
 
 

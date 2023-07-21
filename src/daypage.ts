@@ -27,19 +27,23 @@ export async function gotoDayPage(increment: number) {
             let pageName = page[0];
             var openPath = vscode.Uri.file(pageName);
             console.log(openPath);
-            vscode.workspace.openTextDocument(openPath).then(textDoc => {
-                vscode.window.showTextDocument(textDoc);
-            });
+            var textDoc = await vscode.workspace.openTextDocument(openPath);
+            if (textDoc) {
+                await vscode.window.showTextDocument(textDoc);
+                return;
+            }
         }
     }
 }
 
 export async function prevDayPage(doc: vscode.TextEditor, edit: vscode.TextEditorEdit) {
-    gotoDayPage(-1);
+    var inc = await ODb.getdaypageIncrement();
+    gotoDayPage(-inc);
 }
 
 export async function nextDayPage(doc: vscode.TextEditor, edit: vscode.TextEditorEdit) {
-    gotoDayPage(1);
+    var inc = await ODb.getdaypageIncrement();
+    gotoDayPage(inc);
 }
 
 
