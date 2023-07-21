@@ -105,23 +105,29 @@ export class ODb
         //const got = await import("got");
         //var res = await got.get(url);
         //return JSON.parse(res.body) as T;
-       
-        const httpsAgent = new https.Agent({
-            rejectUnauthorized: false,
+     
+        var httpsAgent = https.globalAgent;
+        if (Sets.allowSelfSigned) {
+          httpsAgent = new https.Agent({
+                rejectUnauthorized: false,
           });
+        }
       
         const request: RequestInfo = new Request(url, {
             method: 'GET',
             headers: headers,
             agent: httpsAgent,
         });
-        // Pass in the request object to the `fetch` API
-        var res = await fetch(request);
-        return res.json() as T;
+        try{
+            // Pass in the request object to the `fetch` API
+            var res = await fetch(request);
+            return res.json() as T;
+        } catch(error) {
+            vscode.window.showErrorMessage(error.message)
+        }
     }
 
     public static async doPost<T>(url: any, payload: any): Promise<T> {
-        /*
         // We can use the `Headers` constructor to create headers
         // and assign it as the type of the `headers` variable
         const headers: Headers = new Headers()
@@ -131,29 +137,32 @@ export class ODb
         // to tell the server that we expect JSON in response
         headers.set('Accept', 'application/json')
 
-        const request: RequestInfo = new Request('/users', {
+        if(url instanceof String) {
+            url = new URL(Sets.orgsConnection + url);
+        }
+
+        var httpsAgent = https.globalAgent;
+        if (Sets.allowSelfSigned) {
+          httpsAgent = new https.Agent({
+                rejectUnauthorized: false,
+          });
+        }
+
+        const request: RequestInfo = new Request(url, {
             // We need to set the `method` to `POST` and assign the headers
             method: 'POST',
             headers: headers,
             // Convert the user object to JSON and pass it as the body
-            body: JSON.stringify(payload)
+            body: JSON.stringify(payload),
+            agent: httpsAgent,
         });
 
-        // Send the request and print the response
-        return fetch(request)
-            .then(res => res.json())
-            .then(res => {
-                return res as T
-            });
-        */
-        if(url instanceof String) {
-            url = new URL(Sets.orgsConnection + url);
+        try{
+            var res = await fetch(request);
+            return res.json() as T;
+        } catch(error) {
+            vscode.window.showErrorMessage(error.message)
         }
-        const got = await import('got');
-        var res = await got.post(url,
-            {json: payload}
-        );
-        return JSON.parse(res.body) as T;
     }
 
     public static async agendaRest<T>(): Promise<T> {
