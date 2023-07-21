@@ -174,22 +174,15 @@ export class ODb
     }
 
     public static async gantt(query: string, retry: boolean = false) {
-        try {
-	        let qry: string = `!IsProject() && !IsArchived() && IsTodo()`;
-            if (query !== "") {
-                qry += ` && ${query}`
-            }
-            let db     = await ODb.get();
-            let result = await db.ws.call("Db.ExportToString",[{ "Name": "gantt", "Query": qry, "Filename": "", "Opts": ""}])
-            return result;
-        } catch(e) {
-            vscode.window.showErrorMessage("GANTT: Cannot contact orgs database, please ensure DB is present");
-            ODb.reset();
-            if (!retry) {
-                return ODb.gantt(query, true);
-            }
-            return null;
+        var url: URL = new URL(Sets.orgsConnection + "/file/gantt");
+
+        const now = new Date();
+        let qry: string = `!IsProject() && !IsArchived() && IsTodo()`;
+        if (query !== "") {
+            qry += ` && ${query}`
         }
+        url.searchParams.append('query', qry);
+        return await this.doGet(url);
     }
 
     public static async html(query: string, retry: boolean = false) {
