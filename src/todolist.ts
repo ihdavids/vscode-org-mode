@@ -251,13 +251,20 @@ export class TodoList<RETURNTYPE> implements vscode.TextDocumentContentProvider 
         } 
         return null;
     }
+    isIterable(obj) {
+        // checks for null and undefined
+        if (obj == null) {
+            return false;
+        }
+        return typeof obj[Symbol.iterator] === 'function';
+    }
 
 	async regenContent() {
         try {
         if (this.page) {
             let query = this.cfg['query'];
             let data = await ODb.query(query);
-            if (data !== null) {
+            if (data !== null && this.isIterable(data)) {
                 this.latestData = data;
                 this.text = `QUERY:  ${query}\n\n`;
                 this.text += `${this.formatHeadline()}\n`;

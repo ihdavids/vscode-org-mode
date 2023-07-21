@@ -186,72 +186,38 @@ export class ODb
     }
 
     public static async html(query: string, retry: boolean = false) {
-        try {
-	        let qry: string = query;
-            let db     = await ODb.get();
-            let result = await db.ws.call("Db.ExportToString",[{ "Name": "html", "Query": qry, "Filename": "", "Opts": ""}])
-            return result;
-        } catch(e) {
-            vscode.window.showErrorMessage("WEB: Cannot contact orgs database, please ensure DB is present: " + e);
-            ODb.reset();
-            if (!retry) {
-                return ODb.html(query, true);
-            }
-            return null;
+        var url: URL = new URL(Sets.orgsConnection + "/file/html");
+
+        let qry: string = `!IsArchived() && IsTodo()`;
+        if (query !== "") {
+            qry += ` && ${query}`
         }
+        url.searchParams.append('query', qry);
+        return await this.doGet(url);
     }
 
-    public static async query(qry: string, retry: boolean = false) {
-        try {
-            let db     = await ODb.get();
-            console.log("QUERY: ", qry)
-            let result = await db.ws.call("Db.QueryTodosExp",[{ "Query": qry}])
-            return result;
-        } catch(e) {
-            vscode.window.showErrorMessage("QUERY: Cannot contact orgs database, please ensure DB is present");
-            console.log("QUERY: Cannot contact orgs database, please ensure DB is present: " + e);
-            ODb.reset();
-            if (!retry) {
-                return ODb.query(qry, true);
-            }
-            return null;
+    public static async query(query: string, retry: boolean = false) : Promise<any> {
+        var url: URL = new URL(Sets.orgsConnection + "/search");
+        let qry: string = `!IsArchived() && IsTodo()`;
+        if (query !== "") {
+            qry += ` && ${query}`
         }
+        url.searchParams.append('query', qry);
+        return await this.doGet(url);
     }
 
     public static async daypage(retry: boolean = false) {
-        try {
-            const now = new Date();
-	        let qry: string = `${now.getFullYear()}-${pad2(now.getDate())}-${pad2(now.getMonth()+1)}`;
-            let db     = await ODb.get();
-            let result = await db.ws.call("Db.CreateDayPage",[qry])
-            return result;
-        } catch(e) {
-            vscode.window.showErrorMessage("DAYPAGE: Cannot contact orgs database, please ensure DB is present");
-            ODb.reset();
-            if (!retry) {
-                return ODb.daypage(true);
-            }
-            return null;
-        }
+        const now = new Date();
+        var url: URL = new URL(Sets.orgsConnection + `/daypage/${now.getFullYear()}-${pad2(now.getDate())}-${pad2(now.getMonth()+1)}/`);
+        return await this.doGet(url);
     }
 
     public static async getdaypage(tm: Date = null, retry: boolean = false) {
-        try {
-            if(tm == null) {
-                tm = new Date();
-            }
-	        let qry: string = `${tm.getFullYear()}-${pad2(tm.getDate())}-${pad2(tm.getMonth()+1)}`;
-            let db     = await ODb.get();
-            let result = await db.ws.call("Db.GetDayPageAt",[qry])
-            return result;
-        } catch(e) {
-            vscode.window.showErrorMessage("DAYPAGE: Cannot contact orgs database, please ensure DB is present");
-            ODb.reset();
-            if (!retry) {
-                return ODb.getdaypage(tm, true);
-            }
-            return null;
+        if(tm == null) {
+            tm = new Date();
         }
+        var url: URL = new URL(Sets.orgsConnection + `/daypage/${tm.getFullYear()}-${pad2(tm.getDate())}-${pad2(tm.getMonth()+1)}`);
+        return await this.doGet(url);
     }
 
 };
