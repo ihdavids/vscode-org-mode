@@ -371,11 +371,11 @@ function createTimeMarker (events: hnode, height, top, left, units, out_of_day) 
 
 
 function getWebviewContent(webview, title: string, agd) {
-    console.log(agd);
+    //console.log(agd);
     //const myStyle = webview.asWebviewUri(vscode.Uri.joinPath(context.extensionUri, 'media', 'my-custom-style.css'));
     const coreStyle = webview.asWebviewUri(vscode.Uri.file(path.join(OrgExtension.get().context.extensionPath, 'media', 'day_agenda.css')));
     const dayStyle  = webview.asWebviewUri(vscode.Uri.file(path.join(OrgExtension.get().context.extensionPath, 'media', 'base_css.css')));
-    console.log(coreStyle);
+    //console.log(coreStyle);
     let agendaItems: string = "";
     let id = 0;
     getCollisions(agd);
@@ -454,7 +454,6 @@ ${scrStr}
 
 
 export async function showAgenda(doc: vscode.TextEditor) {
-      console.log("SHOWING AGENDA");
       const panel = vscode.window.createWebviewPanel(
         'agenda',
         'Agenda',
@@ -499,6 +498,4 @@ export async function showAgenda(doc: vscode.TextEditor) {
         null,
         OrgExtension.get().context.subscriptions
       );
-
-    console.log("SHOW AGENDA SHOWN");
 }
