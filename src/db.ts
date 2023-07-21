@@ -177,8 +177,8 @@ export class ODb
         var url: URL = new URL(Sets.orgsConnection + "/file/gantt");
 
         const now = new Date();
-        let qry: string = `!IsProject() && !IsArchived() && IsTodo()`;
-        if (query !== "") {
+        let qry: string = "!IsProject() && !IsArchived() && IsTodo()";
+        if (query !== null && query !== "") {
             qry += ` && ${query}`
         }
         url.searchParams.append('query', qry);
@@ -221,7 +221,7 @@ export class ODb
     }
 
     public static async getdaypageIncrement(): Promise<any> {
-        var url: URL = new URL(Sets.orgsConnection + `/daypage/increment/`);
+        var url: URL = new URL(Sets.orgsConnection + `/daypage/increment/`); 
         return await this.doGet(url);
     }
 
