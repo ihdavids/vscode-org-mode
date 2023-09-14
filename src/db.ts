@@ -177,9 +177,12 @@ export class ODb
         var url: URL = new URL(Sets.orgsConnection + "/file/gantt");
 
         const now = new Date();
-        let qry: string = "!IsProject() && !IsArchived() && IsTodo()";
-        if (query !== null && query !== "") {
+        //let qry: string = "!IsArchived() && IsTodo()";
+        let qry: string = "";
+        if (query !== null && query !== "" && qry !== "") {
             qry += ` && ${query}`
+        } else {
+            qry = query;
         }
         url.searchParams.append('query', qry);
         return await this.doGet(url);

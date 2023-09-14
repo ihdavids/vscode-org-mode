@@ -36,9 +36,15 @@ export async function showGantt(doc: vscode.TextEditor) {
       let iteration = 0;
       const updateWebview = async () => {
         let agd = await ODb.gantt(qry);
+        console.log("THIS IS WHAT I GOT BACK!");
+        console.log(agd);
         panel.title = 'Gantt: ' + qry;
-        if (agd["Ok"] === true) {
+        if (agd && agd["Ok"] === true) {
           panel.webview.html = agd["Msg"];
+        } else if (agd && agd["Ok"] === false) {
+          panel.webview.html = `<html><body>ERROR: Failed query result was: ${agd["Msg"]}</body></html>`;
+        } else {
+          panel.webview.html = `<html><body>ERROR: Did not manage to query result: ${agd}</body></html>`;
         }
       };
 
