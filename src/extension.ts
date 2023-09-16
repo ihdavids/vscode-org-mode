@@ -154,6 +154,7 @@ export function activate(context: vscode.ExtensionContext) {
     const insertPropertyDrawerCmd = vscode.commands.registerTextEditorCommand('org.insertPropertyDrawer', props.insertPropertyDrawerCommand);
     const insertLogbookDrawerCmd = vscode.commands.registerTextEditorCommand('org.insertLogbookDrawer', props.insertLogbookDrawerCommand);
     const insertPropertyCmd = vscode.commands.registerTextEditorCommand('org.insertProperty', props.insertPropertyCommand);
+    const updateEffortPropertyCmd = vscode.commands.registerTextEditorCommand('org.updateEffortProperty', props.updateEffortPropertyCommand);
     const tablHandlerCmd = vscode.commands.registerTextEditorCommand('org.tabHandler', folding.tabHandler);
 
     const showAgendaCmd = vscode.commands.registerTextEditorCommand('org.showAgenda', agenda.showAgenda);
@@ -175,11 +176,13 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(showDayPageCmd);
     context.subscriptions.push(showAgendaCmd);
     context.subscriptions.push(showGanttCmd);
+    context.subscriptions.push(showGanttWeb);
     context.subscriptions.push(connectToOrgsCmd);
     context.subscriptions.push(tablHandlerCmd);
     context.subscriptions.push(insertPropertyDrawerCmd);
     context.subscriptions.push(insertLogbookDrawerCmd);
     context.subscriptions.push(insertPropertyCmd);
+    context.subscriptions.push(updateEffortPropertyCmd);
     context.subscriptions.push(insertTagCmd);
 
     context.subscriptions.push(addDwimCmd);

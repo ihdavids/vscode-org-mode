@@ -420,3 +420,7 @@ export function getIndent(content:string) : string
         //console.error(`Could not match indent: ${content}`);
     }
 }
+
+export function getLineIndent(doc: vscode.TextDocument, pos: vscode.Position) {
+    return getIndent(getLine(doc, pos));
+}

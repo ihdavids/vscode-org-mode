@@ -23,8 +23,8 @@ function findPropertyDrawer(doc: TextEditor, drawer: string = ":PROPERTIES:", po
     {
         pos = doc.selection.active;   
     }
-    let start: Position = utils.findBeginningOfSection(doc.document, pos, "*");
-    let end: Position   = utils.findEndOfContent(doc.document, start, "*");
+    let start: Position = utils.findBeginningOfBlock(doc.document, pos);
+    let end: Position   = utils.findEndOfBlock(doc.document, start);
     let drawerReStr = `^\\s*${drawer}\\s*$`;
     let drawerRe = new RegExp(drawerReStr);
     let drawerEndRe = /^\s*:END:\s*$/;
@@ -99,7 +99,7 @@ async function findProperty(doc: TextEditor, drawer: string=":PROPERTIES:", key:
         for(let l = prop.region.start.line + 1; l < prop.region.end.line; ++l)
         {
             let line = doc.document.lineAt(l).text;
-            let m = line.match(/^\s*:([^:]):\s*(.*)+/);
+            let m = line.match(/^\s*[:]([^:]+)[:]\s*(.*)+/);
             if(m)
             {
                 let name = m[1].trim();
@@ -135,7 +135,8 @@ async function updateProperty(doc: TextEditor, key: string, value: string)
     {
         return doc.edit( (edit) => {
             let pos: Position = new Position(prop[0],0);
-            edit.replace(new Range(pos, new Position(prop[0],utils.lineLen(doc.document,pos))), ":" + key + ": " + value);
+            let indent: string = utils.getLineIndent(doc.document, pos);
+            edit.replace(new Range(pos, new Position(prop[0],utils.lineLen(doc.document,pos))), `${indent}:${key}: ${value}`);
         });
     }
     else
@@ -182,6 +183,11 @@ export async function insertPropertyCommand(doc: TextEditor, edit: TextEditorEdi
         return;
     }
     return updateProperty(doc, key, value);
+}
+
+export async function updateEffortPropertyCommand(doc: TextEditor, edit: TextEditorEdit, key: string, value: string)
+{
+    return await insertPropertyCommand(doc, edit, "EFFORT", null);
 }
 
 export function insertPropertyDrawerCommand(doc: TextEditor)
