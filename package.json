@@ -31,6 +31,7 @@
         "onLanguage:org",
         "onCommand:org.showAgenda",
         "onCommand:org.showGantt",
+        "onCommand:org.showWeb",
         "onCommand:org.connectToOrgs",
         "onCommand:org.showDayPageToday"
     ],
@@ -220,6 +221,10 @@
             {
                 "command": "org.insertProperty",
                 "title": "Org: Insert Property"
+            },
+            {
+                "command": "org.updateEffortProperty",
+                "title": "Org: Update Effort Property"
             }
         ],
         "languages": [
@@ -590,6 +595,7 @@
     },
     "dependencies": {
         "@types/got": "^9.6.12",
+        "@vscode/vsce": "^2.19.0",
         "date-fns": "^1.28.3",
         "isomorphic-ws": "^5.0.0",
         "node-fetch": "^2.6.12",
