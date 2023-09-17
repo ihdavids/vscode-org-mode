@@ -401,6 +401,16 @@
                     "type": "string",
                     "default": " =>  ",
                     "description": "Clock total separator"
+                },
+                "org.orgsConnection": {
+                    "type": "string",
+                    "default": "https://localhost:443",
+                    "description": "orgs server connection"
+                },
+                "org.allowSelfSigned": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Allow self signed https certificates on your org server, this is NOT safe"
                 }
             }
         },
