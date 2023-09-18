@@ -174,7 +174,7 @@ export class ODb
     }
 
     public static async gantt(query: string, retry: boolean = false) {
-        var url: URL = new URL(Sets.orgsConnection + "/file/gantt");
+        var url: URL = new URL(Sets.orgsConnection + "/file/mermaid");
 
         const now = new Date();
         //let qry: string = "!IsArchived() && IsTodo()";
