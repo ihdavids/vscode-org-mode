@@ -85,6 +85,7 @@ export class TodoList<RETURNTYPE> implements vscode.TextDocumentContentProvider 
 
 	    context.subscriptions.push(vscode.commands.registerTextEditorCommand('org.todo.goto', gotoTodoInView));
 	    context.subscriptions.push(vscode.commands.registerTextEditorCommand('org.todo.filter', searchTodosInView));
+	    context.subscriptions.push(vscode.commands.registerTextEditorCommand('org.todo.effort', setEffortInView));
 
 		this.uri = vscode.Uri.parse('TodoList:TodoList.todolist');
         context.subscriptions.push(vscode.workspace.registerTextDocumentContentProvider('TodoList', this));
@@ -342,6 +343,30 @@ export async function chooseTodoView(doc: vscode.TextEditor, edit: vscode.TextEd
     let todoName = await selectTodoView();
     if (todoName !== undefined) {
         await OrgExtension.get().showTodoList(todoName);
+    }
+}
+
+export async function setEffortInView(doc: vscode.TextEditor, edit: vscode.TextEditorEdit) {
+    if (doc && doc.selection) {
+        let sline = doc.selection.active.line;
+        let evt = OrgExtension.get().getTodoList().findSelection(sline);
+        let effort = "";
+        if (evt) {
+            effort = await vscode.window.showInputBox({
+                value: '',
+                placeHolder: '1d',
+            });
+            if (effort) {
+                let res: any = await ODb.setProperty(evt.Hash, "EFFORT", effort);
+                if (!res || !res.Ok) {
+                    vscode.window.showErrorMessage("EFFORT UPDATE FAILED: ", res)
+                } else {
+                    // Redraw the window
+                    await (OrgExtension.get().getTodoList()).regenContent();
+                    await (OrgExtension.get().getTodoList()).redraw();
+                }
+            }
+        }
     }
 }
 
