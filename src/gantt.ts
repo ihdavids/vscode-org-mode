@@ -5,6 +5,7 @@ import {ODb} from "./db"
 import {OrgExtension} from "./extension"
 import { Sets } from './sets';
 import { listenerCount } from 'stream';
+import * as fs from 'fs';
 
 async function getWebviewContent(name) {
 
@@ -23,6 +24,44 @@ async function selectGantt(): Promise<string | undefined> {
     return Sets.gantts[k];
 }
 
+const userBodyScripts = `
+  <script>
+    window.addEventListener("keydown", function (event) {
+      if (event.defaultPrevented) {
+        return; // Do nothing if the event was already processed
+      }
+      const vscode = acquireVsCodeApi();
+
+      switch (event.key) {
+        case "ArrowDown":
+          // code for "down arrow" key press.
+          break;
+        case "ArrowUp":
+          // code for "up arrow" key press.
+          break;
+        case "ArrowLeft":
+          // code for "left arrow" key press.
+          break;
+        case "ArrowRight":
+          // code for "right arrow" key press.
+          break;
+        case "s":
+          vscode.postMessage({
+              command: 'save',
+              text: 'save file'
+          });
+        default:
+          return; // Quit when this doesn't handle the key event.
+      }
+
+      // Cancel the default action to avoid it being handled twice
+      event.preventDefault();
+    }, true);
+    // the last option dispatches the event to the listener first,
+    // then dispatches event to window
+  </script>
+`
+
 export async function showGantt(doc: vscode.TextEditor) {
 
     let qry = await selectGantt();
@@ -40,7 +79,10 @@ export async function showGantt(doc: vscode.TextEditor) {
         console.log(agd);
         panel.title = 'Gantt: ' + qry;
         if (agd && agd["Ok"] === true) {
-          panel.webview.html = agd["Msg"];
+          let htmlOut = agd["Msg"];
+          htmlOut = htmlOut.replace("<!--USERBODYSCRIPT-->",userBodyScripts);
+        console.log(htmlOut);
+          panel.webview.html = htmlOut;
         } else if (agd && agd["Ok"] === false) {
           panel.webview.html = `<html><body>ERROR: Failed query result was: ${agd["Msg"]}</body></html>`;
         } else {
@@ -51,7 +93,7 @@ export async function showGantt(doc: vscode.TextEditor) {
       // Set initial content
       updateWebview();
     // handle recieving messages from the webview
-    panel.webview.onDidReceiveMessage(message => {
+    panel.webview.onDidReceiveMessage(async message => {
       switch(message.command) {
         case 'open': vscode.window.showErrorMessage(message.text);
             var openPath = vscode.Uri.file(message.text);
@@ -63,6 +105,21 @@ export async function showGantt(doc: vscode.TextEditor) {
                 });
             });
           return;
+        case 'save': 
+        
+            let filename = await vscode.window.showInputBox({
+              value: '',
+              placeHolder: 'FILENAME.html',
+            });
+            let htmlOut = panel.webview.html;
+            fs.writeFile(filename, htmlOut, err => {
+              if (err) {
+                console.error(err);
+              }
+              // file written successfully
+            });
+        
+            return;
         case 'close': 
             console.log("CLOSE");
           return;
@@ -84,3 +141,20 @@ export async function showGantt(doc: vscode.TextEditor) {
 
     console.log("SHOW GANTT SHOWN");
 }
+
+
+/*
+async function writeToHtmlFile(doc: TextEditor, filename: string)
+{
+    if(!filename)
+    {
+        filename = await vscode.window.showInputBox({
+            value: '',
+            placeHolder: 'FILENAME.html',
+        });
+    }
+    
+    doc.webview.html 
+
+}
+*/

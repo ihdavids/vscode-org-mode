@@ -22,11 +22,12 @@ export async function gotoDayPage(increment: number) {
         maxTests -= 1;
         curDay = addDays(curDay, increment);
         let page = await ODb.getdaypage(curDay);
+        vscode.window.showInformationMessage("DAY PAGE", page)
         console.log("DP", page);
         if (page != null && fileExists(page[0])) {
             let pageName = page[0];
             var openPath = vscode.Uri.file(pageName);
-            console.log(openPath);
+            console.log("DP2:", openPath);
             var textDoc = await vscode.workspace.openTextDocument(openPath);
             if (textDoc) {
                 await vscode.window.showTextDocument(textDoc);
@@ -51,12 +52,23 @@ export async function showDayPageToday(doc: vscode.TextEditor, edit: vscode.Text
     let page = await ODb.daypage();
     curDay = new Date();
     console.log("DP", page);
-    if (page != null) {
+    if (page != null && fileExists(page[0])) {
         let pageName = page[0];
         var openPath = vscode.Uri.file(pageName);
         console.log(openPath);
         vscode.workspace.openTextDocument(openPath).then(textDoc => {
             vscode.window.showTextDocument(textDoc);
         });
+    } else {
+        let page = await ODb.createdaypage();
+        vscode.window.showInformationMessage("DAY PAGE", page)
+        if (page != null && fileExists(page[0])) {
+            let pageName = page[0];
+            var openPath = vscode.Uri.file(pageName);
+            console.log(openPath);
+            vscode.workspace.openTextDocument(openPath).then(textDoc => {
+                vscode.window.showTextDocument(textDoc);
+            });
+        }
     }
 }

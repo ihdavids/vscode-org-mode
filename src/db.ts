@@ -102,6 +102,7 @@ export class ODb
         if(url instanceof String) {
             url = new URL(Sets.orgsConnection + url);
         }
+        console.log("GET: ", url);
         //const got = await import("got");
         //var res = await got.get(url);
         //return JSON.parse(res.body) as T;
@@ -140,6 +141,7 @@ export class ODb
         if(url instanceof String) {
             url = new URL(Sets.orgsConnection + url);
         }
+        console.log("POST: ", url);
 
         var httpsAgent = https.globalAgent;
         if (Sets.allowSelfSigned) {
@@ -159,9 +161,12 @@ export class ODb
 
         try{
             var res = await fetch(request);
-            return res.json() as T;
+            console.log("RES: ", res);
+            const js = res.json();
+            console.log("RESJSON: ", res.json());
+            return js as T;
         } catch(error) {
-            vscode.window.showErrorMessage(error.message)
+            vscode.window.showErrorMessage("POST FAILED: " + error.message)
         }
     }
 
@@ -221,6 +226,11 @@ export class ODb
         }
         var url: URL = new URL(Sets.orgsConnection + `/daypage/${tm.getFullYear()}-${pad2(tm.getDate())}-${pad2(tm.getMonth()+1)}`);
         return await this.doGet(url);
+    }
+
+    public static async createdaypage() {
+        var url: URL = new URL(Sets.orgsConnection + `/daypage`);
+        return await this.doPost(url, {});
     }
 
     public static async getdaypageIncrement(): Promise<any> {
