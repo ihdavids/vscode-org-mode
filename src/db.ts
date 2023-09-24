@@ -189,6 +189,22 @@ export class ODb
         return await this.doGet(url);
     }
 
+    public static async mindmap(query: string, retry: boolean = false) {
+        var url: URL = new URL(Sets.orgsConnection + "/file/mindmap");
+
+        const now = new Date();
+        //let qry: string = "!IsArchived() && IsTodo()";
+        let qry: string = "";
+        if (query !== null && query !== "" && qry !== "") {
+            qry += ` && ${query}`
+        } else {
+            qry = query;
+        }
+        url.searchParams.append('query', qry);
+        return await this.doGet(url);
+    }
+
+
     public static async html(query: string, retry: boolean = false) {
         var url: URL = new URL(Sets.orgsConnection + "/file/html");
 

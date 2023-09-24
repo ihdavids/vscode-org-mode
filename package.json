@@ -31,6 +31,7 @@
         "onLanguage:org",
         "onCommand:org.showAgenda",
         "onCommand:org.showGantt",
+        "onCommand:org.showMindMap",
         "onCommand:org.showWeb",
         "onCommand:org.connectToOrgs",
         "onCommand:org.showDayPageToday"
@@ -89,6 +90,10 @@
             {
                 "command": "org.showGantt",
                 "title": "Org: Show Gantt"
+            },
+            {
+                "command": "org.showMindMap",
+                "title": "Org: Show Mind Map"
             },
             {
                 "command": "org.showWeb",

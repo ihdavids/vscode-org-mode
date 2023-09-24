@@ -17,6 +17,7 @@ import * as props from './properties';
 import * as folding from './folding';
 import * as agenda from './agenda';
 import * as gantt from './gantt';
+import * as mindmap from './mindmap';
 import * as web from './web';
 import * as daypage from './daypage';
 import * as odb from './db';
@@ -160,6 +161,7 @@ export function activate(context: vscode.ExtensionContext) {
     const showAgendaCmd = vscode.commands.registerTextEditorCommand('org.showAgenda', agenda.showAgenda);
     const showGanttCmd = vscode.commands.registerTextEditorCommand('org.showGantt', gantt.showGantt);
     const showGanttWeb = vscode.commands.registerTextEditorCommand('org.showWeb', web.showWeb);
+    const showMindMapCmd = vscode.commands.registerTextEditorCommand('org.showMindMap', mindmap.showMindMap);
     const connectToOrgsCmd = vscode.commands.registerTextEditorCommand('org.connectToOrgs', odb.connectToOrgs);
 
     const showDayPageCmd = vscode.commands.registerTextEditorCommand('org.showDayPageToday', daypage.showDayPageToday);
@@ -176,6 +178,7 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(showDayPageCmd);
     context.subscriptions.push(showAgendaCmd);
     context.subscriptions.push(showGanttCmd);
+    context.subscriptions.push(showMindMapCmd);
     context.subscriptions.push(showGanttWeb);
     context.subscriptions.push(connectToOrgsCmd);
     context.subscriptions.push(tablHandlerCmd);
