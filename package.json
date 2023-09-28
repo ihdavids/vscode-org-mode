@@ -144,6 +144,10 @@
                 "title": "Org: Demote Subtree"
             },
             {
+                "command": "org.selectNode",
+                "title": "Org: Select Node"
+            },
+            {
                 "command": "org.timestamp",
                 "title": "Org: Timestamp"
             },

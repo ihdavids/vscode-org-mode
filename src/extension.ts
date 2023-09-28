@@ -122,6 +122,7 @@ export function activate(context: vscode.ExtensionContext) {
 
     const promoteSubtreeCmd = vscode.commands.registerTextEditorCommand('org.promoteSubtree', SubtreeFunctions.promoteSubtree);
     const demoteSubtreeCmd = vscode.commands.registerTextEditorCommand('org.demoteSubtree', SubtreeFunctions.demoteSubtree);
+    const selectNodeCmd = vscode.commands.registerTextEditorCommand('org.selectNode', SubtreeFunctions.selectNode);
 
     const insertTimestampCmd = vscode.commands.registerTextEditorCommand('org.timestamp', TimestampFunctions.insertTimestamp);
     const clockInCmd = vscode.commands.registerTextEditorCommand('org.clockin', TimestampFunctions.clockIn);
@@ -206,6 +207,7 @@ export function activate(context: vscode.ExtensionContext) {
 
     context.subscriptions.push(promoteSubtreeCmd);
     context.subscriptions.push(demoteSubtreeCmd);
+    context.subscriptions.push(selectNodeCmd);
 
     context.subscriptions.push(insertTimestampCmd);
     context.subscriptions.push(incrementContextCmd);
