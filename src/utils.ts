@@ -195,10 +195,11 @@ export function findBeginningOfBlock(document: vscode.TextDocument, pos: vscode.
 
     if(curLine > 0)
     {
-        do {
+        curPos = new vscode.Position(curLine, 0);
+        while (curLine > 0 && !blockRegex.test(document.lineAt(curPos).text)) {
             curLine--;
             curPos = new vscode.Position(curLine, 0);
-        } while (curLine > 0 && !blockRegex.test(document.lineAt(curPos).text))
+        }
         if(curLine > 0)
         {
             return curPos;
