@@ -129,7 +129,6 @@ export function activate(context: vscode.ExtensionContext) {
     const updateClockCmd = vscode.commands.registerTextEditorCommand('org.updateclock', TimestampFunctions.updateClock);
 
     const incrementContextCmd = vscode.commands.registerTextEditorCommand('org.incrementContext', incrementContext);
-
     const decrementContextCmd = vscode.commands.registerTextEditorCommand('org.decrementContext', decrementContext);
 
     const boldCmd = vscode.commands.registerTextEditorCommand('org.bold', MarkupFunctions.bold);
@@ -219,6 +218,11 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(verboseCmd);
     context.subscriptions.push(literalCmd);
     context.subscriptions.push(butterflyCmd);
+
+    // Clocking commands
+    context.subscriptions.push(clockInCmd);
+    context.subscriptions.push(clockOutCmd);
+    context.subscriptions.push(updateClockCmd);
 
     const provider = new OrgFoldingAndOutlineProvider();
     vscode.languages.registerFoldingRangeProvider('org', provider);
