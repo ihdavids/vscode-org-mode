@@ -8,6 +8,7 @@ import * as CC from './cursor-context';
 import { OrgDuration } from './duration';
 import './duration';
 import * as Datetime from './simple-datetime';
+import {ODb} from "./db"
 
 export class CaptureState {
     public capPage: CapturePage;
@@ -21,6 +22,8 @@ export class CapturePage implements vscode.TextDocumentContentProvider {
     private page: Page;
 	private cursorType: vscode.TextEditorDecorationType;
     private uri: vscode.Uri;
+    private templates: any;
+    private template: any;
 
 	private editor: vscode.TextEditor | undefined;
 	private _onDidChange = new vscode.EventEmitter<vscode.Uri>();
@@ -349,6 +352,16 @@ export class CapturePage implements vscode.TextDocumentContentProvider {
         await vscode.commands.executeCommand('setContext', 'hasOrgCapFocus', true);
         // Open up the page with the calendar on it!
 		await this.openCapturePage();
+
+        this.templates = await ODb.captureTemplates();
+        let temps: string[] = [];
+        this.templates.forEach((item) => { temps.push(item.Name); });
+        const templateName = await vscode.window.showQuickPick(temps)
+        console.log("RESULTS", templateName);
+        this.templates.forEach((item) => { if (templateName === item['Name']) { this.template = item; }})
+        console.log("Chosen Template", this.template);
+        this.page.setReadonly(false);
+        this.page.edit((edit) => this.page.editor.insertSnippet(new vscode.SnippetString("* ${1:HEADING}\n  ${2:BODY}")) );
         //vscode.window.showInputBox();
         /*
         let box = vscode.window.createInputBox();
