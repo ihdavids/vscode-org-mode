@@ -72,6 +72,10 @@
                 "title": "Org: Timestamp Todo"
             },
             {
+                "command": "org.capture",
+                "title": "Org: Capture"
+            },
+            {
                 "command": "org.prevDayPage",
                 "title": "Org: Prev Day Page"
             },
