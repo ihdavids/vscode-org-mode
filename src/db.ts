@@ -245,9 +245,14 @@ export class ODb
         return await this.doPost(url, {});
     }
 
-    public static async captureentry(name: string, headline: string, content: string, tags: [] = [], props: {} = {}, priority: string = "") {
+    public static async capture(name: string, headline: string, content: string, tags: [] = [], props: {} = {}, priority: string = "") {
         var url: URL = new URL(Sets.orgsConnection + `/capture`);
         return await this.doPost(url, {Template: name, NewNode: { Headline: headline, Content: content, Tags: tags, Props: props, Priority: priority }});
+    }
+
+    public static async captureTemplates() {
+        var url: URL = new URL(Sets.orgsConnection + `/capture/templates`);
+        return await this.doGet(url);
     }
 
     public static async setProperty(hash: string, name: string, value: string) {

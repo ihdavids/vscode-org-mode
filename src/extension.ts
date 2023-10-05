@@ -25,6 +25,7 @@ import * as Util from './utils';
 import * as CC from './cursor-context';
 import { Calendar, CalendarMode } from './calendar';
 import { TodoList, chooseTodoView } from './todolist';
+import { CapturePage } from './capture';
 
 
 import { Parser } from './parser';
@@ -38,6 +39,7 @@ export class OrgExtension {
     context: vscode.ExtensionContext;    
     todolist: TodoList<boolean>;
     calendar: Calendar;
+    capPage: CapturePage;
     parser: Parser;
     decore: Decoration;
     private updateTimer: NodeJS.Timer | undefined;
@@ -61,11 +63,18 @@ export class OrgExtension {
         this.todolist = new TodoList<boolean>(context);
         this.parser   = new Parser();
         this.decore   = new Decoration(this.parser);
+		this.capPage  = new CapturePage(context);
     }
 
     async timestamp(mode: CalendarMode): Promise<void> {
         let x = await this.calendar.openCalendarEditor(mode);
         await x.writeToEditor(this.calendar.hasTimestamp());
+        return Promise.resolve();
+    }
+
+    async capture(): Promise<void> {
+        let x = await this.capPage.openCaptureEditor();
+        //await x.writeToEditor(this.calendar.hasTimestamp());
         return Promise.resolve();
     }
 
@@ -172,7 +181,7 @@ export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(vscode.commands.registerCommand('org.timestampNode', async () => OrgExtension.get().timestamp(CalendarMode.timestamp)));
 	context.subscriptions.push(vscode.commands.registerCommand('org.chooseTodo', HeaderFunctions.chooseAndChangeTodo));
 	context.subscriptions.push(vscode.commands.registerCommand('org.chooseTodoView', chooseTodoView));
-
+	context.subscriptions.push(vscode.commands.registerCommand('org.capture', async () => OrgExtension.get().capture()));
     context.subscriptions.push(nextDayPageCmd);
     context.subscriptions.push(prevDayPageCmd);
     context.subscriptions.push(showDayPageCmd);
