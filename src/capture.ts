@@ -24,6 +24,7 @@ export class CapturePage implements vscode.TextDocumentContentProvider {
     private uri: vscode.Uri;
     private templates: any;
     private template: any;
+    private context: vscode.ExtensionContext
 
 	private editor: vscode.TextEditor | undefined;
 	private _onDidChange = new vscode.EventEmitter<vscode.Uri>();
@@ -53,7 +54,7 @@ export class CapturePage implements vscode.TextDocumentContentProvider {
     }
 
 	constructor(context: vscode.ExtensionContext) {
-
+        this.context = context;
 	    //context.subscriptions.push(vscode.commands.registerCommand('org.calendar.today',    () => this.setDate(new Date())));
 	    // context.subscriptions.push(vscode.commands.registerCommand('org.calendar.toggleTime',  () => this.toggleTime()));
 	    // context.subscriptions.push(vscode.commands.registerCommand('org.calendar.prevDate', () => this.goDate(-1)));
@@ -64,7 +65,7 @@ export class CapturePage implements vscode.TextDocumentContentProvider {
 
 		//this.showTime = false;
 		this.uri = vscode.Uri.parse('Capture:Capture.capture');
-        context.subscriptions.push(vscode.workspace.registerTextDocumentContentProvider('Capture', this));
+        //context.subscriptions.push(vscode.workspace.registerTextDocumentContentProvider('Capture', this));
 
 		//this.config = Config.getInstance();
 		//this.numberMonth = 3;//this.config.get('number.of.month');
@@ -324,21 +325,12 @@ export class CapturePage implements vscode.TextDocumentContentProvider {
 	}
 */
 
-    regenCapture(resetBaseDate: boolean = true) {
-        /*
-		if (this.calendars === null || this.calendars.length <= 0 || this.findMonth(this.date) < 0) {
-            if (resetBaseDate) {
-			    this.baseDate = this.date;
-            }
-			const year    = this.baseDate.getFullYear();
-			const month   = this.date.getMonth();
-			this.genCalendars(new Date(year, month, 1), this.numberMonth);
-        }
-        */
+    regenCapture() {
+        this.page.edit((edit) => this.page.editor.insertSnippet(new vscode.SnippetString("* ${1:HEADING}\n  ${2:BODY}")) );
     }
 	async openCapturePage() {
         this.page = new Page();
-        await this.page.create(this.uri);
+        await this.page.create();
         await this.page.show();
         this.regenCapture();
 		await this.redraw();
@@ -360,55 +352,9 @@ export class CapturePage implements vscode.TextDocumentContentProvider {
         console.log("RESULTS", templateName);
         this.templates.forEach((item) => { if (templateName === item['Name']) { this.template = item; }})
         console.log("Chosen Template", this.template);
-        this.page.setReadonly(false);
-        this.page.edit((edit) => this.page.editor.insertSnippet(new vscode.SnippetString("* ${1:HEADING}\n  ${2:BODY}")) );
-        //vscode.window.showInputBox();
-        /*
-        let box = vscode.window.createInputBox();
-        box.onDidChangeValue((strLine: string) => {
-            let dt = OrgDuration.parse(strLine);
-            if(dt && dt.mins > 0) {
-                let cdate: Date = new Date();
-                this.setDate(cdate.addDuration(dt), false);
-            } else {
-                let sd = Datetime.parseDateTime(strLine);
-                if (sd && sd.year !== undefined) {
-                    let d = Datetime.simpleDateTimeToDate(sd);
-                    if (d) {
-                        this.setDate(d, false);
-                    }
-                }
-            }
-            //console.log(strLine);
-        })
-        box.ignoreFocusOut = true;
-       */
-        this.onChanged.on((cal,dt) => {
-            //box.value = Datetime.dateToRawString(dt,this.showTime || Datetime.hasTime(box.value));
+        this.page.onDidClose(this.context, (editor) => {
+            // TODO do update
         });
-        /*
-        const curDate = this.getDate();
-        box.value = curDate.toISOString().slice(0, 10);
-		this.box = box;
-        const promise = new Promise<[Date|undefined,boolean]>((resolve, reject) =>{
-        let accept = false;
-        box.onDidAccept(() => {
-            accept = true;
-            box.hide();
-        })
-        box.onDidHide(async () => {
-            await vscode.commands.executeCommand('setContext', 'hasOrgCalFocus', false);
-            let calVal: Date | undefined = undefined;
-            if (accept) {
-                calVal = this.date;    
-            }
-            await this.page.close();
-            resolve([calVal, accept]);
-        });
-        box.show();
-        });
-        */
-        //const [calVal, ok] = await promise;
 
         const state = new CaptureState(this);
         return Promise.resolve(state);

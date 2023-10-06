@@ -47,6 +47,16 @@ export class Page {
         }
     }
 
+    onDidClose(context: vscode.ExtensionContext, callback) {
+        context.subscriptions.push(vscode.window.onDidChangeVisibleTextEditors((ed) => {
+            ed.forEach( (e) => {
+                if (this.editor === e) {
+                    callback(e);
+                }
+            });
+        }));
+    }
+
     async show() {
         await vscode.window.showTextDocument(this.doc);
         this.editor = vscode.window.activeTextEditor;
