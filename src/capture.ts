@@ -9,6 +9,7 @@ import { OrgDuration } from './duration';
 import './duration';
 import * as Datetime from './simple-datetime';
 import {ODb} from "./db"
+import { Sets } from './sets';
 
 export class CaptureState {
     public capPage: CapturePage;
@@ -325,17 +326,48 @@ export class CapturePage implements vscode.TextDocumentContentProvider {
 	}
 */
 
-    regenCapture() {
-        this.page.edit((edit) => this.page.editor.insertSnippet(new vscode.SnippetString("* ${1:HEADING}\n  ${2:BODY}")) );
+    regenCapture(key: string) {
+        const temp = Sets.captureTemplates[key];
+        this.page.edit((edit) => this.page.editor.insertSnippet(new vscode.SnippetString(temp['snippet'])) );
     }
 	async openCapturePage() {
         this.page = new Page();
         await this.page.create();
         await this.page.show();
-        this.regenCapture();
 		await this.redraw();
 		//this.showCurrDate();
 	}
+
+    getCaptureSnippetDefault(type: string) {
+        if (type === "entry") {
+            return "* ${1:HEADING}\n   ${2:BODY}";
+        } else if (type === "item") {
+            return "${1:BODY}";
+        }
+        return "* ${1:HEADING}\n   ${2:BODY}";
+    }
+
+    async rebuildCaptureTemplates(): Promise<any> {
+        this.templates = await ODb.captureTemplates();
+        let knownTemplates = Sets.captureTemplates;
+        let didUpdate = false;
+        this.templates.forEach((item) => {
+            if (!(item.Name in knownTemplates)) {
+                didUpdate = true;
+                knownTemplates[item.Name] = {
+                    "type":    item.Type,
+                    "target":  item.Target,
+                    "snippet": this.getCaptureSnippetDefault(item.Type)
+                }
+            }
+        });
+        if (didUpdate) {
+            Sets.captureTemplates = knownTemplates;
+			vscode.commands.executeCommand('workbench.action.reloadWindow');
+			
+        }
+        return this.templates;
+    }
 
     async openCaptureEditor(): Promise<CaptureState> {
         // Capture state before opening calendar so we can return it!
@@ -345,11 +377,13 @@ export class CapturePage implements vscode.TextDocumentContentProvider {
         // Open up the page with the calendar on it!
 		await this.openCapturePage();
 
-        this.templates = await ODb.captureTemplates();
+
+        this.templates = await this.rebuildCaptureTemplates();
         let temps: string[] = [];
         this.templates.forEach((item) => { temps.push(item.Name); });
         const templateName = await vscode.window.showQuickPick(temps)
         console.log("RESULTS", templateName);
+        this.regenCapture(templateName);
         this.templates.forEach((item) => { if (templateName === item['Name']) { this.template = item; }})
         console.log("Chosen Template", this.template);
         this.page.onDidClose(this.context, (editor) => {

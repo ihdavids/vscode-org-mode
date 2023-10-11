@@ -23,6 +23,10 @@ export class Sets {
     { 
         return Sets.get().settings.get<T>(name, defaultVal); 
     }
+
+    public static setProp<T>(name: string, val: T) {
+        return Sets.get().settings.update(name, val, true);
+    }
     public static get keywords(): string[] {
         const todoKeywords = Sets.getProp<string[]>("todoKeywords");
         const doneKeywords = Sets.getProp<string[]>("doneKeywords");
@@ -69,4 +73,6 @@ export class Sets {
         "default": "HasProperty(\"EFFORT\")"
     });}
     public static get tagOffset(): number              { return Sets.getProp<number>("tagOffset",60);         }
+    public static get captureTemplates(): {[key:string]: {[key:string]: string}}      { return Sets.getProp<{[key:string]: {[key:string]: string}}>("captureTemplates", {});}
+    public static set captureTemplates(value: {[key:string]: {[key:string]: string}}) { Sets.setProp<{[key:string]: {[key:string]: string}}>("captureTemplates", value);}
 }
