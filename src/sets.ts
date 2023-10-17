@@ -25,7 +25,11 @@ export class Sets {
     }
 
     public static setProp<T>(name: string, val: T) {
-        return Sets.get().settings.update(name, val, true);
+        // This is a bit goofy, when we set a property we have to reload the window.
+        // I am not sure if doing this on every set will be a good idea.
+        return Sets.get().settings.update(name, val, true).then(() => {
+		    vscode.commands.executeCommand('workbench.action.reloadWindow');
+        });
     }
     public static get keywords(): string[] {
         const todoKeywords = Sets.getProp<string[]>("todoKeywords");

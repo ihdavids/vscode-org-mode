@@ -363,8 +363,8 @@ export class CapturePage implements vscode.TextDocumentContentProvider {
         });
         if (didUpdate) {
             Sets.captureTemplates = knownTemplates;
-			vscode.commands.executeCommand('workbench.action.reloadWindow');
-			
+			// This has to happen, but now it's inline with the setter.
+			//vscode.commands.executeCommand('workbench.action.reloadWindow');
         }
         return this.templates;
     }
