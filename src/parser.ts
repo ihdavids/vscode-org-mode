@@ -1080,6 +1080,21 @@ export class Parser implements vscode.Disposable {
         return Promise.resolve();
     }
 
+    public async parseFromDoc(doc: vscode.TextDocument): Promise<void> {
+        if (doc) {
+		    const text = doc.getText();
+            this.doc = parseFileContents(text);
+        }
+        return Promise.resolve();
+    }
+
+    public async parseFromText(txt: string): Promise<void> {
+        if (txt) {
+            this.doc = parseFileContents(txt);
+        }
+        return Promise.resolve();
+    }
+
     public find(pos: vscode.Position | undefined = undefined): Node {
 		const editor = vscode.window.activeTextEditor;
 		if (!editor) {

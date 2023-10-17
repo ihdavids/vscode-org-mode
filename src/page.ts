@@ -50,10 +50,16 @@ export class Page {
     onDidClose(context: vscode.ExtensionContext, callback) {
         context.subscriptions.push(vscode.window.onDidChangeVisibleTextEditors((ed) => {
             ed.forEach( (e) => {
-                if (this.editor === e) {
+                if (this.editor.document === e.document) {
                     callback(e);
                 }
             });
+        }));
+    }
+
+    onWindowsChanged(context: vscode.ExtensionContext, callback) {
+        context.subscriptions.push(vscode.window.onDidChangeVisibleTextEditors((ed) => {
+            callback(this.doc.getText());
         }));
     }
 

@@ -10,6 +10,7 @@ import './duration';
 import * as Datetime from './simple-datetime';
 import {ODb} from "./db"
 import { Sets } from './sets';
+import { Parser } from './parser';
 
 export class CaptureState {
     public capPage: CapturePage;
@@ -363,8 +364,6 @@ export class CapturePage implements vscode.TextDocumentContentProvider {
         });
         if (didUpdate) {
             Sets.captureTemplates = knownTemplates;
-			// This has to happen, but now it's inline with the setter.
-			//vscode.commands.executeCommand('workbench.action.reloadWindow');
         }
         return this.templates;
     }
@@ -386,8 +385,18 @@ export class CapturePage implements vscode.TextDocumentContentProvider {
         this.regenCapture(templateName);
         this.templates.forEach((item) => { if (templateName === item['Name']) { this.template = item; }})
         console.log("Chosen Template", this.template);
-        this.page.onDidClose(this.context, (editor) => {
-            // TODO do update
+        this.page.onWindowsChanged(this.context, (content) => {
+			let parser: Parser = new Parser();
+			parser.parseFromText(content);
+			if (parser.doc && parser.doc.children) {
+				const h = parser.doc.children[0];
+				const headline = h.getHeadline();
+				const body = h.text;
+				const props = h.properties;
+				const tags = h.tags;
+				const priority = "";
+				ODb.capture(templateName, headline, body, tags, props, priority);
+			}
         });
 
         const state = new CaptureState(this);
