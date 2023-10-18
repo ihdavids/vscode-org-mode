@@ -679,7 +679,7 @@ function* parseLines(rootNode: RootNode, content: string, state: ParserState) {
                 curNode = startHeadline(rootNode, m, curLine, curNode);
             }
         } else {
-            buildup += curLine;
+            buildup += "\n" + line;
             // Offset within the heading.
             const offset = curLine - start;
             // In header, have to parse heading bits.
