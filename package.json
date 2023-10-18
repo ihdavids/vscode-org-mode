@@ -560,6 +560,11 @@
                 "when": "editorTextFocus && editorLangId == 'calendar'"
             },
             {
+                "command": "org.capture.close",
+                "key": "ctrl+alt+w",
+                "when": "hasOrgCapFocus"
+            },
+            {
                 "command": "org.calendar.prevDate",
                 "key": ",",
                 "when": "hasOrgCalFocus"

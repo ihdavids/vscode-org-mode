@@ -57,6 +57,7 @@ export class CapturePage implements vscode.TextDocumentContentProvider {
 
 	constructor(context: vscode.ExtensionContext) {
         this.context = context;
+	    context.subscriptions.push(vscode.commands.registerCommand('org.capture.close',    () => this.closeWindow()));
 	    //context.subscriptions.push(vscode.commands.registerCommand('org.calendar.today',    () => this.setDate(new Date())));
 	    // context.subscriptions.push(vscode.commands.registerCommand('org.calendar.toggleTime',  () => this.toggleTime()));
 	    // context.subscriptions.push(vscode.commands.registerCommand('org.calendar.prevDate', () => this.goDate(-1)));
@@ -403,6 +404,9 @@ export class CapturePage implements vscode.TextDocumentContentProvider {
         return Promise.resolve(state);
 	}
 
+	async closeWindow() {
+		this.page.closeEvenIfDirty();
+	}
 
 	async redraw() {
         this._onDidChange.fire(this.uri);

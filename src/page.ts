@@ -101,6 +101,11 @@ export class Page {
         await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
     }
 
+    async closeEvenIfDirty() {
+        await vscode.window.showTextDocument(this.doc.uri, {preview: true, preserveFocus: false});
+        await vscode.commands.executeCommand('workbench.action.revertAndCloseActiveEditor');
+    }
+
     setReadonly(val: boolean) {
         setReadOnly(this.doc, val);
     }
