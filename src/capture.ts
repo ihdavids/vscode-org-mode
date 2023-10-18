@@ -391,8 +391,8 @@ export class CapturePage implements vscode.TextDocumentContentProvider {
 			parser.parseFromText(content);
 			if (parser.doc && parser.doc.children) {
 				const h = parser.doc.children[0];
-				const headline = h.getHeadline();
-				const body = h.text;
+				const headline = h.getRawHeadline();
+				const body = h.data;
 				const props = h.properties;
 				const tags = h.tags;
 				const priority = "";

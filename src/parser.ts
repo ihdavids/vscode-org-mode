@@ -303,6 +303,7 @@ export class Headline implements Parent {
     dones:     string[];
     todoKeywords: string;
     sourceBlocks: SourceBlock[];
+    data: string;
     
     public getHeadline(): string {
         let tags = "";
@@ -318,7 +319,11 @@ export class Headline implements Parent {
             tags = txt;
         }
         return tags;
-    } 
+    }
+
+    public getRawHeadline(): string {
+        return `${this.text.trim()}`
+    }
 
     public find(pos: vscode.Position | undefined = undefined): Node|undefined {
 		const editor = vscode.window.activeTextEditor;
@@ -553,8 +558,9 @@ function parseSpecialComments(cmt: Comment) {
 }
 
 
-function finishHeadline(curNode, start, end) {
+function finishHeadline(curNode, start, end, buildup) {
     curNode.range = new vscode.Range(new vscode.Position(start,0), new vscode.Position(end, 0));
+    curNode.data = buildup;
 }
 
 function startHeadline(rootNode, m: RegExpExecArray, curLine, last: Headline | null): Headline {
@@ -652,6 +658,7 @@ function* parseLines(rootNode: RootNode, content: string, state: ParserState) {
     //content = content.replace(/\r/gm,"");
     const lines = content.split('\n');
     //while((line = linere.exec(content)) && line.index < content.length) {
+    let buildup = "";
     for(let line of lines) {
         line = line.replace('\r','');
         let todoKeywords = null;
@@ -667,11 +674,12 @@ function* parseLines(rootNode: RootNode, content: string, state: ParserState) {
                 start   = curLine;
                 curNode = startHeadline(rootNode, m, curLine, null);
             } else {
-                finishHeadline(curNode, start, curLine);
+                finishHeadline(curNode, start, curLine, buildup);
                 start = curLine;
                 curNode = startHeadline(rootNode, m, curLine, curNode);
             }
         } else {
+            buildup += curLine;
             // Offset within the heading.
             const offset = curLine - start;
             // In header, have to parse heading bits.
@@ -691,7 +699,7 @@ function* parseLines(rootNode: RootNode, content: string, state: ParserState) {
         curLine += 1;
     } 
     if (curNode) {
-        finishHeadline(curNode, start, curLine);
+        finishHeadline(curNode, start, curLine, buildup);
     }
 }
 
