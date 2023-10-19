@@ -103,24 +103,44 @@ export class CapturePage implements vscode.TextDocumentContentProvider {
         return "* ${1:HEADING}\n   ${2:BODY}";
     }
 
+	haveInKnownTemplates(item, knownTemplates) {
+		for (const [key, value] of Object.entries(knownTemplates)) {
+			if (item.Name === value['selector']) {
+				return true;
+			}
+		}
+		return false;
+	}
+
     async rebuildCaptureTemplates(): Promise<any> {
         this.templates = await ODb.captureTemplates();
         let knownTemplates = Sets.captureTemplates;
         let didUpdate = false;
-		/*
 		// TODO: I want to be able to map multiple capture templates to a single target definition
 		// TODO: I want to have vscode side target definitions that do not exist on the server side
 		// TODO: I want to automatically add server side definitions if they do not exist on the vscode side?
 		//
+		
 		let notInTemplates = [];
-		for (const [key, value] of Object.entries(knownTemplates) {
-			for 
+		for (const [key, value] of Object.entries(knownTemplates)) {
+			const selector = value['selector'];
+			let have = false;
+			for (const item of this.templates) {
+				if (item.Name === selector) {
+					have = true;
+					break;
+				}
+			}
+			if(!have) {
+				notInTemplates.push(key);
+			}
 		}
-		*/
+		
         this.templates.forEach((item) => {
-            if (!(item.Name in knownTemplates)) {
+            if (!this.haveInKnownTemplates(item.Name, knownTemplates)) {
                 didUpdate = true;
                 knownTemplates[item.Name] = {
+					"selector": item.Name,
                     "type":    item.Type,
                     "target":  item.Target,
                     "snippet": this.getCaptureSnippetDefault(item.Type)
@@ -130,7 +150,7 @@ export class CapturePage implements vscode.TextDocumentContentProvider {
         if (didUpdate) {
             Sets.captureTemplates = knownTemplates;
         }
-        return this.templates;
+        return [knownTemplates, notInTemplates];
     }
 
     async openCaptureEditor(): Promise<CaptureState> {
@@ -140,14 +160,15 @@ export class CapturePage implements vscode.TextDocumentContentProvider {
 		await this.openCapturePage();
 
 
-        this.templates = await this.rebuildCaptureTemplates();
+        const [knownTemplates, notInTemplates] = await this.rebuildCaptureTemplates();
         let temps: string[] = [];
-        this.templates.forEach((item) => { temps.push(item.Name); });
+        Object.entries(knownTemplates).forEach(([name, item]) => { temps.push(name); });
 		console.log("TEMPS: ", temps);
         const templateName = await vscode.window.showQuickPick(temps)
         console.log("RESULTS", templateName);
         this.regenCapture(templateName);
-        this.templates.forEach((item) => { if (templateName === item['Name']) { this.template = item; }})
+		this.template = knownTemplates[templateName];
+		const selector = this.template['selector'];
         console.log("Chosen Template", this.template);
         this.page.onWindowsChanged(this.context, (content) => {
 			let parser: Parser = new Parser();
@@ -159,7 +180,7 @@ export class CapturePage implements vscode.TextDocumentContentProvider {
 				const props = h.properties;
 				const tags = h.tags;
 				const priority = "";
-				ODb.capture(templateName, headline, body, tags, props, priority);
+				ODb.capture(selector, headline, body, tags, props, priority);
 			}
         });
 
