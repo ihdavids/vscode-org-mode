@@ -565,6 +565,11 @@
                 "when": "hasOrgCapFocus"
             },
             {
+                "command": "org.capture.escape",
+                "key": "ctrl+alt+q",
+                "when": "hasOrgCapFocus"
+            },
+            {
                 "command": "org.calendar.prevDate",
                 "key": ",",
                 "when": "hasOrgCalFocus"

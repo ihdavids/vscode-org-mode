@@ -27,6 +27,7 @@ export class CapturePage implements vscode.TextDocumentContentProvider {
     private templates: any;
     private template: any;
     private context: vscode.ExtensionContext
+	private doNotSave: boolean;
 
 	private editor: vscode.TextEditor | undefined;
 	private _onDidChange = new vscode.EventEmitter<vscode.Uri>();
@@ -58,6 +59,7 @@ export class CapturePage implements vscode.TextDocumentContentProvider {
 	constructor(context: vscode.ExtensionContext) {
         this.context = context;
 	    context.subscriptions.push(vscode.commands.registerCommand('org.capture.close',    () => this.closeWindow()));
+	    context.subscriptions.push(vscode.commands.registerCommand('org.capture.escape',    () => this.escapeOut()));
 		this.uri = vscode.Uri.parse('Capture:Capture.capture');
 		this.cursorType = vscode.window.createTextEditorDecorationType({
 			'light': {
@@ -154,6 +156,7 @@ export class CapturePage implements vscode.TextDocumentContentProvider {
     }
 
     async openCaptureEditor(): Promise<CaptureState> {
+		this.doNotSave = false;
         // Set context so keybindings will work now.
         await vscode.commands.executeCommand('setContext', 'hasOrgCapFocus', true);
         // Open up the page with the calendar on it!
@@ -171,16 +174,18 @@ export class CapturePage implements vscode.TextDocumentContentProvider {
 		const selector = this.template['selector'];
         console.log("Chosen Template", this.template);
         this.page.onWindowsChanged(this.context, (content) => {
-			let parser: Parser = new Parser();
-			parser.parseFromText(content);
-			if (parser.doc && parser.doc.children) {
-				const h = parser.doc.children[0];
-				const headline = h.getRawHeadline();
-				const body = h.data.trim();
-				const props = h.properties;
-				const tags = h.tags;
-				const priority = "";
-				ODb.capture(selector, headline, body, tags, props, priority);
+			if (!this.doNotSave) {
+				let parser: Parser = new Parser();
+				parser.parseFromText(content);
+				if (parser.doc && parser.doc.children) {
+					const h = parser.doc.children[0];
+					const headline = h.getRawHeadline();
+					const body = h.data.trim();
+					const props = h.properties;
+					const tags = h.tags;
+					const priority = "";
+					ODb.capture(selector, headline, body, tags, props, priority);
+				}
 			}
         });
 
@@ -189,6 +194,11 @@ export class CapturePage implements vscode.TextDocumentContentProvider {
 	}
 
 	async closeWindow() {
+		this.page.closeEvenIfDirty();
+	}
+
+	async escapeOut() {
+		this.doNotSave = true;
 		this.page.closeEvenIfDirty();
 	}
 
