@@ -2,12 +2,13 @@
 	- [ ] Named Objects [0%]
 		- [ ] Works with babel
 		- [ ] Identifies tables and other things
-	- [ ] Capture [0%]
+	- [-] Capture [16%]
 		- [ ] External Capture (orgprotocol)
-		- [ ] Basic capture buffer
+		- [x] Basic capture buffer
+		- [ ] item
+		- [ ] better targetting
 		- [ ] Templates in config file.
 		- [ ] Capture targetting
-		- [ ] Capture using sublime snippets
 		- [ ] Capture box size controls?
 	- [ ] Parsing [0/5]
 		- [ ] Basic file parsing

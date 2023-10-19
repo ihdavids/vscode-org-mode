@@ -344,8 +344,14 @@ export class CapturePage implements vscode.TextDocumentContentProvider {
         if (type === "entry") {
             return "* ${1:HEADING}\n   ${2:BODY}";
         } else if (type === "item") {
-            return "${1:BODY}";
-        }
+            return "${1:ITEM}";
+        } else if (type === "checkitem") {
+            return "${1:ITEM}";
+        } else if (type === "table-line") {
+            return "${1:ITEM}";
+        } else if (type == "plain") {
+			return "${1:TXT}"
+		}
         return "* ${1:HEADING}\n   ${2:BODY}";
     }
 

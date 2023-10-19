@@ -1,0 +1,15 @@
+* Capture Basics
+    Capture has as its primary goal of getting it out of your mind now.
+    When you capture you are grabbing a concept and quickly putting it in your inbox 
+    for later refiling. Orgs and vscode make this possible through a hybrid approach.
+    Orgs does the capture operation while vscode handles the text input.
+
+    The orgs server allows you to define capture targets in its configuration file.
+    These are synced with your vscode settings file automatically. Your vscode settings file
+    then allows you to extend these capture targets with a snippet template to use when 
+    filling out one of these captures. These snippets use the normal vscode snippet rules:
+
+    As an example, variables should work just fine:
+    [[https://code.visualstudio.com/docs/editor/userdefinedsnippets][VsCode Snippet Rules]] 
+
+
