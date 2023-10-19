@@ -12,4 +12,12 @@
     As an example, variables should work just fine:
     [[https://code.visualstudio.com/docs/editor/userdefinedsnippets][VsCode Snippet Rules]] 
 
+** Capture Targets
+    Capture targets come in a variety of types:
+    - entry - This is a subnode of whatever the target it pointing at.
+    - plain - This is plain text added somewhere in the node.
 
+    NOT YET SUPPORTED PAST THIS POINT
+    - item  - this is a list item added to the end of a list in the target.
+    - checkitem - this is a checkbox list item added to the end of a checklist in the target (or end of target)
+    - table-line - This is a line of a table added to whatever table is in the document
