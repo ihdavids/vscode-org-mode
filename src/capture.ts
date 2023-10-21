@@ -99,7 +99,7 @@ export class CapturePage implements vscode.TextDocumentContentProvider {
             return "${1:ITEM}";
         } else if (type === "table-line") {
             return "${1:ITEM}";
-        } else if (type == "plain") {
+        } else if (type === "plain") {
 			return "${1:TXT}"
 		}
         return "* ${1:HEADING}\n   ${2:BODY}";
@@ -107,6 +107,7 @@ export class CapturePage implements vscode.TextDocumentContentProvider {
 
 	haveInKnownTemplates(item, knownTemplates) {
 		for (const [key, value] of Object.entries(knownTemplates)) {
+            console.log("KNOWN: ", item.Name, value)
 			if (item.Name === value['selector']) {
 				return true;
 			}
@@ -139,7 +140,7 @@ export class CapturePage implements vscode.TextDocumentContentProvider {
 		}
 		
         this.templates.forEach((item) => {
-            if (!this.haveInKnownTemplates(item.Name, knownTemplates)) {
+            if (!this.haveInKnownTemplates(item, knownTemplates)) {
                 didUpdate = true;
                 knownTemplates[item.Name] = {
 					"selector": item.Name,
@@ -164,9 +165,9 @@ export class CapturePage implements vscode.TextDocumentContentProvider {
 
 
         const [knownTemplates, notInTemplates] = await this.rebuildCaptureTemplates();
+        console.log("knownTemplates", knownTemplates);
         let temps: string[] = [];
         Object.entries(knownTemplates).forEach(([name, item]) => { temps.push(name); });
-		console.log("TEMPS: ", temps);
         const templateName = await vscode.window.showQuickPick(temps)
         console.log("RESULTS", templateName);
         this.regenCapture(templateName);
