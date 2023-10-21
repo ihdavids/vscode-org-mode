@@ -176,17 +176,22 @@ export class CapturePage implements vscode.TextDocumentContentProvider {
         console.log("Chosen Template", this.template);
         this.page.onWindowsChanged(this.context, (content) => {
 			if (!this.doNotSave) {
-				let parser: Parser = new Parser();
-				parser.parseFromText(content);
-				if (parser.doc && parser.doc.children) {
-					const h = parser.doc.children[0];
-					const headline = h.getRawHeadline();
-					const body = h.data.trim();
-					const props = h.properties;
-					const tags = h.tags;
-					const priority = "";
-					ODb.capture(selector, headline, body, tags, props, priority);
-				}
+                if (this.template['type'] === 'entry') {
+				    let parser: Parser = new Parser();
+				    parser.parseFromText(content);
+				    if (parser.doc && parser.doc.children) {
+				    	const h = parser.doc.children[0];
+				    	const headline = h.getRawHeadline();
+				    	const body = h.data.trim();
+				    	const props = h.properties;
+				    	const tags = h.tags;
+				    	const priority = "";
+				    	ODb.capture(selector, headline, body, tags, props, priority);
+				    }
+                }
+                else {
+				    ODb.capture(selector, "", content, [], {}, "");
+                }
 			}
         });
 
