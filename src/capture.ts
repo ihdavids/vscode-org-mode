@@ -107,7 +107,7 @@ export class CapturePage implements vscode.TextDocumentContentProvider {
 
 	haveInKnownTemplates(item, knownTemplates) {
 		for (const [key, value] of Object.entries(knownTemplates)) {
-            console.log("KNOWN: ", item.Name, value)
+            //console.log("KNOWN: ", item.Name, value)
 			if (item.Name === value['selector']) {
 				return true;
 			}
@@ -174,8 +174,9 @@ export class CapturePage implements vscode.TextDocumentContentProvider {
 		this.template = knownTemplates[templateName];
 		const selector = this.template['selector'];
         console.log("Chosen Template", this.template);
+        let haveCaptured = false;
         this.page.onWindowsChanged(this.context, (content) => {
-			if (!this.doNotSave) {
+			if (!this.doNotSave && !haveCaptured) {
                 if (this.template['type'] === 'entry') {
 				    let parser: Parser = new Parser();
 				    parser.parseFromText(content);
@@ -186,10 +187,12 @@ export class CapturePage implements vscode.TextDocumentContentProvider {
 				    	const props = h.properties;
 				    	const tags = h.tags;
 				    	const priority = "";
+                        haveCaptured = true;
 				    	ODb.capture(selector, headline, body, tags, props, priority);
 				    }
                 }
                 else {
+                    haveCaptured = true;
 				    ODb.capture(selector, "", content, [], {}, "");
                 }
 			}

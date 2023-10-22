@@ -13,7 +13,16 @@ import * as https from 'https';
 //var got = require('got');
 //import got from 'got';
 
-const fetch = (url,...args) => import('node-fetch').then(({default: fetch}) => fetch(url,...args));
+const fetchModule = import('node-fetch');
+let callFetch = null;
+async function fetch(url,...args) {
+    if (callFetch === null) {
+        const temp = await fetchModule;
+        callFetch = temp['default'];
+    }
+    return callFetch(url,...args);
+}
+//const fetch = (url,...args) => import('node-fetch').then(({default: callFetch}) => callFetch(url,...args));
 
 function pad2(num: number): string {
     return String(num).padStart(2, '0');
