@@ -123,8 +123,10 @@ export class CapturePage implements vscode.TextDocumentContentProvider {
 		// TODO: I want to have vscode side target definitions that do not exist on the server side
 		// TODO: I want to automatically add server side definitions if they do not exist on the vscode side?
 		//
-		
 		let notInTemplates = [];
+		if (!this.templates) {
+            return [knownTemplates, notInTemplates];
+        }
 		for (const [key, value] of Object.entries(knownTemplates)) {
 			const selector = value['selector'];
 			let have = false;
@@ -163,13 +165,15 @@ export class CapturePage implements vscode.TextDocumentContentProvider {
         // Open up the page with the calendar on it!
 		await this.openCapturePage();
 
-
         const [knownTemplates, notInTemplates] = await this.rebuildCaptureTemplates();
         console.log("knownTemplates", knownTemplates);
         let temps: string[] = [];
         Object.entries(knownTemplates).forEach(([name, item]) => { temps.push(name); });
         const templateName = await vscode.window.showQuickPick(temps)
         console.log("RESULTS", templateName);
+        if (!templateName) {
+            return Promise.resolve(undefined);
+        }
         this.regenCapture(templateName);
 		this.template = knownTemplates[templateName];
 		const selector = this.template['selector'];
