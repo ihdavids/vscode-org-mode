@@ -79,9 +79,14 @@ export class CapturePage implements vscode.TextDocumentContentProvider {
        return "";
 	}
 
-    regenCapture(key: string) {
+    regenCapture(key: string): boolean {
         const temp = Sets.captureTemplates[key];
+        if (!temp || !temp['snippet']) {
+            vscode.window.showErrorMessage("Capture template seems to be missing a snippet field. Cannot continue!");
+            return false;
+        }
         this.page.edit((edit) => this.page.editor.insertSnippet(new vscode.SnippetString(temp['snippet'])) );
+        return true;
     }
 	async openCapturePage() {
         this.page = new Page();
@@ -174,9 +179,15 @@ export class CapturePage implements vscode.TextDocumentContentProvider {
         if (!templateName) {
             return Promise.resolve(undefined);
         }
-        this.regenCapture(templateName);
+        if (!this.regenCapture(templateName)) {
+            return Promise.resolve(undefined);
+        }
 		this.template = knownTemplates[templateName];
 		const selector = this.template['selector'];
+        if (!selector) {
+            vscode.window.showErrorMessage("Capture definition is missing a selector field. PLEASE add one! ABORT!");
+            return Promise.resolve(undefined);
+        }
         console.log("Chosen Template", this.template);
         let haveCaptured = false;
         this.page.onWindowsChanged(this.context, (content) => {
