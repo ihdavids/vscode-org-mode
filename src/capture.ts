@@ -173,7 +173,7 @@ export class CapturePage implements vscode.TextDocumentContentProvider {
         const [knownTemplates, notInTemplates] = await this.rebuildCaptureTemplates();
         console.log("knownTemplates", knownTemplates);
         let temps: string[] = [];
-        Object.entries(knownTemplates).forEach(([name, item]) => { temps.push(name); });
+        Object.entries(knownTemplates).forEach(([name, item]) => { if (!item['hide']) { temps.push(name); }});
         const templateName = await vscode.window.showQuickPick(temps)
         console.log("RESULTS", templateName);
         if (!templateName) {

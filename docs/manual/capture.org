@@ -12,6 +12,19 @@
     As an example, variables should work just fine:
     [[https://code.visualstudio.com/docs/editor/userdefinedsnippets][VsCode Snippet Rules]] 
 
+    Capture targets are stored in the selector section of your vscode capture definition.
+    #+BEGIN_SRC json
+        "todo": {
+            "type":     "entry",
+            "snippet":  "* ${1:HEADING}\n  [$CURRENT_YEAR $CURRENT_MONTH $CURRENT_DATE $CURRENT_HOUR:$CURRENT_MINUTE]\n   ${2:BODY}",
+            "selector": "orgs_capture_target_name",
+        },
+    #+END_SRC
+
+    Orgs will automatically create entries for all targets is has defined in your settings. This can get in the way
+    if you don't want them but do not want to regenerate them. To fix that use the hide: true field to remove it
+    as an active option for captures in your vscode settings.
+
 ** Capture Targets
     Capture targets come in a variety of types:
     - entry - This is a subnode of whatever the target it pointing at.
