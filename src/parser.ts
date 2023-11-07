@@ -282,7 +282,9 @@ export class Headline implements Parent {
     type:      OrgTypes = OrgTypes.Headline;
     range:     vscode.Range;
     fullLine:  vscode.Range;
+    noTagsFullLine:    vscode.Range;
     statusRange: vscode.Range;
+    tagsRange: vscode.Range;
     level:     number;
     status:    string;
     scheduled: Scheduled | undefined;
@@ -582,11 +584,22 @@ function startHeadline(rootNode, m: RegExpExecArray, curLine, last: Headline | n
     const statusLen = h.status ? h.status.length : 0;
     h.statusRange = new vscode.Range(new vscode.Position(curLine,statusOffset),new vscode.Position(curLine,statusOffset + statusLen));
 
+
     const startPos = new vscode.Position(curLine, m.index);
     const endPos   = new vscode.Position(curLine, m.index + m[0].length);
     const range    = new vscode.Range(startPos, endPos);
     h.fullLine = range;
+    if(m.groups['tags']) {
+        const endPos2   = new vscode.Position(curLine, m.index + m[0].length - m.groups.tags.length);
+        const range2    = new vscode.Range(startPos, endPos2);
+        h.noTagsFullLine = range2;
+        h.tagsRange = new vscode.Range(h.noTagsFullLine.end,h.fullLine.end);
+    } else {
+        h.noTagsFullLine = h.fullLine;
+        h.tagsRange = new vscode.Range(h.fullLine.end,h.fullLine.end);
+    }
 
+    
     if(h.level === 1) {
         rootNode.children.push(h);
     } 
