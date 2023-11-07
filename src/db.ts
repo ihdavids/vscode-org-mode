@@ -274,6 +274,11 @@ export class ODb
         return await this.doGet(url);
     }
 
+    public static async reformat(filename: string) {
+        var url: URL = new URL(Sets.orgsConnection + `/reformat`);
+        return await this.doPost(url, [filename]);
+    }
+
 };
 
 

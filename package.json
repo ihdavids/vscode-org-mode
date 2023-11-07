@@ -238,6 +238,10 @@
             {
                 "command": "org.updateEffortProperty",
                 "title": "Org: Update Effort Property"
+            },
+            {
+                "command": "org.reformat",
+                "title": "Org: Reformat"
             }
         ],
         "languages": [

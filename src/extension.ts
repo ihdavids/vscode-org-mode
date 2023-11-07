@@ -78,6 +78,11 @@ export class OrgExtension {
         return Promise.resolve();
     }
 
+    async reformat(): Promise<void> {
+        const fname = vscode.window.activeTextEditor.document.fileName;
+        odb.ODb.reformat(fname);
+    }
+
 	dispose(): void {
 		this.stopUpdate();
 		this.decore.dispose();
@@ -182,6 +187,7 @@ export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(vscode.commands.registerCommand('org.chooseTodo', HeaderFunctions.chooseAndChangeTodo));
 	context.subscriptions.push(vscode.commands.registerCommand('org.chooseTodoView', chooseTodoView));
 	context.subscriptions.push(vscode.commands.registerCommand('org.capture', async () => OrgExtension.get().capture()));
+	context.subscriptions.push(vscode.commands.registerCommand('org.reformat', async () => OrgExtension.get().reformat()));
     context.subscriptions.push(nextDayPageCmd);
     context.subscriptions.push(prevDayPageCmd);
     context.subscriptions.push(showDayPageCmd);
