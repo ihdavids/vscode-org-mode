@@ -667,7 +667,7 @@ function* parseLines(rootNode: RootNode, content: string, state: ParserState) {
         } else {
             todoKeywords = rootNode.getTodoKeywords();
         }
-        const todoHeaderRegexp = new RegExp(`^\\s*(?<stars>\\*+)\\s+(?<status>${todoKeywords})?\\s*(?<text>[^:]+)\\s*(?<tags>[:][a-zA-Z0-9@#$!_]+[:])?`);
+        const todoHeaderRegexp = new RegExp(`^\\s*(?<stars>\\*+)\\s+(?<status>${todoKeywords})?\\s*(?<text>[^:]+)\\s*(?<tags>[:]([a-zA-Z0-9@#$!_]+[:])*)?`);
         const m = todoHeaderRegexp.exec(line);
         if(state.canParse(ParserPhase.Headline) && m) {
             if (curNode == null) {
