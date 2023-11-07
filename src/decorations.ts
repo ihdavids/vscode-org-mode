@@ -7,6 +7,7 @@ export class Decoration implements vscode.Disposable {
 	private parser: Parser;
 	private descRegex: RegExp;
 	private linkType: vscode.TextEditorDecorationType;
+	private tagType: vscode.TextEditorDecorationType;
 	private hideType: vscode.TextEditorDecorationType;
 	private starTypes: vscode.TextEditorDecorationType[];
 	private prefixStarType: vscode.TextEditorDecorationType;
@@ -86,6 +87,14 @@ export class Decoration implements vscode.Disposable {
       			'textDecoration': "underline;"
 			}
 		});
+		this.tagType = vscode.window.createTextEditorDecorationType({
+			'light': {
+				'color': Sets.tagColoring,
+			},
+			'dark': {
+				'color': Sets.tagColoring,
+			}
+		});
 		// 'letterSpacing': '-256px',
 		this.hideType = vscode.window.createTextEditorDecorationType({
 
@@ -124,7 +133,7 @@ export class Decoration implements vscode.Disposable {
 	dispose(): void {
 	}
 
-	addPrefix(hidestar, prefs, h, level: number, blocks, editor, headings) {
+	addPrefix(hidestar, prefs, h, level: number, blocks, editor, headings, tags) {
 		while (prefs.length <= level) {
 			prefs.push([])
 		}
@@ -134,7 +143,10 @@ export class Decoration implements vscode.Disposable {
 			let hlevel = h.level-1;
 			if (hlevel < headings.length && h.range.start && h.range.end) {
 				headings[hlevel].push(new vscode.Range(new vscode.Position(h.fullLine.start.line, h.fullLine.start.character + hlevel + 2), new vscode.Position(h.noTagsFullLine.end.line, h.noTagsFullLine.end.character + hlevel)));
-			} 
+			}
+			if (h.tags.length > 0) {
+				tags.push(h.tagsRange);
+			}
 			let blks = h.getSourceBlocks();
 			for (let b of blks) {
 				let height = b.height*100;
@@ -172,7 +184,7 @@ export class Decoration implements vscode.Disposable {
 			prefs[level].push(ran);
 		}
 		for(let c of h.children) {
-			this.addPrefix(hidestar, prefs, c, c.level-1, blocks, editor, headings);
+			this.addPrefix(hidestar, prefs, c, c.level-1, blocks, editor, headings, tags);
 		}
 	}
 
@@ -211,9 +223,10 @@ export class Decoration implements vscode.Disposable {
 			const hidestar: vscode.Range[] = [];
 			const headings: vscode.Range[][] = [[],[],[],[],[],[],[],[]];
 			const sourceBlocks: vscode.Range[] = [];
+			const tags: vscode.Range[] = [];
 			const level = 0;
 			for (let l of this.parser.doc.children) {
-				this.addPrefix(hidestar, prefix, l, 0, sourceBlocks, editor, headings);
+				this.addPrefix(hidestar, prefix, l, 0, sourceBlocks, editor, headings, tags);
 			}
 			for (const [idx, _] of this.starTypes.entries()) {
 				if (idx < prefix.length) {
@@ -228,6 +241,7 @@ export class Decoration implements vscode.Disposable {
 					editor.setDecorations(this.headingType[i], headings[i]);
 				}
 			}
+			editor.setDecorations(this.tagType, tags);
 		}
 	}
 

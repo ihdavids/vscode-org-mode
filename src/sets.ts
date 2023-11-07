@@ -56,6 +56,7 @@ export class Sets {
     public static get prettyBullets(): boolean      { return Sets.getProp<boolean>("decorateBullets",true);        }
     public static get underlineTopHeading(): boolean{ return Sets.getProp<boolean>("underlineTopHeading",true);    }
     public static get linkColoring(): string        { return Sets.getProp<string>("linkColoring","rgba(0, 128, 255, 1.0)");    }
+    public static get tagColoring(): string         { return Sets.getProp<string>("tagColoring","rgba(128, 128,128, 1.0)");    }
     public static get allowSelfSigned(): boolean    { return Sets.getProp<boolean>("allowSelfSigned", true);         }
     // Pretty Bullets
     //  "◉" "○" "✸" "✿"
