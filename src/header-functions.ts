@@ -33,7 +33,13 @@ export function insertHeadingRespectContent(textEditor: vscode.TextEditor, edit:
         insertPos = Utils.eatEmptyLines(textEditor, insertPos, cursorPos, insertPos.character);
 
         if(sibling) {
-            edit.insert(insertPos, "\n" + sibling + " ");
+            const curLine = Utils.getLine(document, insertPos);
+            // Empty line, just insert
+            if (curLine.trim().length == 0) {
+                edit.insert(insertPos, sibling + " ");
+            } else {
+                edit.insert(insertPos, "\n" + sibling + " ");
+            }
             Utils.moveToEndOfLine(textEditor, new vscode.Position(insertPos.line, 0));
             textEditor.revealRange(new vscode.Range(new vscode.Position(insertPos.line, 0), insertPos));     // jump screen so cursor is in view
         }
