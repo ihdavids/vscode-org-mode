@@ -266,17 +266,32 @@ export function findEndOfContent(document: vscode.TextDocument, pos: vscode.Posi
     let curLinePrefix;
     let inSub;
 
+    //let lastNonEmpty = curLine;
     do {
         curLine++;
         curPos = new vscode.Position(curLine, 0);
-        curLinePrefix = getPrefix(getLine(document, curPos));
+        const lineTxt = getLine(document, curPos);
+        curLinePrefix = getPrefix(lineTxt);
         inSub = inSubsection(curLinePrefix, sectionRegex);
+        /*
+        if (inSub) {
+            if(lineTxt.trim().length != 0) {
+                lastNonEmpty = curLine
+            }
+        }
+        */
     } while (curLine < (document.lineCount-1) && inSub)
 
 
     let rv = null;
     if (curLine < document.lineCount-1 || !inSub) {
-        rv = new vscode.Position(curPos.line - 1, getLine(document, new vscode.Position(curPos.line - 1, 0)).length + 1);
+        let linePos = curPos.line - 1;
+        /*
+        if (lastNonEmpty < linePos) {
+            linePos = lastNonEmpty;
+        }
+        */
+        rv = new vscode.Position(curPos.line - 1, getLine(document, new vscode.Position(linePos, 0)).length + 1);
     } else {
         rv = new vscode.Position(curPos.line, getLine(document, new vscode.Position(curPos.line, 0)).length + 1);
     }

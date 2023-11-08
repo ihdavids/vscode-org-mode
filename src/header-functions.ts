@@ -63,6 +63,8 @@ export async function insertChild(textEditor: vscode.TextEditor, edit: vscode.Te
         endPos = ctx.range.end;
         // Lets try to eat any empty space we might have along the way
         insertPos = Utils.eatEmptyLines(textEditor, endPos, cursorPos, endOfLine);
+        const curLine = Utils.getLine(textEditor.document, insertPos);
+        endOfLine = curLine.length;
     }
 
     // We have a node
