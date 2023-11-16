@@ -10,6 +10,7 @@ import { NumList } from './parser';
 import { URL } from 'url';
 import {Request, RequestInfo, Headers} from 'node-fetch';
 import * as https from 'https';
+import { NodeTarget } from './capture';
 //var got = require('got');
 //import got from 'got';
 
@@ -257,6 +258,16 @@ export class ODb
     public static async capture(name: string, headline: string, content: string, tags: string[] = [], props: {} = {}, priority: string = "") {
         var url: URL = new URL(Sets.orgsConnection + `/capture`);
         return await this.doPost(url, {Template: name, NewNode: { Headline: headline, Content: content, Tags: tags, Props: props, Priority: priority }});
+    }
+
+    public static async delete(target: NodeTarget) {
+        var url: URL = new URL(Sets.orgsConnection + `/delete`);
+        return await this.doPost(url, {Filename: target.filename, Id: target.id, Type: target.type });
+    }
+
+    public static async refile(src: NodeTarget, dest: NodeTarget) {
+        var url: URL = new URL(Sets.orgsConnection + `/refile`);
+        return await this.doPost(url, {FromId: {Filename: src.filename, Id: src.id, Type: src.type }, ToId: {Filename: dest.filename, Id: dest.id, Type: dest.type }});
     }
 
     public static async captureTemplates() {

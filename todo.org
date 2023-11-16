@@ -2,14 +2,15 @@
 	- [ ] Named Objects [0%]
 		- [ ] Works with babel
 		- [ ] Identifies tables and other things
-	- [-] Capture [16%]
+	- [-] Capture [75%]
 		- [ ] External Capture (orgprotocol)
 		- [x] Basic capture buffer
-		- [ ] item
-		- [ ] better targetting
-		- [ ] Templates in config file.
-		- [ ] Capture targetting
-		- [ ] Capture box size controls?
+		- [x] item
+		- [x] better targetting
+		- [x] Templates in config file.
+		- [x] Capture targetting
+		- [x] Capture box size controls?
+		- [ ] Table Capture
 	- [ ] Parsing [0/5]
 		- [ ] Basic file parsing
 		- [ ] Tags parsed.
@@ -20,15 +21,15 @@
 		- [ ] Basic Refile support
 		- [ ] Basic Copy support
 		- [ ] More complex options for refiling.
-	- [ ] Fold cycling [0/11]
+	- [-] Fold cycling [2/11]
 		- [ ] Local fold cycling
 		- [ ] Fold cycling in a modified file (currently gets confused)
 		- [ ] Global fold cycling
 		- [ ] Initial folding state control tag
 		- [ ] Fold ALL, Unfold ALL commands
-		- [ ] Folding property drawers
+		- [x] Folding property drawers
 		- [ ] Folding src and quote blocks
-		- [ ] Automatic property drawer folding. (I hate seeing those things!)
+		- [x] Automatic property drawer folding. (I hate seeing those things!)
 		- [ ] Fixing folding over a git pull! Sublime folds don't adapt and persist across a save.
 		- [ ] Folding of all generic property drawers.
 		- [ ] Folding of checkbox trees
@@ -56,8 +57,8 @@
 		- [ ] Property insertion
 		- [ ] Fix Tag Insertion (tooltip is broken for some reason)
 		- [ ] Fix Tab Insertion (snippets are now not expanding properly) (ST4 only issue)
-	- [ ] Links [0/17]
-		- [ ] Orgmode style links
+	- [-] Links [1/17]
+		- [x] Orgmode style links
 		- [ ] images displayed inline
 		- [ ] #+ATTR_ORG: :width 100 supported for images
 		- [ ] Single entry links vs with description (don't auto fold)
@@ -95,10 +96,10 @@
 		- [ ] Clock reports
 		- [ ] execute all dynamic blocks in file command
 	- [ ] Basic Clocking
-	- [ ] Agenda [0/8]
+	- [-] Agenda [1/8]
 		- [ ] Todo list (dynamic)
 		- [ ] Extensible agenda views
-		- [ ] org_calendar - will it work for me? (NO) - to linked to old orgmode
+		- [x] org_calendar - will it work for me? (NO) - to linked to old orgmode
 		- [ ] Todo summaries?
 		- [ ] More extensible views.
 		- [ ] Week View
@@ -146,7 +147,7 @@
     - [ ] Vintageous bindings
 
 
-* Tables
+* Tables 
   - [ ] Investigate Text Tables
   - [ ] Edit CSV
   - [ ] CSV to Table 

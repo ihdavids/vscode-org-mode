@@ -20,6 +20,12 @@ export class CaptureState {
     }
 }
 
+export class NodeTarget {
+    public filename: string;
+    public id:       string;
+    public type:     string;
+}
+
 export class CapturePage implements vscode.TextDocumentContentProvider {
     private page: Page;
 	private cursorType: vscode.TextEditorDecorationType;
