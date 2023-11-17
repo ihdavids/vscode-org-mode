@@ -238,13 +238,11 @@ export class CapturePage implements vscode.TextDocumentContentProvider {
 }
 
 async function deleteHeading(): Promise<void> {
-    const fname = vscode.window.activeTextEditor.document.fileName;
-
-    //ODb.delete(fname);
+    const src = await ODb.getHashTarget();
+    await ODb.delete(src);
 }
 
 async function refileHeading(): Promise<void> {
-    const fname = vscode.window.activeTextEditor.document.fileName;
-
+    const src = await ODb.getHashTarget();
     //ODb.refile(from, to);
 }

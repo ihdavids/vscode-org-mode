@@ -236,6 +236,32 @@ export class ODb
         return await this.doGet(url);
     }
 
+
+
+    public static async lookuphash(file: string, pos) : Promise<string> {
+        var url: URL = new URL(Sets.orgsConnection + `/lookuphash/`);
+        url.searchParams.append('pos', pos);
+        url.searchParams.append('filename', file);
+        return await this.doGet(url);
+    }
+
+    public static async lookupCurrentHash() : Promise<string> {
+        const fname = vscode.window.activeTextEditor.document.fileName;
+        const row = vscode.window.activeTextEditor.selection.active.line;
+        return await ODb.lookuphash(fname, row);
+    }
+
+    public static async getHashTarget() : Promise<NodeTarget> {
+        const fname = vscode.window.activeTextEditor.document.fileName;
+        const row = vscode.window.activeTextEditor.selection.active.line;
+        let t = new NodeTarget();
+        t.filename = fname;
+        t.id = await ODb.lookuphash(fname, row);
+        t.type = "hash";
+        return t
+    }
+
+
     public static async daypage(retry: boolean = false) {
         const now = new Date();
         var url: URL = new URL(Sets.orgsConnection + `/daypage/${now.getFullYear()}-${pad2(now.getDate())}-${pad2(now.getMonth()+1)}/`);
