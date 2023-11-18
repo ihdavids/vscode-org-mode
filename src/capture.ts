@@ -11,6 +11,7 @@ import * as Datetime from './simple-datetime';
 import {ODb} from "./db"
 import { Sets } from './sets';
 import { Parser } from './parser';
+import { Log } from './log';
 
 export class CaptureState {
     public capPage: CapturePage;
@@ -247,6 +248,6 @@ export async function refileHeading(): Promise<void> {
     const src = await ODb.getHashTarget();
     const tgts = await ODb.refiletargets();
     const r = await vscode.window.showQuickPick(tgts);
-    console.log("RESULT: ", r);
+    Log.get().log("RESULT: ", r);
     //ODb.refile(from, to);
 }
