@@ -237,7 +237,6 @@ export class ODb
     }
 
 
-
     public static async lookuphash(file: string, pos) : Promise<string> {
         var url: URL = new URL(Sets.orgsConnection + `/lookuphash/`);
         url.searchParams.append('pos', pos);
@@ -294,6 +293,12 @@ export class ODb
     public static async refile(src: NodeTarget, dest: NodeTarget) {
         var url: URL = new URL(Sets.orgsConnection + `/refile`);
         return await this.doPost(url, {FromId: {Filename: src.filename, Id: src.id, Type: src.type }, ToId: {Filename: dest.filename, Id: dest.id, Type: dest.type }});
+    }
+
+    // Returns a potential list of refile targets
+    public static async refiletargets(): Promise<string[]> {
+        var url: URL = new URL(Sets.orgsConnection + `/refilefiles`);
+        return await this.doGet(url);
     }
 
     public static async captureTemplates() {

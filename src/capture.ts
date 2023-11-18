@@ -237,12 +237,16 @@ export class CapturePage implements vscode.TextDocumentContentProvider {
 	}
 }
 
+// Do we ever want to expose this?
 async function deleteHeading(): Promise<void> {
     const src = await ODb.getHashTarget();
     await ODb.delete(src);
 }
 
-async function refileHeading(): Promise<void> {
+export async function refileHeading(): Promise<void> {
     const src = await ODb.getHashTarget();
+    const tgts = await ODb.refiletargets();
+    const r = await vscode.window.showQuickPick(tgts);
+    console.log("RESULT: ", r);
     //ODb.refile(from, to);
 }

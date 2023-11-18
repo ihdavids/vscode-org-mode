@@ -25,7 +25,7 @@ import * as Util from './utils';
 import * as CC from './cursor-context';
 import { Calendar, CalendarMode } from './calendar';
 import { TodoList, chooseTodoView } from './todolist';
-import { CapturePage } from './capture';
+import { CapturePage, refileHeading } from './capture';
 
 
 import { Parser } from './parser';
@@ -188,6 +188,7 @@ export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(vscode.commands.registerCommand('org.chooseTodoView', chooseTodoView));
 	context.subscriptions.push(vscode.commands.registerCommand('org.capture', async () => OrgExtension.get().capture()));
 	context.subscriptions.push(vscode.commands.registerCommand('org.reformat', async () => OrgExtension.get().reformat()));
+	context.subscriptions.push(vscode.commands.registerCommand('org.refile', async () => await refileHeading()));
     context.subscriptions.push(nextDayPageCmd);
     context.subscriptions.push(prevDayPageCmd);
     context.subscriptions.push(showDayPageCmd);
