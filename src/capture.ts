@@ -1,5 +1,5 @@
 
-import { parse } from 'path';
+import { join, parse } from 'path';
 import * as vscode from 'vscode';
 import { Page } from "./page";
 import { Signal } from "./signal";
@@ -25,6 +25,10 @@ export class NodeTarget {
     public filename: string;
     public id:       string;
     public type:     string;
+
+    public toString = () : string => {
+        return `Tgt (id: ${this.id}, type: ${this.type}, fn: ${this.filename})`;
+    }
 }
 
 export class CapturePage implements vscode.TextDocumentContentProvider {
@@ -248,6 +252,18 @@ export async function refileHeading(): Promise<void> {
     const src = await ODb.getHashTarget();
     const tgts = await ODb.refiletargets();
     const r = await vscode.window.showQuickPick(tgts);
-    Log.get().log("RESULT: ", r);
-    //ODb.refile(from, to);
+    if (r) {
+        let to = new NodeTarget();
+        const rs = r.split("|");
+        to.filename = rs[0]; 
+        to.type = "file+olp"
+        to.id = rs.slice(1).join("::");
+        const res: any = await ODb.refile(src, to);
+        if (!res.Ok) {
+            Log.get().error("REFILE: ", r, " <- ", src);
+            Log.get().error("  > REFILE ERROR: ", JSON.stringify(res))
+        } else {
+            Log.get().log("RESULT: ", r, " <- ", src);
+        }
+    }
 }

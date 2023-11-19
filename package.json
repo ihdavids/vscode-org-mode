@@ -242,6 +242,10 @@
             {
                 "command": "org.reformat",
                 "title": "Org: Reformat"
+            },
+            {
+                "command": "org.refile",
+                "title": "Org: ReFile"
             }
         ],
         "languages": [
