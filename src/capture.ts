@@ -267,3 +267,14 @@ export async function refileHeading(): Promise<void> {
         }
     }
 }
+
+export async function archiveHeading(): Promise<void> {
+    const src = await ODb.getHashTarget();
+    const res: any = await ODb.archive(src);
+    if (!res.Ok) {
+        Log.get().error("ARCHIVE: ", src);
+        Log.get().error("  > ARCHIVE ERROR: ", JSON.stringify(res))
+    } else {
+        Log.get().log("RESULT: ", src);
+    }
+}

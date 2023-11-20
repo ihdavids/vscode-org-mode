@@ -295,6 +295,11 @@ export class ODb
         return await this.doPost(url, {FromId: {Filename: src.filename, Id: src.id, Type: src.type }, ToId: {Filename: dest.filename, Id: dest.id, Type: dest.type }});
     }
 
+    public static async archive(src: NodeTarget) {
+        var url: URL = new URL(Sets.orgsConnection + `/archive`);
+        return await this.doPost(url, {Filename: src.filename, Id: src.id, Type: src.type });
+    }
+
     // Returns a potential list of refile targets
     public static async refiletargets(): Promise<string[]> {
         var url: URL = new URL(Sets.orgsConnection + `/refilefiles`);

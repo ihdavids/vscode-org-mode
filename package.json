@@ -246,6 +246,10 @@
             {
                 "command": "org.refile",
                 "title": "Org: ReFile"
+            },
+            {
+                "command": "org.archive",
+                "title": "Org: Archive"
             }
         ],
         "languages": [
