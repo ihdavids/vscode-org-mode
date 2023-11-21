@@ -29,8 +29,100 @@
     Capture targets come in a variety of types:
     - entry - This is a subnode of whatever the target it pointing at.
     - plain - This is plain text added somewhere in the node.
-
-    NOT YET SUPPORTED PAST THIS POINT
     - item  - this is a list item added to the end of a list in the target.
     - checkitem - this is a checkbox list item added to the end of a checklist in the target (or end of target)
     - table-line - This is a line of a table added to whatever table is in the document
+
+** Refile
+    Many organization methodologies have the concept of an inbox and one or more triage stages of the process.
+    Org supports these notions through capture and refile. Once captured you can then, later, place the information
+    where you need it by refiling it. Refiling simply moves the data to a more appropriate location.
+
+    The org.refile command will refile the subtree under your cursor to a target of your choosing. Refile targets are determined
+    in one of several ways:
+
+    The global option in the orgs configuration file determines the generic search path. This is a list of org files.
+    Here we are searching every org file in our entire org setup for refile targets:
+
+    #+BEGIN_SRC js
+     "refileTargets": [".*\\.org"]
+    #+END_SRC
+
+** Archive
+    Some methodologies make use of the concept of a reference. There are numerous ways of handling a reference. Refiling can be 
+    made to support reference material. The other is the use of an archive. Org has 2 ways that you can archive files:
+
+    - Placing an ACHIVE tag on a heading or filetags. This removes it from consideration for the agenda amoung other things.
+    - Moving the heading from the current file to a refile target. Refile targets are determined programmatically through the use of
+      an #+ARHIVE: comment. This is a filename and heading combination:
+
+      #+BEGIN_SRC org
+      #+ARCHIVE: %s_done::* My Heading
+      #+END_SRC
+
+    This will move from the current file to <currentfile>.org_done under a * My Heading parent heading.
+	
+    When the filename is omitted, archiving happens in the same file.
+	%s in the filename will be replaced by the current file
+	name (without the directory part). Archiving to a different file
+	is useful to keep archived entries from contributing to the
+	Org-mode Agenda.
+	
+	The archived entries will be filed as subtrees of the specified
+	headline. When the headline is omitted, the subtrees are simply
+	filed away at the end of the file, as top-level entries. Also in
+	the heading you can use %s to represent the file name, this can be
+	useful when using the same archive for a number of different files.
+
+    The default archive behaviour is as follows and can be configured in the
+    Org Yaml file as follows
+
+    #+BEGIN_SRC js
+	"archiveDefault": "%s_archive::"
+    #+END_SRC
+
+*** New Archive File
+    If a new archive file is created it will use a template for generating the archive file:
+
+    #+BEGIN_SRC js
+	"newFileTemplate": "newfile.tpl"
+    #+END_SRC
+
+    You can configure this to have the file headings you would like in your archive file.
+
+*** Archive Properties
+
+    Archiving will automatically add some standard properties to a heading as it is archived:
+      
+	file from where the entry came, its outline path the archiving time
+	org-archive-save-context-info
+	Parts of context info that should be stored as properties when archiving.
+	When a subtree is moved to an archive file, it loses information given by
+	context, like inherited tags, the category, and possibly also the TODO
+	state (depending on the variable `org-archive-mark-done').
+	This variable can be a list of any of the following symbols:
+
+	- time       The time of archiving.
+	- file       The file where the entry originates.
+	- ltags      The local tags, in the headline of the subtree.
+	- itags      The tags the subtree inherits from further up the hierarchy.
+	- todo       The pre-archive TODO state.
+	- category   The category, taken from file name or #+CATEGORY lines.
+	- olpath     The outline path to the item.  These are all headlines above
+	             the current item, separated by /, like a file path.
+	
+	For each symbol present in the list, a property will be created in
+	the archived entry, with a prefix \"ARCHIVE_\", to remember this
+	information."
+
+    #+BEGIN_SRC js
+	"archiveSaveContextInfo": ["time", "file"]
+    #+END_SRC
+
+	If true empty properties in the ArchiveSaveContextInfo are not included
+	in the archive output, false all listed properties will be included even if
+    empty.
+
+    #+BEGIN_SRC js
+	"archiveSkipEmptyProperties": true
+    #+END_SRC
