@@ -258,6 +258,10 @@
             {
                 "command": "org.jumpToMarker",
                 "title": "Org: Jump To Marker"
+            },
+            {
+                "command": "org.createJira",
+                "title": "Org: Create Jira"
             }
         ],
         "languages": [

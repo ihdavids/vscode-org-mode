@@ -278,3 +278,15 @@ export async function archiveHeading(): Promise<void> {
         Log.get().log("RESULT: ", src);
     }
 }
+
+
+export async function createJira(): Promise<void> {
+    const src = await ODb.getHashTarget();
+    const res: any = await ODb.createJira(src);
+    if (!res.Ok) {
+        Log.get().error("JIRA: ", src);
+        Log.get().error("  > JIRA ERROR: ", JSON.stringify(res))
+    } else {
+        Log.get().log("JIRA RESULT: ", src);
+    }
+}

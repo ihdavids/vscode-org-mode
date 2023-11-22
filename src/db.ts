@@ -337,6 +337,11 @@ export class ODb
         return await this.doGet(url);
     }
 
+    public static async createJira(src: NodeTarget) {
+        var url: URL = new URL(Sets.orgsConnection + `/update`);
+        return await this.doPost(url, {Target: {Filename: src.filename, Id: src.id, Type: src.type }, Name: "jira"});
+    }
+
 };
 
 
