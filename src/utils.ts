@@ -448,7 +448,9 @@ export function jumpToHeading(file: string, line: number) {
     Log.get().log(openPath);
     vscode.workspace.openTextDocument(openPath).then(textDoc => {
         vscode.window.showTextDocument(textDoc).then( doc => {
-            doc.revealRange(new vscode.Range(new vscode.Position(line,0), new vscode.Position(line,0)));
+            let npos : Position = new Position(line, 0); 
+            doc.revealRange(new vscode.Range(npos, npos));
+            doc.selection = new vscode.Selection(npos, npos);
         });
     });
 }

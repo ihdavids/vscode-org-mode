@@ -47,7 +47,7 @@ export async function jumpToMarker(): Promise<void> {
         Log.get().error("  > JUMP MARKER ERROR: ", JSON.stringify(res))
     } else {
         Log.get().error("  > JUMP MARKER: ", JSON.stringify(res))
-        Util.jumpToHeading(res[0].Filename, res[0].LineNum + 1);
+        Util.jumpToHeading(res[0].Filename, res[0].LineNum);
     }
 }
 
