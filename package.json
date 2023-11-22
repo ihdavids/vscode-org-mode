@@ -250,6 +250,14 @@
             {
                 "command": "org.archive",
                 "title": "Org: Archive"
+            },
+            {
+                "command": "org.setMarker",
+                "title": "Org: Set Marker"
+            },
+            {
+                "command": "org.jumpToMarker",
+                "title": "Org: Jump To Marker"
             }
         ],
         "languages": [
