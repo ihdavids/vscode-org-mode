@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import { Sets } from './sets';
 
 enum LogLevel {
     Errors,
@@ -25,7 +26,9 @@ export class Log {
             this.out.append(str);
         }
         this.out.appendLine("");
-        this.out.show();
+        if (Sets.popupLog) {
+            this.out.show();
+        }
     }
 
     public log(...data: any) {
