@@ -26,7 +26,26 @@
     as an active option for captures in your vscode settings.
 
 ** Capture Targets
-    Capture targets come in a variety of types:
+
+    Capture targets specify where the new entry should go. They are used for captures, refiles and archiving.
+    Captures targets come in a variety of types.
+
+    TARGET TYPES
+    - file              "path/to/file"                               - Text will be placed at the beginning or end of that file.
+    - id                "id of existing org entry"                   - Filing as child of this entry, or in the body of the entry.
+    - customid          "customid of existing org entry"             - Filing as child of this entry, or in the body of the entry.
+    - file+headline     "filename" "node headline"                   - Fast configuration if the target heading is unique in the file.
+    - file+olp          "filename" "Level 1 heading" "Level 2" ...   - For non-unique headings, the full path is safer.
+    - file+regexp       "filename" "regexp to find location"         - Use a regular expression to position point.
+    - file+datetree     "filename" root                              - This target creates a root datetree for today’s date.
+    - file+olp+datetree "filename" [ "Level 1 heading" ...]          - This target creates a heading in a date tree for today’s date. If the optional outline path is given, the tree will be built under the node it is pointing to, instead of at top level. Check out the :time-prompt and :tree-type properties below for additional options.
+    - clock                                                          - insert at position of active clock
+    - hash              dynamically assigned hash                    - during a run of the server nodes are dynamically assigned a hash
+
+** Capture Types
+    Capture come in a variety of types. Types define the type of org mode component you are inserting.
+    The simplest is entry in that your are capturing a full heading and body.
+
     - entry - This is a subnode of whatever the target it pointing at.
     - plain - This is plain text added somewhere in the node.
     - item  - this is a list item added to the end of a list in the target.
