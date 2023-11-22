@@ -80,4 +80,5 @@ export class Sets {
     public static get tagOffset(): number              { return Sets.getProp<number>("tagOffset",60);         }
     public static get captureTemplates(): {[key:string]: {[key:string]: string}}      { return Sets.getProp<{[key:string]: {[key:string]: string}}>("captureTemplates", {});}
     public static set captureTemplates(value: {[key:string]: {[key:string]: string}}) { Sets.setProp<{[key:string]: {[key:string]: string}}>("captureTemplates", value);}
+    public static get markers(): string[]              { return Sets.getProp<string[]>("markers",["TODAY"]);    }
 }

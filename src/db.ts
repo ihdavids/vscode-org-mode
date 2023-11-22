@@ -326,6 +326,17 @@ export class ODb
         return await this.doPost(url, [filename]);
     }
 
+    public static async setMarker(src: NodeTarget, marker: string) {
+        var url: URL = new URL(Sets.orgsConnection + `/setexclusivemarker`);
+        return await this.doPost(url, {ToId: {Filename: src.filename, Id: src.id, Type: src.type }, Name: marker});
+    }
+
+    public static async getMarker(marker: string): Promise<any> {
+        var url: URL = new URL(Sets.orgsConnection + `/exclusivemarker`);
+        url.searchParams.append('name', marker);
+        return await this.doGet(url);
+    }
+
 };
 
 

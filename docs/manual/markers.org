@@ -1,0 +1,18 @@
+* Markers
+    Tags can be used like bookmarks. The orgs vscode extension supports the use of
+    exclusive tags like they are a bookmark. You can set the markers list with
+    tags that you want to use in this way.
+
+    #+BEGIN_SRC js
+    "markers": ["TODAY"]
+    #+END_SRC
+
+    Once you have set up the markers list you can use the following 2 commands to
+    work with your markers:
+
+    - org.setMarker
+    - org.jumpToMarker
+
+    These two commands will remove the tag from any other headings in your org files
+    and set the tag on the heading currently under cursort. They will also let you jump back
+    to this marker as needed.

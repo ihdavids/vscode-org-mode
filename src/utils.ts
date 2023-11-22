@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import {Position, TextEditor} from "vscode";
+import { Log } from './log';
 
 export function getCursorPosition() {
     const curEditor = vscode.window.activeTextEditor;
@@ -439,4 +440,15 @@ export function getIndent(content:string) : string
 
 export function getLineIndent(doc: vscode.TextDocument, pos: vscode.Position) {
     return getIndent(getLine(doc, pos));
+}
+
+
+export function jumpToHeading(file: string, line: number) {
+    var openPath = vscode.Uri.file(file);
+    Log.get().log(openPath);
+    vscode.workspace.openTextDocument(openPath).then(textDoc => {
+        vscode.window.showTextDocument(textDoc).then( doc => {
+            doc.revealRange(new vscode.Range(new vscode.Position(line,0), new vscode.Position(line,0)));
+        });
+    });
 }

@@ -31,6 +31,7 @@ import { CapturePage, refileHeading, archiveHeading } from './capture';
 import { Parser } from './parser';
 import { Decoration } from './decorations';
 import { Sets } from './sets';
+import { jumpToMarker, setMarker } from './marker';
 
 
 export class OrgExtension {
@@ -190,6 +191,8 @@ export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(vscode.commands.registerCommand('org.reformat', async () => OrgExtension.get().reformat()));
 	context.subscriptions.push(vscode.commands.registerCommand('org.refile', async () => await refileHeading()));
 	context.subscriptions.push(vscode.commands.registerCommand('org.archive', async () => await archiveHeading()));
+	context.subscriptions.push(vscode.commands.registerCommand('org.setMarker', async () => await setMarker()));
+	context.subscriptions.push(vscode.commands.registerCommand('org.jumpToMarker', async () => await jumpToMarker()));
     context.subscriptions.push(nextDayPageCmd);
     context.subscriptions.push(prevDayPageCmd);
     context.subscriptions.push(showDayPageCmd);

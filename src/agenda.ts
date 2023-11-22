@@ -3,6 +3,7 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import {ODb} from "./db"
 import {OrgExtension} from "./extension"
+import { jumpToHeading } from './utils';
 //import { Script } from 'vm';
 
 class hnode {
@@ -475,14 +476,7 @@ export async function showAgenda(doc: vscode.TextEditor) {
     panel.webview.onDidReceiveMessage(message => {
       switch(message.command) {
         case 'open': vscode.window.showErrorMessage(message.text);
-            var openPath = vscode.Uri.file(message.text);
-            console.log(openPath);
-            vscode.workspace.openTextDocument(openPath).then(textDoc => {
-                vscode.window.showTextDocument(textDoc).then( doc => {
-                  let line = message.line;
-                  doc.revealRange(new vscode.Range(new vscode.Position(line,0), new vscode.Position(line,0)));
-                });
-            });
+            jumpToHeading(message.text, message.line);
         return;
       }
     }, undefined, undefined); 
