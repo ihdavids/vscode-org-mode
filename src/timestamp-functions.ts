@@ -2,6 +2,8 @@ import * as vscode from 'vscode';
 import * as Datetime from './simple-datetime';
 import * as Utils from './utils';
 import { Sets } from './sets';
+import {ODb} from "./db"
+import { Log } from './log';
 
 export function insertTimestamp(textEditor: vscode.TextEditor, edit: vscode.TextEditorEdit) {
     const document = Utils.getActiveTextEditorEdit();
@@ -13,7 +15,16 @@ export function insertTimestamp(textEditor: vscode.TextEditor, edit: vscode.Text
     edit.insert(cursorPos, dateString);
 }
 
-export function clockIn(textEditor: vscode.TextEditor, edit: vscode.TextEditorEdit) {
+export async function clockIn(textEditor: vscode.TextEditor, edit: vscode.TextEditorEdit) {
+    const src = await ODb.getHashTarget();
+    const res = await ODb.clockIn(src);
+    if (!res.Ok) {
+        Log.get().error("CLOCK IN: ", src);
+        Log.get().error("  > CLOCK IN ERROR: ", JSON.stringify(res))
+    } else {
+        Log.get().log("CLOCK IN RESULT: ", res, src);
+    }
+    /*
     const document = Utils.getActiveTextEditorEdit();
     const cursorPos = Utils.getCursorPosition();
     const line = Utils.getLine(document, cursorPos);
@@ -23,9 +34,18 @@ export function clockIn(textEditor: vscode.TextEditor, edit: vscode.TextEditorEd
     }
     
     insertDateTime(edit, cursorPos);
+    */
 }
 
-export function clockOut(textEditor: vscode.TextEditor, edit: vscode.TextEditorEdit) {
+export async function clockOut(textEditor: vscode.TextEditor, edit: vscode.TextEditorEdit) {
+    const res = await ODb.clockOut();
+    if (!res.Ok) {
+        Log.get().error("CLOCK OUT: ");
+        Log.get().error("  > CLOCK OUT ERROR: ", JSON.stringify(res))
+    } else {
+        Log.get().log("CLOCK OUT RESULT: ", res);
+    }
+    /*
     const document = Utils.getActiveTextEditorEdit();
     const cursorPos = Utils.getCursorPosition();
     const line = Utils.getLine(document, cursorPos);
@@ -40,6 +60,17 @@ export function clockOut(textEditor: vscode.TextEditor, edit: vscode.TextEditorE
     }
     edit.insert(cursorPos, separator)
     insertDateTime(edit, cursorPos);
+    */
+}
+
+export async function clockActive(textEditor: vscode.TextEditor, edit: vscode.TextEditorEdit) {
+    const res = await ODb.clockActive();
+    if (!res.Ok) {
+        Log.get().error("CLOCK ACTIVE: ");
+        Log.get().error("  > CLOCK ACTIVE ERROR: ", JSON.stringify(res))
+    } else {
+        Log.get().log("CLOCK ACTIVE RESULT: ", res);
+    }
 }
 
 export function updateClock(textEditor: vscode.TextEditor, edit: vscode.TextEditorEdit) {

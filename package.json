@@ -168,6 +168,10 @@
                 "title": "Org: Update Clock Total"
             },
             {
+                "command": "org.clockactive",
+                "title": "Org: Clock Active?"
+            },
+            {
                 "command": "org.incrementContext",
                 "title": "Org: Increment Context"
             },

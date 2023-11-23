@@ -121,5 +121,33 @@
             "#+INDEX: $0"
         ],
         "description": "index line"
+    },
+    "jira properties": {
+        "prefix": "<J",
+        "body": [
+            "   :PROPERTIES:",
+            "    :LABELS:       ${1:ProactiveBenchmarking}",
+            "    :PRIORITY:     ${2:P3}",
+            "    :ASSIGNED:     ${3:Ian Davids [idavids@roblox.com]}",
+            "    :ISSUETYPE:    ${4:Story}",
+            "    :PROJECTKEY:   ${5:CLI}",
+            "   :END:"
+        ],
+        "description": "insert jira properties required to create a jira"
+    },
+    "make jira": {
+        "prefix": "<j",
+        "body": [
+            "* TODO ${1:Heading}",
+            "   :PROPERTIES:",
+            "    :LABELS:       ${1:ProactiveBenchmarking}",
+            "    :PRIORITY:     ${2:P3}",
+            "    :ASSIGNED:     ${3:Ian Davids [idavids@roblox.com]}",
+            "    :ISSUETYPE:    ${4:Story}",
+            "    :PROJECTKEY:   ${5:CLI}",
+            "   :END:",
+            "   $0"
+        ],
+        "description": "create a new JIRA todo"
     }
 }

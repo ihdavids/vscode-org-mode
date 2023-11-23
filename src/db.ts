@@ -342,6 +342,21 @@ export class ODb
         return await this.doPost(url, {Target: {Filename: src.filename, Id: src.id, Type: src.type }, Name: "jira"});
     }
 
+    public static async clockIn(src: NodeTarget): Promise<any> {
+        var url: URL = new URL(Sets.orgsConnection + `/clockin`);
+        return await this.doPost(url, {Filename: src.filename, Id: src.id, Type: src.type });
+    }
+
+    public static async clockOut(): Promise<any> {
+        var url: URL = new URL(Sets.orgsConnection + `/clockout`);
+        return await this.doPost(url, {});
+    }
+
+    public static async clockActive(): Promise<any> {
+        var url: URL = new URL(Sets.orgsConnection + `/clock`);
+        return await this.doGet(url);
+    }
+
 };
 
 
