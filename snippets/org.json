@@ -140,11 +140,11 @@
         "body": [
             "* TODO ${1:Heading}",
             "   :PROPERTIES:",
-            "    :LABELS:       ${1:ProactiveBenchmarking}",
-            "    :PRIORITY:     ${2:P3}",
-            "    :ASSIGNED:     ${3:Ian Davids [idavids@roblox.com]}",
-            "    :ISSUETYPE:    ${4:Story}",
-            "    :PROJECTKEY:   ${5:CLI}",
+            "    :LABELS:       ${2:ProactiveBenchmarking}",
+            "    :PRIORITY:     ${3:P3}",
+            "    :ASSIGNED:     ${4:Ian Davids [idavids@roblox.com]}",
+            "    :ISSUETYPE:    ${5:Story}",
+            "    :PROJECTKEY:   ${6:CLI}",
             "   :END:",
             "   $0"
         ],
