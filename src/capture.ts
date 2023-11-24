@@ -299,18 +299,26 @@ export async function dynamicEvalText(): Promise<void> {
     const editor = vscode.window.activeTextEditor;
     if (editor) {
         const selectedCode = editor.document.getText(editor.selection);
+        /*
         const code = `
-        async function temp() {
-  const Log = await import('./log');
-        return ${selectedCode}
-        }
-        temp();
+        (async () => {
+            const {Log} = await import('./log');
+            ${selectedCode}
+        })();
         `
         if (selectedCode) {
-            const res = eval(code);
-            res.then((res) => {
-                Log.get().log(res);
-            })
+            const res = await eval(code);
+            Log.get().log("RESULT: ", res);
+        } else {
+            vscode.window.showWarningMessage("No text selected.");
+        }
+        */
+        if (selectedCode) {
+            globalThis["Log"] = Log;
+            const result = await Object.getPrototypeOf(async function() {}).constructor(`${selectedCode}`)();
+            delete globalThis["Log"];
+            //const res = await eval(code);
+            Log.get().log("RESULT: ", result);
         } else {
             vscode.window.showWarningMessage("No text selected.");
         }
@@ -324,3 +332,4 @@ export async function showFunctionNames(): Promise<void> {
     const methods = getMethods(globalThis)
     Log.get().log(methods);
 }
+
