@@ -15,6 +15,11 @@ export function insertTimestamp(textEditor: vscode.TextEditor, edit: vscode.Text
     edit.insert(cursorPos, dateString);
 }
 
+let statusVar: vscode.StatusBarItem = undefined;
+let nextColor = 0;
+const colors = ["red","black"];
+let timer: NodeJS.Timer
+
 export async function clockIn(textEditor: vscode.TextEditor, edit: vscode.TextEditorEdit) {
     const src = await ODb.getHashTarget();
     const res = await ODb.clockIn(src);
@@ -23,6 +28,16 @@ export async function clockIn(textEditor: vscode.TextEditor, edit: vscode.TextEd
         Log.get().error("  > CLOCK IN ERROR: ", JSON.stringify(res))
     } else {
         Log.get().log("CLOCK IN RESULT: ", res, src);
+        statusVar = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right,100);
+        statusVar.color = "red";
+        statusVar.text = "$(clock~spin)";
+        statusVar.tooltip = "Org Mode Clock Running...";
+        let colorChange = () => {
+            nextColor = 1 - nextColor; 
+            statusVar.color=colors[nextColor];
+        }
+        timer = setInterval(colorChange, 1000);
+        statusVar.show();
     }
     /*
     const document = Utils.getActiveTextEditorEdit();
@@ -44,6 +59,10 @@ export async function clockOut(textEditor: vscode.TextEditor, edit: vscode.TextE
         Log.get().error("  > CLOCK OUT ERROR: ", JSON.stringify(res))
     } else {
         Log.get().log("CLOCK OUT RESULT: ", res);
+        if (statusVar) {
+            clearInterval(timer);
+            statusVar.hide();
+        }
     }
     /*
     const document = Utils.getActiveTextEditorEdit();
