@@ -67,6 +67,9 @@
             "include": "#blocks"
         },
         {
+            "include": "#dyn-blocks"
+        },
+        {
             "include": "#checkbox"
         },
         {
@@ -1869,6 +1872,33 @@
                             "name": "keyword.control.block.org"
                         },
                         "3": {
+                            "name": "string.other.header-args.org"
+                        }
+                    },
+                    "endCaptures": {
+                        "1": {
+                            "name": "keyword.control.block.org"
+                        }
+                    },
+                    "patterns": [
+                        {
+                            "include": "#common"
+                        }
+                    ]
+                }
+            ]
+        },
+        "dyn-blocks": {
+            "patterns": [
+                {
+                    "name": "meta.block.dynamic",
+                    "begin": "(?i)(?:^|\\G)(?:\\s*)(#\\+BEGIN)\\b\\s*(.*)$",
+                    "end": "(?i)(?:^|\\G)(?:\\s*)(#\\+END)\\b\\s*$",
+                    "beginCaptures": {
+                        "1": {
+                            "name": "keyword.control.block.org"
+                        },
+                        "2": {
                             "name": "string.other.header-args.org"
                         }
                     },

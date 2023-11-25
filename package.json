@@ -266,6 +266,10 @@
             {
                 "command": "org.createJira",
                 "title": "Org: Create Jira"
+            },
+            {
+                "command": "org.execBlock",
+                "title": "Org: Execute Block"
             }
         ],
         "languages": [

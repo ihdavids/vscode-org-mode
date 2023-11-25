@@ -357,6 +357,11 @@ export class ODb
         return await this.doGet(url);
     }
 
+    public static async execBlock(src: NodeTarget, row: number): Promise<any> {
+        var url: URL = new URL(Sets.orgsConnection + `/execb`);
+        return await this.doPost(url, {Target: {Filename: src.filename, Id: src.id, Type: src.type }, Row: row});
+    }
+
 };
 
 
