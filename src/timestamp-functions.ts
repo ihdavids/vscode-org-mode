@@ -15,10 +15,39 @@ export function insertTimestamp(textEditor: vscode.TextEditor, edit: vscode.Text
     edit.insert(cursorPos, dateString);
 }
 
-let statusVar: vscode.StatusBarItem = undefined;
-let nextColor = 0;
-const colors = ["red","black"];
-let timer: NodeJS.Timer
+class TimerIcon {
+    // https://code.visualstudio.com/api/references/icons-in-labels
+    public colors: string[];
+    private statusVar: vscode.StatusBarItem;
+    private nextColor: number;
+    private timer: NodeJS.Timer;
+
+    constructor() {
+        this.colors = ["red","black"];
+    }
+
+    public start() {
+        this.statusVar = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right,100);
+        this.statusVar.color = this.colors[0];
+        this.nextColor = 0;
+        this.statusVar.text = "$(clock~spin)";
+        this.statusVar.tooltip = "Org Mode Clock Running...";
+        let colorChange = () => {
+            this.nextColor = 1 - this.nextColor; 
+            this.statusVar.color=this.colors[this.nextColor];
+        }
+        this.timer = setInterval(colorChange, 1000);
+        this.statusVar.show();
+    }
+
+    public stop() {
+        if (this.statusVar) {
+            clearInterval(this.timer);
+            this.statusVar.hide();
+        }
+    }
+}
+let clockIcon: TimerIcon = new TimerIcon();
 
 export async function clockIn(textEditor: vscode.TextEditor, edit: vscode.TextEditorEdit) {
     const src = await ODb.getHashTarget();
@@ -28,16 +57,7 @@ export async function clockIn(textEditor: vscode.TextEditor, edit: vscode.TextEd
         Log.get().error("  > CLOCK IN ERROR: ", JSON.stringify(res))
     } else {
         Log.get().log("CLOCK IN RESULT: ", res, src);
-        statusVar = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right,100);
-        statusVar.color = "red";
-        statusVar.text = "$(clock~spin)";
-        statusVar.tooltip = "Org Mode Clock Running...";
-        let colorChange = () => {
-            nextColor = 1 - nextColor; 
-            statusVar.color=colors[nextColor];
-        }
-        timer = setInterval(colorChange, 1000);
-        statusVar.show();
+        clockIcon.start();
     }
     /*
     const document = Utils.getActiveTextEditorEdit();
@@ -59,10 +79,7 @@ export async function clockOut(textEditor: vscode.TextEditor, edit: vscode.TextE
         Log.get().error("  > CLOCK OUT ERROR: ", JSON.stringify(res))
     } else {
         Log.get().log("CLOCK OUT RESULT: ", res);
-        if (statusVar) {
-            clearInterval(timer);
-            statusVar.hide();
-        }
+        clockIcon.stop();
     }
     /*
     const document = Utils.getActiveTextEditorEdit();
