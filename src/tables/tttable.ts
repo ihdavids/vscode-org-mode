@@ -31,6 +31,7 @@ export class Table {
     cols: ColDef[] = [];
 
     private data: string[][] = [];
+    indent: number = 0;
 
     addRow(type: RowType, values: string[]) {
         let adjustCount = values.length - this.cols.length;
@@ -51,6 +52,14 @@ export class Table {
 
         this.rows.push({ type });
         this.data.push(values);
+    }
+
+    setIndent(idt: number) {
+        this.indent = idt;
+    }
+
+    getIndent(): string {
+        return " ".repeat(this.indent)
     }
 
     getAt(row: number, col: number): string {

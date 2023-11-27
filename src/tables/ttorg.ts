@@ -15,7 +15,15 @@ export class OrgParser implements tt.Parser {
         }
 
         const result = new tt.Table();
-        const strings = text.split('\n').map(x => x.trim()).filter(x => x.startsWith(verticalSeparator));
+        const lines = text.split('\n');
+        let indent = 0;
+        if (lines && lines.length > 0) {
+            const idx = lines[0].indexOf(verticalSeparator);
+            if (idx >= 0) {
+                indent = idx;
+            }
+        }
+        const strings = lines.map(x => x.trim()).filter(x => x.startsWith(verticalSeparator));
 
         for (const s of strings) {
             if (this.isSeparatorRow(s)) {
@@ -31,7 +39,7 @@ export class OrgParser implements tt.Parser {
 
             result.addRow(tt.RowType.Data, values);
         }
-
+        result.setIndent(indent);
         return result;
     }
 
@@ -46,9 +54,12 @@ export class OrgStringifier implements tt.Stringifier {
         [tt.RowType.Separator, this.separatorReducer],
     ]);
 
+    public indent: string = "";
+
     stringify(table: tt.Table): string {
         const result = [];
 
+        this.indent = table.getIndent();
         for (let i = 0; i < table.rows.length; ++i) {
             let rowString = '';
             const rowData = table.getRow(i);
@@ -56,7 +67,7 @@ export class OrgStringifier implements tt.Stringifier {
             if (reducer) {
                 rowString = rowData.reduce(reducer(table.cols), verticalSeparator);
             }
-
+            rowString = this.indent + rowString
             result.push(rowString);
         }
 
