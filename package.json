@@ -270,7 +270,65 @@
             {
                 "command": "org.execBlock",
                 "title": "Org: Execute Block"
+            },
+            {
+                "command": "org.enable",
+                "title": "Org: Text Table Enable"
+            },
+            {
+                "command": "org.formatUnderCursor",
+                "title": "Org: Format table under cursor"
+            },
+            {
+                "command": "org.tableModeOn",
+                "title": "Org: Enter table mode"
+            },
+            {
+                "command": "org.tableModeOff",
+                "title": "Org: Exit table mode"
+            },
+            {
+                "command": "org.gotoNextCell",
+                "title": "Org: Go to next table cell"
+            },
+            {
+                "command": "org.gotoPreviousCell",
+                "title": "Org: Go to previous table cell"
+            },
+            {
+                "command": "org.createTable",
+                "title": "Org: Create table"
+            },
+            {
+                "command": "org.clearCell",
+                "title": "Org: Clear table cell"
+            },
+            {
+                "command": "org.moveRowDown",
+                "title": "Org: Move table row down",
+                "category": "Text Tables"
+            },
+            {
+                "command": "org.moveRowUp",
+                "title": "Org: Move table row up",
+                "category": "Text Tables"
+            },
+            {
+                "command": "org.moveColRight",
+                "title": "Org: Move table column right",
+                "category": "Text Tables"
+            },
+            {
+                "command": "org.moveColLeft",
+                "title": "Org: Move table column left",
+                "category": "Text Tables"
+            },
+            {
+                "command": "org.nextRow",
+                "title": "Org: Next table row",
+                "category": "Text Tables"
             }
+
         ],
         "languages": [
             {
@@ -640,6 +698,61 @@
                 "command": "org.todo.effort",
                 "key": "e",
                 "when": "editorLangId == todolist"
+            },
+            {
+                "command": "org.formatUnderCursor",
+                "key": "ctrl+q ctrl+f",
+                "when": "editorLangId == 'org'"
+            },
+            {
+                "command": "org.clearCell",
+                "key": "ctrl+q space",
+                "when": "editorLangId == 'org'"
+            },
+            {
+                "command": "org.tableModeOn",
+                "key": "ctrl+q ctrl+q",
+                "when": "editorFocus && !orgTableMode"
+            },
+            {
+                "command": "org.tableModeOff",
+                "key": "ctrl+q ctrl+q",
+                "when": "editorFocus && orgTableMode"
+            },
+            {
+                "command": "org.gotoNextCell",
+                "key": "tab",
+                "when": "orgTableMode"
+            },
+            {
+                "command": "org.gotoPreviousCell",
+                "key": "shift+tab",
+                "when": "orgTableMode"
+            },
+            {
+                "command": "org.moveRowUp",
+                "key": "alt+up",
+                "when": "orgTableMode"
+            },
+            {
+                "command": "org.moveRowDown",
+                "key": "alt+down",
+                "when": "orgTableMode"
+            },
+            {
+                "command": "org.moveColRight",
+                "key": "alt+right",
+                "when": "orgTableMode"
+            },
+            {
+                "command": "org.moveColLeft",
+                "key": "alt+left",
+                "when": "orgTableMode"
+            },
+            {
+                "command": "org.nextRow",
+                "key": "enter",
+                "when": "orgTableMode"
             }
         ]
     },

@@ -82,4 +82,5 @@ export class Sets {
     public static set captureTemplates(value: {[key:string]: {[key:string]: string}}) { Sets.setProp<{[key:string]: {[key:string]: string}}>("captureTemplates", value);}
     public static get markers(): string[]              { return Sets.getProp<string[]>("markers",["TODAY"]);    }
     public static get popupLog(): boolean             { return Sets.getProp<boolean>("popupLog", false);         }
+    public static get showTableStatus(): boolean             { return Sets.getProp<boolean>("showTableStatus", true);         }
 }

@@ -1,0 +1,49 @@
+* Clocking
+    Org mode has a variety of clocking mechanisms. From starting a clock and inserting timestamps during note taking to a variety of other tools.
+    One of the most important is tracking time spent on a task. While true org mode can clock almost anywhere, this version of
+    org mode can only clock into a drawer. By default that is the LOGBOOK drawer although you can configure that on the orgs server
+    with the configuration option:
+
+    #+BEGIN_SRC js
+    "clockIntoDrawer": "LOGBOOK"
+    #+END_SRC
+
+    There are two primary commands for working with the clock:
+
+    - org.clockIn - For the currently active heading the orgs server will begin tracking time for this heading.
+                    NOTE: this will clock out any currently running clock
+    - orc.clockOut - Will write the current clocking information into the drawer specified for the active clocked heading.
+
+    Once you clock out you will get a heading that looks as follows on the heading that was tracked:
+
+    #+BEGIN_SRC org
+    *** Some other task
+        :LOGBOOK:
+        CLOCK: [2023-11-26 Sun 15:38]--[2023-11-26 Sun 15:39] => 0:01
+        :END:
+    #+END_SRC
+
+** The ClockTable 
+    There are a variety of ways that you can use clock data. One of the ways is the clock table dynamic block.
+    Dynamic blocks are powerful tools. In emacs, you can simply write some lisp, evaluate it then use it in a dynamic block.
+    In other editors you can't get away with that. The orgs server however can have functions registered that can be used just like a dynamic 
+    block in emacs, we just don't have quite the flexibility that emacs has.
+
+    The following defines a clocktable that can be evaluated to generate a summary of your clocking data:
+    #+BEGIN_SRC org
+      #BEGIN clocktable :maxlevel 3
+      ##ND
+    #+END_SRC
+
+    Right now the only scope we support is the subtree scope, but that will hopefully change going forward.
+    The clocktable can look something as follows:
+
+    #+BEGIN_SRC org
+     +--------------------+-------------+-------------+
+     |       Title        |    Local    |    Total    |
+     +--------------------+-------------+-------------+
+     | \_ Some task       | 1d 9h 1mins | 1d 9h 3mins |
+     | \___ A Subtask     | 2mins       | 2mins       |
+     | \_ Some other task | 1mins       | 1mins       |
+     +--------------------+-------------+-------------+
+    #+END_SRC

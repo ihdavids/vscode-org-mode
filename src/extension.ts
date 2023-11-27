@@ -33,6 +33,7 @@ import { Parser } from './parser';
 import { Decoration } from './decorations';
 import { Sets } from './sets';
 import { jumpToMarker, setMarker } from './marker';
+import { activateTableExtension } from "./tables/commands"
 
 
 export class OrgExtension {
@@ -252,6 +253,8 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(clockOutCmd);
     context.subscriptions.push(clockActiveCmd);
     context.subscriptions.push(updateClockCmd);
+
+    activateTableExtension(context);
 
     const provider = new OrgFoldingAndOutlineProvider();
     vscode.languages.registerFoldingRangeProvider('org', provider);
