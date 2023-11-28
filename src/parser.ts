@@ -285,6 +285,23 @@ export class Table implements Node {
         this.data.push(values);
     }
 
+    insertRow(row: number) {
+        if (row < 0 || row > this.rows.length) {
+            return 
+        }
+        let idx = 0
+        if (row > 0) {
+            idx = row - 1
+        }
+        this.rows.splice(row,0, { type: RowType.Data })
+
+        let rowd: string[] = Array(this.data[0].length)
+        for (var i = 0; i < this.data[0].length; ++i) {
+            rowd[i] = "";
+        }
+        this.data.splice(row,0, rowd)
+    }
+
     addCol(col: number) {
         let cd = {alignment: Alignment.Left, width: 0};
         this.cols.splice(col, 0, cd);

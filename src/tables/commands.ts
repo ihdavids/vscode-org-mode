@@ -140,6 +140,21 @@ export async function addColLeft(editor: vscode.TextEditor, range: vscode.Range,
     await gotoNextCell(editor, tableRange, table, stringifier);
 }
 
+export async function addRowDown(editor: vscode.TextEditor, range: vscode.Range, table: Table, stringifier: Stringifier) {
+    const rowCol = rowColFromPosition(table, editor.selection.start);
+    if (rowCol.col < 0) {
+        vscode.window.showWarningMessage('Not in table data field');
+        return;
+    }
+
+    table.insertRow(rowCol.row+1)
+
+    const newText = stringifier.stringify(table);
+    await editor.edit(e => e.replace(range, newText));
+    const pos = editor.selection.start.translate(1,0);
+    editor.selection = new vscode.Selection(pos, pos);
+}
+
 
 /**
  * Swap column under cursor with column on the left
@@ -255,6 +270,9 @@ export function activateTableExtension(ctx: vscode.ExtensionContext) {
 
     ctx.subscriptions.push(registerTableCommand('org.addColLeft', async (editor, range, table) => {
         await addColLeft(editor, range, table, stringifier);
+    }));
+    ctx.subscriptions.push(registerTableCommand('org.addRowDown', async (editor, range, table) => {
+        await addRowDown(editor, range, table, stringifier);
     }));
 
     ctx.subscriptions.push(registerTableCommand('org.moveRowDown', moveRowDown, {format: true}));
