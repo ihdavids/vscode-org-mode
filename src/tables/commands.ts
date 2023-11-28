@@ -1,12 +1,11 @@
 'use strict';
 
 import * as vscode from 'vscode';
-import * as cmd from './commands';
 import { OrgLocator, OrgParser, OrgStringifier } from './ttorg';
-import { Locator, Parser, Stringifier, Table } from './tttable';
+import { Locator, Parser, Stringifier, TableNavigator } from './tttable';
+import { Table, RowType } from '../parser';
 import { isUndefined } from 'util';
 import { registerContext, ContextType, enterContext, exitContext, restoreContext } from './context';
-import { RowType, TableNavigator } from './tttable';
 import {Sets } from "../sets"
 
 export const tableSizeRe = /^(\d+)x(\d+)$/u;
@@ -124,6 +123,21 @@ export async function moveColRight(editor: vscode.TextEditor, range: vscode.Rang
     await gotoNextCell(editor, range, table, stringifier);
 }
 
+export async function addColLeft(editor: vscode.TextEditor, range: vscode.Range, table: Table, stringifier: Stringifier) {
+    const rowCol = rowColFromPosition(table, editor.selection.start);
+    if (rowCol.col < 0) {
+        vscode.window.showWarningMessage('Not in table data field');
+        return;
+    }
+
+    table.addCol(rowCol.col)
+
+    const newText = stringifier.stringify(table);
+    await editor.edit(e => e.replace(range, newText));
+    await gotoNextCell(editor, range, table, stringifier);
+}
+
+
 /**
  * Swap column under cursor with column on the left
  */
@@ -152,6 +166,7 @@ export async function moveColLeft(editor: vscode.TextEditor, range: vscode.Range
     await editor.edit(e => e.replace(range, newText));
     await gotoPreviousCell(editor, range, table);
 }
+
 
 /**
  * Clear cell under cursor
@@ -235,30 +250,34 @@ export function activateTableExtension(ctx: vscode.ExtensionContext) {
     });
     */
 
-    ctx.subscriptions.push(registerTableCommand('org.moveRowDown', cmd.moveRowDown, {format: true}));
-    ctx.subscriptions.push(registerTableCommand('org.moveRowUp', cmd.moveRowUp, {format: true}));
+    ctx.subscriptions.push(registerTableCommand('org.addColLeft', async (editor, range, table) => {
+        await addColLeft(editor, range, table, stringifier);
+    }));
+
+    ctx.subscriptions.push(registerTableCommand('org.moveRowDown', moveRowDown, {format: true}));
+    ctx.subscriptions.push(registerTableCommand('org.moveRowUp', moveRowUp, {format: true}));
     ctx.subscriptions.push(registerTableCommand('org.moveColRight', async (editor, range, table) => {
-        await cmd.moveColRight(editor, range, table, stringifier);
+        await moveColRight(editor, range, table, stringifier);
     }));
     ctx.subscriptions.push(registerTableCommand('org.moveColLeft', async (editor, range, table) => {
-        await cmd.moveColLeft(editor, range, table, stringifier);
+        await moveColLeft(editor, range, table, stringifier);
     }));
 
     ctx.subscriptions.push(vscode.commands.registerTextEditorCommand('org.clearCell',
-        (e, ed) => cmd.clearCell(e, ed, parser)));
+        (e, ed) => clearCell(e, ed, parser)));
 
     ctx.subscriptions.push(registerTableCommand('org.gotoNextCell', async (editor, range, table) => {
-        await cmd.gotoNextCell(editor, range, table, stringifier);
+        await gotoNextCell(editor, range, table, stringifier);
     }));
 
-    ctx.subscriptions.push(registerTableCommand('org.gotoPreviousCell', cmd.gotoPreviousCell, {format: true}));
+    ctx.subscriptions.push(registerTableCommand('org.gotoPreviousCell', gotoPreviousCell, {format: true}));
     ctx.subscriptions.push(registerTableCommand('org.nextRow', async (editor, range, table) => {
-        await cmd.nextRow(editor, range, table, stringifier);
+        await nextRow(editor, range, table, stringifier);
     }));
 
     // Format table under cursor
     ctx.subscriptions.push(registerTableCommand('org.formatUnderCursor',
-        (editor, range, table) => cmd.formatUnderCursor(editor, range, table, stringifier)));
+        (editor, range, table) => formatUnderCursor(editor, range, table, stringifier)));
 
     ctx.subscriptions.push(vscode.commands.registerTextEditorCommand('org.createTable', async editor => {
         const opts: vscode.InputBoxOptions = {
@@ -278,7 +297,7 @@ export function activateTableExtension(ctx: vscode.ExtensionContext) {
             if (match) {
                 const cols = +match[1] || 1;
                 const rows = +match[2] || 2;
-                cmd.createTable(rows, cols, editor, stringifier);
+                createTable(rows, cols, editor, stringifier);
             }
         }
     }));
@@ -312,7 +331,7 @@ function registerTableCommand(command: string, callback: TableCommandCallback, o
         table.startLine = tableRange.start.line;
 
         if (options && options.format) {
-            await cmd.formatUnderCursor(editor, tableRange, table, stringifier);
+            await formatUnderCursor(editor, tableRange, table, stringifier);
         }
 
         await callback(editor, tableRange, table);

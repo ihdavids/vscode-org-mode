@@ -1,4 +1,5 @@
 import * as tt from './tttable';
+import {Table, RowType, ColDef} from '../parser'
 import * as vscode from 'vscode';
 
 
@@ -9,12 +10,12 @@ export const intersection = '+';
 type StringReducer = (previous: string, current: string, index: number) => string;
 
 export class OrgParser implements tt.Parser {
-    parse(text: string): tt.Table | undefined {
+    parse(text: string): Table | undefined {
         if (!text || text.length === 0) {
             return undefined;
         }
 
-        const result = new tt.Table();
+        const result = new Table();
         const lines = text.split('\n');
         let indent = 0;
         if (lines && lines.length > 0) {
@@ -27,7 +28,7 @@ export class OrgParser implements tt.Parser {
 
         for (const s of strings) {
             if (this.isSeparatorRow(s)) {
-                result.addRow(tt.RowType.Separator, []);
+                result.addRow(RowType.Separator, []);
                 continue;
             }
 
@@ -37,7 +38,7 @@ export class OrgParser implements tt.Parser {
                 .split(verticalSeparator)
                 .map(x => x.trim());
 
-            result.addRow(tt.RowType.Data, values);
+            result.addRow(RowType.Data, values);
         }
         result.setIndent(indent);
         return result;
@@ -50,13 +51,13 @@ export class OrgParser implements tt.Parser {
 
 export class OrgStringifier implements tt.Stringifier {
     private reducers = new Map([
-        [tt.RowType.Data, this.dataRowReducer],
-        [tt.RowType.Separator, this.separatorReducer],
+        [RowType.Data, this.dataRowReducer],
+        [RowType.Separator, this.separatorReducer],
     ]);
 
     public indent: string = "";
 
-    stringify(table: tt.Table): string {
+    stringify(table: Table): string {
         const result = [];
 
         this.indent = table.getIndent();
@@ -74,14 +75,14 @@ export class OrgStringifier implements tt.Stringifier {
         return result.join('\n');
     }
 
-    private dataRowReducer(cols: tt.ColDef[]): StringReducer {
+    private dataRowReducer(cols: ColDef[]): StringReducer {
         return (prev, cur, idx) => {
             const pad = ' '.repeat(cols[idx].width - cur.length + 1);
             return prev + ' ' + cur + pad + verticalSeparator;
         };
     }
 
-    private separatorReducer(cols: tt.ColDef[]): (p: string, c: string, i: number) => string {
+    private separatorReducer(cols: ColDef[]): (p: string, c: string, i: number) => string {
         return (prev, _, idx) => {
             // Intersections for each cell are '+', except the last one, where it should be '|'
             const ending = (idx === cols.length - 1)

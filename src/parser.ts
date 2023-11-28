@@ -285,6 +285,14 @@ export class Table implements Node {
         this.data.push(values);
     }
 
+    addCol(col: number) {
+        let cd = {alignment: Alignment.Left, width: 0};
+        this.cols.splice(col, 0, cd);
+        for (var r = 0; r < this.data.length; ++r) {
+            this.data[r].splice(col, 0, '')
+        }
+    }
+
     setIndent(idt: number) {
         this.indent = idt;
     }
@@ -320,7 +328,7 @@ export class Table implements Node {
         const s = line.trim();
 
         if (isSeparatorRow(s)) {
-            this.addRow(tt.RowType.Separator, []);
+            this.addRow(RowType.Separator, []);
             return;
         }
 
@@ -330,7 +338,7 @@ export class Table implements Node {
                 .split(to.verticalSeparator)
                 .map(x => x.trim());
 
-        this.addRow(tt.RowType.Data, values);
+        this.addRow(RowType.Data, values);
     }
 }
 

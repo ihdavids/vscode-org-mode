@@ -327,6 +327,11 @@
                 "command": "org.nextRow",
                 "title": "Org: Next table row",
                 "category": "Text Tables"
+            },
+            {
+                "command": "org.addColLeft",
+                "title": "Org: Add Table Col",
+                "category": "Text Tables"
             }
 
         ],
