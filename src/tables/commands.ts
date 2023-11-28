@@ -134,7 +134,10 @@ export async function addColLeft(editor: vscode.TextEditor, range: vscode.Range,
 
     const newText = stringifier.stringify(table);
     await editor.edit(e => e.replace(range, newText));
-    await gotoNextCell(editor, range, table, stringifier);
+
+    // range is now WRONG! Have to recompute it!
+    const tableRange = locator.locate(editor.document, editor.selection.start.line);
+    await gotoNextCell(editor, tableRange, table, stringifier);
 }
 
 
