@@ -272,6 +272,7 @@ export function activate(context: vscode.ExtensionContext) {
 
     		// open new document
 		vscode.window.onDidChangeActiveTextEditor(editor => {
+            OrgExtension.get().tableContext.setState(false);
 			if (editor && editor.document.languageId === 'org') {
 				OrgExtension.get().update();
 			}
@@ -287,12 +288,15 @@ export function activate(context: vscode.ExtensionContext) {
                     } else {
                         OrgExtension.get().tableContext.setState(false);
                     }
+                } else {
+                    OrgExtension.get().tableContext.setState(false);
                 }
             }
         }, null, context.subscriptions);
 
 		// modify current document
 		vscode.workspace.onDidChangeTextDocument(event => {
+            OrgExtension.get().tableContext.setState(false);
 			const editor = vscode.window.activeTextEditor;
 			if (editor && event.document === editor.document &&
 				editor.document.languageId === 'org') {
