@@ -226,19 +226,14 @@ let stringifier: Stringifier;
 
 export function activateTableExtension(ctx: vscode.ExtensionContext) {
     loadConfiguration();
-    //registerContext(ContextType.TableMode, '$(book) Table Mode', statusItem);
 
-
+    /*
     vscode.window.onDidChangeActiveTextEditor(e => {
         if (e) {
             restoreContext(e);
         }
     });
-
-    ctx.subscriptions.push(vscode.commands.registerTextEditorCommand('org.tableModeOn',
-        (e) => enterContext(e, ContextType.TableMode)));
-    ctx.subscriptions.push(vscode.commands.registerTextEditorCommand('org.tableModeOff',
-        (e) => exitContext(e, ContextType.TableMode)));
+    */
 
     ctx.subscriptions.push(registerTableCommand('org.moveRowDown', cmd.moveRowDown, {format: true}));
     ctx.subscriptions.push(registerTableCommand('org.moveRowUp', cmd.moveRowUp, {format: true}));
@@ -302,6 +297,7 @@ function registerTableCommand(command: string, callback: TableCommandCallback, o
             return;
         }
 
+        // TODO: Switch this to use the lineMap vs this mechanism
         const tableRange = locator.locate(editor.document, editor.selection.start.line);
         if (isUndefined(tableRange)) {
             return;
