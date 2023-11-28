@@ -2,9 +2,9 @@ import * as tt from './tttable';
 import * as vscode from 'vscode';
 
 
-const verticalSeparator = '|';
-const horizontalSeparator = '-';
-const intersection = '+';
+export const verticalSeparator = '|';
+export const horizontalSeparator = '-';
+export const intersection = '+';
 
 type StringReducer = (previous: string, current: string, index: number) => string;
 

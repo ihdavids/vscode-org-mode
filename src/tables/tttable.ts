@@ -164,11 +164,13 @@ export class TableNavigator {
 
         const cellPadding = 2;
         let lastAnchor = 0;
+        let indent = this.table.indent;
         const anchors = this.table.cols.reduce((accum, col) => {
-            lastAnchor += col.width + cellPadding + 1;
+            lastAnchor += col.width + cellPadding + 1 + indent;
+            indent = 0;
             accum.push(lastAnchor);
             return accum;
-        }, [lastAnchor]);
+        }, [lastAnchor+indent]);
         // extend last point to "infinity"
         anchors[anchors.length - 1] = 999;
 

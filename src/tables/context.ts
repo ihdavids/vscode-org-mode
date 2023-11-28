@@ -49,16 +49,42 @@ export function restoreContext(editor: vscode.TextEditor) {
     toExit.forEach(x => exitContext(editor, x));
 }
 
-class Context {
-    constructor(private type: ContextType, private title: string, private statusItem?: vscode.StatusBarItem) {
-
+export class Context {
+    public enabled = false;
+    public constructor(private type: ContextType, private title: string, private statusItem?: vscode.StatusBarItem) {
     }
 
-    setState(isEnabled: boolean) {
-        vscode.commands.executeCommand('setContext', this.type, isEnabled);
+    public setState(isEnabled: boolean) {
+        if (this.enabled != isEnabled) {
+            vscode.commands.executeCommand('setContext', this.type, isEnabled);
+            if (this.statusItem) {
+                const stateText = isEnabled ? 'On' : 'Off';
+                this.statusItem.text = `${this.title}: ${stateText}`;
+            }
+            this.enabled = isEnabled;
+        }
+    }
+
+    public toggle() {
+        this.enabled = !this.enabled;
+        vscode.commands.executeCommand('setContext', this.type, this.enabled);
         if (this.statusItem) {
-            const stateText = isEnabled ? 'On' : 'Off';
+            const stateText = this.enabled ? 'On' : 'Off';
             this.statusItem.text = `${this.title}: ${stateText}`;
+        }
+    }
+
+    public isOn(): boolean {
+        return this.enabled;
+    }
+
+    public isOff(): boolean {
+        return !this.enabled;
+    }
+
+    public reset() {
+        if (this.enabled) {
+            this.setState(false);
         }
     }
 }

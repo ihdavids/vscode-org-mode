@@ -3,7 +3,9 @@ import { Sets } from './sets';
 import { isHeaderLine } from './utils';
 import { DateType, OrgDate } from './simple-datetime'
 import { listenerCount } from 'stream';
-import * as tt from "./todolist";
+//import * as tt from "./todolist";
+import * as tt from "./tables/tttable";
+import * as to from "./tables/ttorg";
 
 export enum OrgTypes {
     Root,
@@ -21,6 +23,7 @@ export enum OrgTypes {
     Drawer,
     ClockEntry,
     SourceBlock,
+    Table,
 };
 
 export type Primitive = string | number | boolean
@@ -222,6 +225,116 @@ export class SourceBlock implements Node {
     }
 }
 
+
+export enum RowType {
+    Unknown,
+    Separator,
+    Data
+}
+
+export enum Alignment {
+    Left,
+    Center,
+    Right
+}
+
+export interface RowDef {
+    type: RowType;
+}
+
+export interface ColDef {
+    alignment: Alignment;
+    width: number;
+}
+
+function isSeparatorRow(text: string): boolean {
+    return text.length > 1 && text[1] === to.horizontalSeparator;
+}
+
+export class Table implements Node {
+    type:     OrgTypes = OrgTypes.Table;
+    range:    vscode.Range;
+    startLine = 0;
+    height:   number;
+    parent?:  Headline;
+
+    rows: RowDef[] = [];
+    cols: ColDef[] = [];
+
+    private data: string[][] = [];
+    indent: number = 0;
+
+    addRow(type: RowType, values: string[]) {
+        let adjustCount = values.length - this.cols.length;
+        while (adjustCount-- > 0) {
+            this.cols.push({ alignment: Alignment.Left, width: 0 });
+        }
+
+        for (const row of this.data) {
+            const adjustee = row.length < values.length ? row : values;
+            adjustCount = Math.abs(row.length - values.length);
+
+            while (adjustCount-- > 0) {
+                adjustee.push('');
+            }
+        }
+
+        this.cols.forEach((col, i) => col.width = Math.max(col.width, values[i].length));
+
+        this.rows.push({ type });
+        this.data.push(values);
+    }
+
+    setIndent(idt: number) {
+        this.indent = idt;
+    }
+
+    getIndent(): string {
+        return " ".repeat(this.indent)
+    }
+
+    getAt(row: number, col: number): string {
+        return this.data[row][col];
+    }
+
+    getRow(row: number): string[] {
+        return this.data[row];
+    }
+
+    setAt(row: number, col: number, value: string) {
+        if (this.cols[col].width < value.length) {
+            this.cols[col].width = value.length;
+        }
+
+        this.data[row][col] = value;
+    }
+
+    isType(type: OrgTypes):  boolean {
+        if (type == this.type) {
+            return true;
+        }
+        return false;
+    }
+
+    parseTableLine(line: string) {
+        const s = line.trim();
+
+        if (isSeparatorRow(s)) {
+            this.addRow(tt.RowType.Separator, []);
+            return;
+        }
+
+        const lastIndex = s.length - (s.endsWith(to.verticalSeparator) ? 1 : 0);
+        const values = s
+                .slice(1, lastIndex)
+                .split(to.verticalSeparator)
+                .map(x => x.trim());
+
+        this.addRow(tt.RowType.Data, values);
+    }
+}
+
+
 export class PropertyDrawer extends Drawer {
     properties:  {[key: string]: Property};
     add(n: Property) {
@@ -305,6 +418,7 @@ export class Headline implements Parent {
     dones:     string[];
     todoKeywords: string;
     sourceBlocks: SourceBlock[];
+    tables: Table[];
     data: string;
     
     public getHeadline(): string {
@@ -364,10 +478,15 @@ export class Headline implements Parent {
         this.nodes    = [];
         this.comments = {};
         this.sourceBlocks = [];
+        this.tables = [];
     }
 
     getSourceBlocks(): SourceBlock[] {
         return this.sourceBlocks;
+    }
+
+    getTables(): Table[] {
+        return this.tables;
     }
 
     getComment(name: string, defaultVal: Comment | undefined = undefined): Comment | undefined {
@@ -481,6 +600,7 @@ export class RootNode implements Parent {
     comments: {[key: string]: Comment};
     todos: string[];
     dones: string[];
+    lineMap: Node[];
 
     constructor() {
         this.nodes    = [];
@@ -640,6 +760,7 @@ enum ParserPhase {
     LogBook,
     Links,
     SourceBlock,
+    Table,
 }
 
 class ParserState {
@@ -670,6 +791,7 @@ function* parseLines(rootNode: RootNode, content: string, state: ParserState) {
     const commentRegexp = /^\s*[#][+](?<name>[A-Za-z][A-Za-z0-9_]+)[:]\s*(?<val>.*)$/;
     //content = content.replace(/\r/gm,"");
     const lines = content.split('\n');
+    rootNode.lineMap = new Array(lines.length);
     //while((line = linere.exec(content)) && line.index < content.length) {
     let buildup = "";
     for(let line of lines) {
@@ -984,6 +1106,59 @@ function* parseSourceBlock(gen, state: ParserState) {
 }
 
 
+function* parseTable(gen, state: ParserState) {
+    let inTable = false;
+    let startPos;
+    let maxLen = 0;
+    let height = 0;
+    let curTable = null;
+    const tregexp = /^\s*[|].*$/
+    for (var lineData of gen) {
+        let [rootNode, curNode, offset, curLine, line] = lineData;
+        if (inTable) {
+            const em = tregexp.exec(line);
+            if (!em) {
+                inTable = false;
+                state.setState(ParserPhase.None);
+                const endPos     = new vscode.Position(curLine, line.length);
+                curTable.range   = new vscode.Range(startPos, endPos);
+                curTable.maxLen  = maxLen;
+                curTable.height  = height+1;
+            } else {
+                if (maxLen < line.length) {
+                    maxLen = line.length;
+                }
+                height += 1;
+                curTable.parseTableLine(line)
+                rootNode.lineMap[curLine] = curTable;
+            }
+            continue;
+        } else {
+            const sm = tregexp.exec(line);
+            if (state.canParse(ParserPhase.Table) && sm) {
+                inTable = true;
+                state.setState(ParserPhase.Table);
+                curTable = new Table();
+                startPos = new vscode.Position(curLine, sm.index);
+                curNode.tables.push(curTable);
+                rootNode.nodes.push(curTable);
+                curNode.nodes.push(curTable);
+                curTable.parent = curNode;
+                maxLen = line.length;
+                height = 1;
+                const idx = line.indexOf(to.verticalSeparator);
+                if (idx >= 0) {
+                    curTable.setIndent(idx)
+                }
+                curTable.parseTableLine(line)
+                rootNode.lineMap[curLine] = curTable;
+                continue;
+            }
+        }
+        yield lineData;
+    }
+}
+
 
 function* parseLinks(gen, state: ParserState) {
     for (var lineData of gen) {
@@ -1081,6 +1256,7 @@ export function parseFileContents(contents: string) {
     gen     = parseNumList(gen,state);
     gen     = parseList(gen,state);
     gen     = parseSourceBlock(gen,state);
+    gen     = parseTable(gen,state);
 
     for (var x of gen) {}
 

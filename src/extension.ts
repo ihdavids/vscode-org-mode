@@ -29,11 +29,12 @@ import { CapturePage, refileHeading, archiveHeading, createJira } from './captur
 import { dynamicEvalText, showFunctionNames, execBlock } from './execb';
 
 
-import { Parser } from './parser';
+import { Parser, OrgTypes } from './parser';
 import { Decoration } from './decorations';
 import { Sets } from './sets';
 import { jumpToMarker, setMarker } from './marker';
-import { activateTableExtension } from "./tables/commands"
+import { activateTableExtension} from "./tables/commands"
+import * as tt from "./tables/context"
 
 
 export class OrgExtension {
@@ -46,6 +47,7 @@ export class OrgExtension {
     parser: Parser;
     decore: Decoration;
     private updateTimer: NodeJS.Timer | undefined;
+    tableContext: tt.Context;
 
     constructor()
     {
@@ -67,6 +69,12 @@ export class OrgExtension {
         this.parser   = new Parser();
         this.decore   = new Decoration(this.parser);
 		this.capPage  = new CapturePage(context);
+
+        const statusItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
+        this.tableContext = new tt.Context(tt.ContextType.TableMode, "$(book) Table Mode", statusItem);
+        if (Sets.showTableStatus) {
+            statusItem.show();
+        }
     }
 
     async timestamp(mode: CalendarMode): Promise<void> {
@@ -268,6 +276,20 @@ export function activate(context: vscode.ExtensionContext) {
 				OrgExtension.get().update();
 			}
 		}, null, context.subscriptions);
+
+        vscode.window.onDidChangeTextEditorSelection(event =>{
+            if (OrgExtension.get().parser) {
+                if (event.selections.length > 0 && event.textEditor.document.languageId == 'org') {
+                    const lineNum = event.selections[0].start.line;
+                    const litem = OrgExtension.get().parser.doc.lineMap[lineNum];
+                    if (litem && litem.isType(OrgTypes.Table)) {
+                        OrgExtension.get().tableContext.setState(true);
+                    } else {
+                        OrgExtension.get().tableContext.setState(false);
+                    }
+                }
+            }
+        }, null, context.subscriptions);
 
 		// modify current document
 		vscode.workspace.onDidChangeTextDocument(event => {

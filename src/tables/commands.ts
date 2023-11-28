@@ -226,22 +226,14 @@ let stringifier: Stringifier;
 
 export function activateTableExtension(ctx: vscode.ExtensionContext) {
     loadConfiguration();
-    const statusItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
-    registerContext(ContextType.TableMode, '$(book) Table Mode', statusItem);
+    //registerContext(ContextType.TableMode, '$(book) Table Mode', statusItem);
 
-    if (Sets.showTableStatus) {
-        statusItem.show();
-    }
 
     vscode.window.onDidChangeActiveTextEditor(e => {
         if (e) {
             restoreContext(e);
         }
     });
-
-    ctx.subscriptions.push(vscode.commands.registerCommand('text-tables.enable', () => {
-        vscode.window.showInformationMessage('Text tables enabled!');
-    }));
 
     ctx.subscriptions.push(vscode.commands.registerTextEditorCommand('org.tableModeOn',
         (e) => enterContext(e, ContextType.TableMode)));
