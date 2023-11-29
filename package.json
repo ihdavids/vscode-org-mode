@@ -305,48 +305,48 @@
             },
             {
                 "command": "org.moveRowDown",
-                "title": "Org: Move table row down",
-                "category": "Text Tables"
+                "title": "Move table row down",
+                "category": "Org"
             },
             {
                 "command": "org.moveRowUp",
-                "title": "Org: Move table row up",
-                "category": "Text Tables"
+                "title": "Move table row up",
+                "category": "Org"
             },
             {
                 "command": "org.moveColRight",
-                "title": "Org: Move table column right",
-                "category": "Text Tables"
+                "title": "Move table column right",
+                "category": "Org"
             },
             {
                 "command": "org.moveColLeft",
-                "title": "Org: Move table column left",
-                "category": "Text Tables"
+                "title": "Move table column left",
+                "category": "Org"
             },
             {
                 "command": "org.nextRow",
-                "title": "Org: Next table row",
-                "category": "Text Tables"
+                "title": "Next table row",
+                "category": "Org"
             },
             {
                 "command": "org.addColLeft",
-                "title": "Org: Add Table Col",
-                "category": "Text Tables"
+                "title": "Add Table Col",
+                "category": "Org"
             },
             {
                 "command": "org.addRowDown",
-                "title": "Org: Add Table Row",
-                "category": "Text Tables"
+                "title": "Add Table Row",
+                "category": "Org"
             },
             {
                 "command": "org.deleteRow",
-                "title": "Org: Delete Table Row",
-                "category": "Text Tables"
+                "title": "Delete Table Row",
+                "category": "Org"
             },
             {
                 "command": "org.deleteCol",
-                "title": "Org: Delete Table Col",
-                "category": "Text Tables"
+                "title": "Delete Table Col",
+                "category": "Org"
             }
 
         ],
