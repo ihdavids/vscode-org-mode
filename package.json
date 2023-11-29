@@ -347,6 +347,11 @@
                 "command": "org.deleteCol",
                 "title": "Delete Table Col",
                 "category": "Org"
+            },
+            {
+                "command": "org.insertSeparator",
+                "title": "Insert Table Separator",
+                "category": "Org"
             }
 
         ],
@@ -792,6 +797,11 @@
             {
                 "command": "org.deleteCol",
                 "key": "ctrl+alt+left",
+                "when": "orgTableMode"
+            },
+            {
+                "command": "org.insertSeparator",
+                "key": "ctrl+-",
                 "when": "orgTableMode"
             }
         ]

@@ -304,7 +304,7 @@ export class Table implements Node {
         this.data.push(values);
     }
 
-    insertRow(row: number) {
+    insertRow(row: number, rtype: RowType=RowType.Data) {
         if (row < 0 || row > this.rows.length) {
             return 
         }
@@ -312,7 +312,7 @@ export class Table implements Node {
         if (row > 0) {
             idx = row - 1
         }
-        this.rows.splice(row,0, { type: RowType.Data })
+        this.rows.splice(row,0, { type: rtype })
 
         let rowd: string[] = Array(this.data[0].length)
         for (var i = 0; i < this.data[0].length; ++i) {

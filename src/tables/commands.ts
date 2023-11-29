@@ -88,11 +88,18 @@ export async function gotoPreviousCell(editor: vscode.TextEditor, _range: vscode
  * Format table under cursor
  */
 export async function formatUnderCursor(editor: vscode.TextEditor, range: vscode.Range, table: Table, stringifier: Stringifier) {
-    const newText = stringifier.stringify(table);
+    let dim = {width: 0, height: 0}
+    const newText = stringifier.stringify(table, dim);
     const prevSel = editor.selection.start;
-
-    await editor.edit(e => e.replace(range, newText));
-    editor.selection = new vscode.Selection(prevSel, prevSel);
+    const w = range.end.character - range.start.character
+    const h = range.end.line - range.start.line + 1
+    // WE REALLY do not want to be updating the buffer unless we have to. Avoid the update
+    // unless we know we need to update. This is more costly for the update as the table gets
+    // bigger, hopefully it is efficient enough.
+    if ((w != dim.width || h != dim.height) || (newText != editor.document.getText(range))) {
+        await editor.edit(e => e.replace(range, newText));
+        editor.selection = new vscode.Selection(prevSel, prevSel);
+    } 
 }
 
 /**
@@ -158,6 +165,20 @@ export async function addRowDown(editor: vscode.TextEditor, range: vscode.Range,
     editor.selection = new vscode.Selection(pos, pos);
 }
 
+export async function insertSeparator(editor: vscode.TextEditor, range: vscode.Range, table: Table, stringifier: Stringifier) {
+    const rowCol = rowColFromPosition(table, editor.selection.start);
+    if (rowCol.col < 0) {
+        vscode.window.showWarningMessage('Not in table data field');
+        return;
+    }
+
+    table.insertRow(rowCol.row+1,RowType.Separator)
+
+    const newText = stringifier.stringify(table);
+    await editor.edit(e => e.replace(range, newText));
+    const pos = editor.selection.start.translate(1,0);
+    editor.selection = new vscode.Selection(pos, pos);
+}
 
 export async function deleteRow(editor: vscode.TextEditor, range: vscode.Range, table: Table, stringifier: Stringifier) {
     const pos = editor.selection.start
@@ -315,6 +336,9 @@ export function activateTableExtension(ctx: vscode.ExtensionContext) {
     });
     */
 
+    ctx.subscriptions.push(registerTableCommand('org.insertSeparator', async (editor, range, table) => {
+        await insertSeparator(editor, range, table, stringifier);
+    }));
     ctx.subscriptions.push(registerTableCommand('org.addColLeft', async (editor, range, table) => {
         await addColLeft(editor, range, table, stringifier);
     }));

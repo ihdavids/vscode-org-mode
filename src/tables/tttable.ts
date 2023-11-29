@@ -6,7 +6,7 @@ export interface Parser {
 }
 
 export interface Stringifier {
-    stringify(table: Table): string;
+    stringify(table: Table, range?: any): string;
 }
 
 export interface Locator {

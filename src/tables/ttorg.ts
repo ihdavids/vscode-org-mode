@@ -57,9 +57,10 @@ export class OrgStringifier implements tt.Stringifier {
 
     public indent: string = "";
 
-    stringify(table: Table): string {
+    stringify(table: Table, range: any= null): string {
         const result = [];
-
+        let width  = 0;
+        let height = table.rows.length;
         this.indent = table.getIndent();
         for (let i = 0; i < table.rows.length; ++i) {
             let rowString = '';
@@ -69,9 +70,13 @@ export class OrgStringifier implements tt.Stringifier {
                 rowString = rowData.reduce(reducer(table.cols), verticalSeparator);
             }
             rowString = this.indent + rowString
+            width = rowString.length
             result.push(rowString);
         }
-
+        if (range) {
+            range.width = width;
+            range.height = height;
+        }
         return result.join('\n');
     }
 
