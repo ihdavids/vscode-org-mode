@@ -302,6 +302,24 @@ export class Table implements Node {
         this.data.splice(row,0, rowd)
     }
 
+    deleteRow(row: number) {
+        if (row < 0 || row > this.rows.length) {
+            return 
+        }
+        this.rows.splice(row,1)
+        this.data.splice(row,1)
+    }
+
+    deleteCol(col: number) {
+        if (col < 0 || col > this.cols.length) {
+            return 
+        }
+        this.cols.splice(col,1)
+        for( var i = 0; i < this.data.length; ++i) {
+            this.data[i].splice(col, 1)
+        }
+    }
+
     addCol(col: number) {
         let cd = {alignment: Alignment.Left, width: 0};
         this.cols.splice(col, 0, cd);

@@ -156,6 +156,32 @@ export async function addRowDown(editor: vscode.TextEditor, range: vscode.Range,
 }
 
 
+export async function deleteRow(editor: vscode.TextEditor, range: vscode.Range, table: Table, stringifier: Stringifier) {
+    const rowCol = rowColFromPosition(table, editor.selection.start);
+    if (rowCol.col < 0) {
+        vscode.window.showWarningMessage('Not in table data field');
+        return;
+    }
+
+    table.deleteRow(rowCol.row)
+
+    const newText = stringifier.stringify(table);
+    await editor.edit(e => e.replace(range, newText));
+}
+
+export async function deleteCol(editor: vscode.TextEditor, range: vscode.Range, table: Table, stringifier: Stringifier) {
+    const rowCol = rowColFromPosition(table, editor.selection.start);
+    if (rowCol.col < 0) {
+        vscode.window.showWarningMessage('Not in table data field');
+        return;
+    }
+
+    table.deleteCol(rowCol.col)
+
+    const newText = stringifier.stringify(table);
+    await editor.edit(e => e.replace(range, newText));
+}
+
 /**
  * Swap column under cursor with column on the left
  */
@@ -273,6 +299,12 @@ export function activateTableExtension(ctx: vscode.ExtensionContext) {
     }));
     ctx.subscriptions.push(registerTableCommand('org.addRowDown', async (editor, range, table) => {
         await addRowDown(editor, range, table, stringifier);
+    }));
+    ctx.subscriptions.push(registerTableCommand('org.deleteCol', async (editor, range, table) => {
+        await deleteCol(editor, range, table, stringifier);
+    }));
+    ctx.subscriptions.push(registerTableCommand('org.deleteRow', async (editor, range, table) => {
+        await deleteRow(editor, range, table, stringifier);
     }));
 
     ctx.subscriptions.push(registerTableCommand('org.moveRowDown', moveRowDown, {format: true}));

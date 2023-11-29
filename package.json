@@ -332,6 +332,21 @@
                 "command": "org.addColLeft",
                 "title": "Org: Add Table Col",
                 "category": "Text Tables"
+            },
+            {
+                "command": "org.addRowDown",
+                "title": "Org: Add Table Row",
+                "category": "Text Tables"
+            },
+            {
+                "command": "org.deleteRow",
+                "title": "Org: Delete Table Row",
+                "category": "Text Tables"
+            },
+            {
+                "command": "org.deleteCol",
+                "title": "Org: Delete Table Col",
+                "category": "Text Tables"
             }
 
         ],
