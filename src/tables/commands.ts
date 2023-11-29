@@ -157,16 +157,21 @@ export async function addRowDown(editor: vscode.TextEditor, range: vscode.Range,
 
 
 export async function deleteRow(editor: vscode.TextEditor, range: vscode.Range, table: Table, stringifier: Stringifier) {
+    const pos = editor.selection.start
     const rowCol = rowColFromPosition(table, editor.selection.start);
     if (rowCol.col < 0) {
         vscode.window.showWarningMessage('Not in table data field');
         return;
     }
-
+    const end = table.IsLastRow(rowCol.row)
     table.deleteRow(rowCol.row)
 
     const newText = stringifier.stringify(table);
     await editor.edit(e => e.replace(range, newText));
+    if (end) {
+        const npos = pos.translate(-1,0);
+        editor.selection = new vscode.Selection(npos, npos);
+    }
 }
 
 export async function deleteCol(editor: vscode.TextEditor, range: vscode.Range, table: Table, stringifier: Stringifier) {
@@ -177,11 +182,18 @@ export async function deleteCol(editor: vscode.TextEditor, range: vscode.Range, 
         return;
     }
 
+    const end = table.IsLastRow(rowCol.row)
     table.deleteCol(rowCol.col)
 
     const newText = stringifier.stringify(table);
     await editor.edit(e => e.replace(range, newText));
-    editor.selection = new vscode.Selection(pos, pos);
+    if (end) {
+        // TODO this should give us the last row
+        const npos = pos.translate(0,0);
+        editor.selection = new vscode.Selection(npos, npos);
+    } else {
+        editor.selection = new vscode.Selection(pos, pos);
+    }
 }
 
 /**
@@ -267,7 +279,7 @@ function rowColFromPosition(table: Table, position: vscode.Position): { row: num
     const result = { row: -1, col: -1 };
 
     result.row = position.line - table.startLine;
-    let counter = 1;
+    let counter = 1 + table.indent;
     for (let i = 0; i < table.cols.length; ++i) {
         const col = table.cols[i];
         if (position.character >= counter && position.character < counter + col.width + 3) {

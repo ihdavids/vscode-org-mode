@@ -773,6 +773,26 @@
                 "command": "org.nextRow",
                 "key": "enter",
                 "when": "orgTableMode"
+            },
+            {
+                "command": "org.deleteRow",
+                "key": "ctrl+alt+up",
+                "when": "orgTableMode"
+            },
+            {
+                "command": "org.addRowDown",
+                "key": "ctrl+alt+down",
+                "when": "orgTableMode"
+            },
+            {
+                "command": "org.addColLeft",
+                "key": "ctrl+alt+right",
+                "when": "orgTableMode"
+            },
+            {
+                "command": "org.deleteCol",
+                "key": "ctrl+alt+left",
+                "when": "orgTableMode"
             }
         ]
     },

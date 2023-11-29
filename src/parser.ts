@@ -264,6 +264,10 @@ export class Table implements Node {
     private data: string[][] = [];
     indent: number = 0;
 
+    IsLastRow(row: number): boolean{
+        return row === (this.rows.length-1);
+    }
+
     addRow(type: RowType, values: string[]) {
         let adjustCount = values.length - this.cols.length;
         while (adjustCount-- > 0) {
@@ -321,7 +325,7 @@ export class Table implements Node {
     }
 
     addCol(col: number) {
-        let cd = {alignment: Alignment.Left, width: 0};
+        let cd = {alignment: Alignment.Left, width: 1};
         this.cols.splice(col, 0, cd);
         for (var r = 0; r < this.data.length; ++r) {
             this.data[r].splice(col, 0, '')
