@@ -124,6 +124,7 @@ export async function moveColRight(editor: vscode.TextEditor, range: vscode.Rang
 }
 
 export async function addColLeft(editor: vscode.TextEditor, range: vscode.Range, table: Table, stringifier: Stringifier) {
+    const pos = editor.selection.start
     const rowCol = rowColFromPosition(table, editor.selection.start);
     if (rowCol.col < 0) {
         vscode.window.showWarningMessage('Not in table data field');
@@ -135,6 +136,7 @@ export async function addColLeft(editor: vscode.TextEditor, range: vscode.Range,
     const newText = stringifier.stringify(table);
     await editor.edit(e => e.replace(range, newText));
 
+    editor.selection = new vscode.Selection(pos, pos);
     // range is now WRONG! Have to recompute it!
     const tableRange = locator.locate(editor.document, editor.selection.start.line);
     await gotoNextCell(editor, tableRange, table, stringifier);
@@ -182,14 +184,14 @@ export async function deleteCol(editor: vscode.TextEditor, range: vscode.Range, 
         return;
     }
 
-    const end = table.IsLastRow(rowCol.row)
+    const end = table.IsLastCol(rowCol.col)
     table.deleteCol(rowCol.col)
 
     const newText = stringifier.stringify(table);
     await editor.edit(e => e.replace(range, newText));
     if (end) {
-        // TODO this should give us the last row
-        const npos = pos.translate(0,0);
+        const tableRange = locator.locate(editor.document, editor.selection.start.line);
+        const npos = new vscode.Position(pos.line, tableRange.end.character - 3)
         editor.selection = new vscode.Selection(npos, npos);
     } else {
         editor.selection = new vscode.Selection(pos, pos);
