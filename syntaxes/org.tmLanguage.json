@@ -1942,6 +1942,9 @@
                     "include": "#verbatim"
                 },
                 {
+                    "include": "#formula"
+                },
+                {
                     "include": "#comment"
                 },
                 {
@@ -2088,6 +2091,21 @@
                 {
                     "name": "variable.org",
                     "match": "(^|\\s)\\=[^\\s](.*?[^\\s])?\\=($|\\W)"
+                }
+            ]
+        },
+        "formula": {
+            "patterns": [
+                {
+                    "match": "(^|\\s)([#][+]TBLFM:)\\s?(.*)$",
+                    "captures": {
+                        "2": {
+                            "name": "punctuation.definition.comment.org tableformula.selector.org"
+                        },
+                        "3": {
+                            "name": "comment.line.org tableformula.org"
+                        }
+                    }
                 }
             ]
         },
