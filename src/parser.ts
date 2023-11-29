@@ -251,6 +251,7 @@ function isSeparatorRow(text: string): boolean {
     return text.length > 1 && text[1] === to.horizontalSeparator;
 }
 
+const tableLineRe = /^\s*[|].*$/
 export class Table implements Node {
     type:     OrgTypes = OrgTypes.Table;
     range:    vscode.Range;
@@ -264,6 +265,16 @@ export class Table implements Node {
     private data: string[][] = [];
     indent: number = 0;
 
+    public static IsTableLine(): boolean {
+        const editor = vscode.window.activeTextEditor;
+        let row = editor.selection.start.line;
+        let line = editor.document.lineAt(row).text;
+        const mr = tableLineRe.exec(line);
+        if (mr) {
+            return true;
+        }
+        return false;
+    }
     IsLastRow(row: number): boolean{
         return row === (this.rows.length-1);
     }

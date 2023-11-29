@@ -7,6 +7,7 @@ import { Table, RowType } from '../parser';
 import { isUndefined } from 'util';
 import { registerContext, ContextType, enterContext, exitContext, restoreContext } from './context';
 import {Sets } from "../sets"
+import { OrgExtension } from '../extension';
 
 export const tableSizeRe = /^(\d+)x(\d+)$/u;
 
@@ -174,6 +175,8 @@ export async function deleteRow(editor: vscode.TextEditor, range: vscode.Range, 
         const npos = pos.translate(-1,0);
         editor.selection = new vscode.Selection(npos, npos);
     }
+    // Ensure this does not get turned off during our editing
+    OrgExtension.get().tableContext.setState(Table.IsTableLine());
 }
 
 export async function deleteCol(editor: vscode.TextEditor, range: vscode.Range, table: Table, stringifier: Stringifier) {
@@ -196,6 +199,8 @@ export async function deleteCol(editor: vscode.TextEditor, range: vscode.Range, 
     } else {
         editor.selection = new vscode.Selection(pos, pos);
     }
+    // Ensure this does not get turned off during our editing
+    OrgExtension.get().tableContext.setState(Table.IsTableLine());
 }
 
 /**
