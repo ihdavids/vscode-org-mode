@@ -106,7 +106,7 @@ export async function formatUnderCursor(editor: vscode.TextEditor, range: vscode
  * Swap column under cursor with column on the right
  */
 export async function moveColRight(editor: vscode.TextEditor, range: vscode.Range, table: Table, stringifier: Stringifier) {
-    const rowCol = rowColFromPosition(table, editor.selection.start);
+    const rowCol = table.rowColFromPosition(editor.selection.start);
     if (rowCol.col < 0) {
         vscode.window.showWarningMessage('Not in table data field');
         return;
@@ -133,7 +133,7 @@ export async function moveColRight(editor: vscode.TextEditor, range: vscode.Rang
 
 export async function addColLeft(editor: vscode.TextEditor, range: vscode.Range, table: Table, stringifier: Stringifier) {
     const pos = editor.selection.start
-    const rowCol = rowColFromPosition(table, editor.selection.start);
+    const rowCol = table.rowColFromPosition(editor.selection.start);
     if (rowCol.col < 0) {
         vscode.window.showWarningMessage('Not in table data field');
         return;
@@ -151,7 +151,7 @@ export async function addColLeft(editor: vscode.TextEditor, range: vscode.Range,
 }
 
 export async function addRowDown(editor: vscode.TextEditor, range: vscode.Range, table: Table, stringifier: Stringifier) {
-    const rowCol = rowColFromPosition(table, editor.selection.start);
+    const rowCol = table.rowColFromPosition(editor.selection.start);
     if (rowCol.col < 0) {
         vscode.window.showWarningMessage('Not in table data field');
         return;
@@ -166,7 +166,7 @@ export async function addRowDown(editor: vscode.TextEditor, range: vscode.Range,
 }
 
 export async function insertSeparator(editor: vscode.TextEditor, range: vscode.Range, table: Table, stringifier: Stringifier) {
-    const rowCol = rowColFromPosition(table, editor.selection.start);
+    const rowCol = table.rowColFromPosition(editor.selection.start);
     if (rowCol.col < 0) {
         vscode.window.showWarningMessage('Not in table data field');
         return;
@@ -182,7 +182,7 @@ export async function insertSeparator(editor: vscode.TextEditor, range: vscode.R
 
 export async function deleteRow(editor: vscode.TextEditor, range: vscode.Range, table: Table, stringifier: Stringifier) {
     const pos = editor.selection.start
-    const rowCol = rowColFromPosition(table, editor.selection.start);
+    const rowCol = table.rowColFromPosition(editor.selection.start);
     if (rowCol.col < 0) {
         vscode.window.showWarningMessage('Not in table data field');
         return;
@@ -202,7 +202,7 @@ export async function deleteRow(editor: vscode.TextEditor, range: vscode.Range, 
 
 export async function deleteCol(editor: vscode.TextEditor, range: vscode.Range, table: Table, stringifier: Stringifier) {
     const pos = editor.selection.start
-    const rowCol = rowColFromPosition(table, editor.selection.start);
+    const rowCol = table.rowColFromPosition(editor.selection.start);
     if (rowCol.col < 0) {
         vscode.window.showWarningMessage('Not in table data field');
         return;
@@ -228,7 +228,7 @@ export async function deleteCol(editor: vscode.TextEditor, range: vscode.Range, 
  * Swap column under cursor with column on the left
  */
 export async function moveColLeft(editor: vscode.TextEditor, range: vscode.Range, table: Table, stringifier: Stringifier) {
-    const rowCol = rowColFromPosition(table, editor.selection.start);
+    const rowCol = table.rowColFromPosition(editor.selection.start);
     if (rowCol.col < 0) {
         vscode.window.showWarningMessage('Not in table data field');
         return;
@@ -303,23 +303,6 @@ export async function nextRow(editor: vscode.TextEditor, range: vscode.Range, ta
     }
 }
 
-function rowColFromPosition(table: Table, position: vscode.Position): { row: number, col: number } {
-    const result = { row: -1, col: -1 };
-
-    result.row = position.line - table.startLine;
-    let counter = 1 + table.indent;
-    for (let i = 0; i < table.cols.length; ++i) {
-        const col = table.cols[i];
-        if (position.character >= counter && position.character < counter + col.width + 3) {
-            result.col = i;
-            break;
-        }
-
-        counter += col.width + 3;
-    }
-
-    return result;
-}
 
 let locator: Locator;
 let parser: Parser;

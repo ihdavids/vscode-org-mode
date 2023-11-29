@@ -285,11 +285,14 @@ export function activate(context: vscode.ExtensionContext) {
                     const litem = OrgExtension.get().parser.doc.lineMap[lineNum];
                     if (litem && litem.isType(OrgTypes.Table)) {
                         OrgExtension.get().tableContext.setState(true);
-                    } else {
-                        OrgExtension.get().tableContext.setState(false);
+                        const tbl: any = litem;
+                        const range = tbl.rowColCellFromPosition(event.selections[0].start);
+			            event.textEditor.setDecorations(Decoration.selectedCellType, [range.rng]);
+                        return;
                     }
-                } else {
-                    OrgExtension.get().tableContext.setState(false);
+                } 
+                if(OrgExtension.get().tableContext.setState(false)) {
+			        event.textEditor.setDecorations(Decoration.selectedCellType, []);
                 }
             }
         }, null, context.subscriptions);

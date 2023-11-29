@@ -283,6 +283,45 @@ export class Table implements Node {
         return col === (this.cols.length-1);
     }
 
+    rowColFromPosition(position: vscode.Position): { row: number, col: number } {
+        const result = { row: -1, col: -1 };
+
+        result.row = position.line - this.startLine;
+        let counter = 1 + this.indent;
+        for (let i = 0; i < this.cols.length; ++i) {
+            const col = this.cols[i];
+            if (position.character >= counter && position.character < counter + col.width + 3) {
+                result.col = i;
+                break;
+            }
+            counter += col.width + 3;
+        }
+        return result;
+    }
+
+    rowColCellFromPosition(position: vscode.Position): { row: number, col: number, rng: vscode.Range } {
+        const result = { row: -1, col: -1, rng: null };
+
+        let scol = 0;
+        let ecol = 0;
+        result.row = position.line - this.startLine;
+        let counter = 1 + this.indent;
+        for (let i = 0; i < this.cols.length; ++i) {
+            const col = this.cols[i];
+            ecol = counter + col.width + 3;
+            if (position.character >= counter && position.character < ecol) {
+                result.col = i;
+                scol = counter;
+                break;
+            }
+            counter += col.width + 3;
+        }
+        if (result.col >= 0 && this.rows[result.row].type != RowType.Separator) {
+            result.rng = new vscode.Range(position.line, scol, position.line, ecol-1);
+        }
+        return result;
+    }
+
     addRow(type: RowType, values: string[]) {
         let adjustCount = values.length - this.cols.length;
         while (adjustCount-- > 0) {
@@ -1201,6 +1240,7 @@ function* parseTable(gen, state: ParserState) {
                 inTable = true;
                 state.setState(ParserPhase.Table);
                 curTable = new Table();
+                curTable.startLine = curLine;
                 startPos = new vscode.Position(curLine, sm.index);
                 curNode.tables.push(curTable);
                 rootNode.nodes.push(curTable);

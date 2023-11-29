@@ -62,6 +62,9 @@ export class Context {
                 this.statusItem.text = `${this.title}: ${stateText}`;
             }
             this.enabled = isEnabled;
+            return true;
+        } else {
+            return false;
         }
     }
 
