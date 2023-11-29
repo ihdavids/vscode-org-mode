@@ -170,6 +170,7 @@ export async function deleteRow(editor: vscode.TextEditor, range: vscode.Range, 
 }
 
 export async function deleteCol(editor: vscode.TextEditor, range: vscode.Range, table: Table, stringifier: Stringifier) {
+    const pos = editor.selection.start
     const rowCol = rowColFromPosition(table, editor.selection.start);
     if (rowCol.col < 0) {
         vscode.window.showWarningMessage('Not in table data field');
@@ -180,6 +181,7 @@ export async function deleteCol(editor: vscode.TextEditor, range: vscode.Range, 
 
     const newText = stringifier.stringify(table);
     await editor.edit(e => e.replace(range, newText));
+    editor.selection = new vscode.Selection(pos, pos);
 }
 
 /**
