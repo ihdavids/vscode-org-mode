@@ -362,6 +362,11 @@ export class ODb
         return await this.doPost(url, {Target: {Filename: src.filename, Id: src.id, Type: src.type }, Row: row});
     }
 
+    public static async execTable(src: NodeTarget, row: number): Promise<any> {
+        var url: URL = new URL(Sets.orgsConnection + `/exectable`);
+        return await this.doPost(url, {Target: {Filename: src.filename, Id: src.id, Type: src.type }, Row: row});
+    }
+
 };
 
 
