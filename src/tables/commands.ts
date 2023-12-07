@@ -304,9 +304,9 @@ export async function nextRow(editor: vscode.TextEditor, range: vscode.Range, ta
 }
 
 
-let locator: Locator;
-let parser: Parser;
-let stringifier: Stringifier;
+export let locator: Locator;
+export let parser: Parser;
+export let stringifier: Stringifier;
 
 export function activateTableExtension(ctx: vscode.ExtensionContext) {
     loadConfiguration();

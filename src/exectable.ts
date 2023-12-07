@@ -5,6 +5,7 @@ import {ODb} from "./db"
 import { Sets } from './sets';
 import { Parser } from './parser';
 import { Log } from './log';
+import { locator } from './tables/commands';
 
 
 export async function execTable(): Promise<void> {
@@ -19,7 +20,10 @@ export async function execTable(): Promise<void> {
         Log.get().log("EXECT SUCCESS: ", src);
         Log.get().log("EXECT        : ");
         Log.get().log(res.Msg);
+        let editor = vscode.window.activeTextEditor;
         vscode.window.showInformationMessage("ExecTable success: ", res.Msg )
+        const tableRange = locator.locate(editor.document, editor.selection.start.line);
+        await editor.edit(e => e.replace(tableRange, res.Msg.trimEnd()));
     }
 }
 
