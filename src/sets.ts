@@ -24,8 +24,8 @@ export class Sets {
         // Set defaults for our settings
         // Would be good to do this en masse for everything...
         // With comments...
-        if (!Sets.get().settings.has('org.highlight')) {
-            vscode.workspace.getConfiguration ().update( 'org.highlight', defaultHighlights, vscode.ConfigurationTarget.Global);
+        if (!Sets.get().settings.has('highlight')) {
+            vscode.workspace.getConfiguration ().update( 'highlight', defaultHighlights, vscode.ConfigurationTarget.Global);
         }
     }
     public static getProp<T>(name: string, defaultVal = undefined): T      
@@ -92,6 +92,16 @@ export class Sets {
     public static get markers(): string[]              { return Sets.getProp<string[]>("markers",["TODAY"]);    }
     public static get popupLog(): boolean             { return Sets.getProp<boolean>("popupLog", false);         }
     public static get showTableStatus(): boolean             { return Sets.getProp<boolean>("showTableStatus", true);         }
+    public static get selectedCellIndicator(): {[key:string]: string} { return Sets.getProp<{[key:string]: string}>("selectedCellIndicator", {
+			            "light": {
+      			            "textDecoration": "bold;",
+				            "border": "1px dashed black"
+			            },
+			            "dark": {
+      			            "textDecoration": "bold;",
+				            "border": "1px dashed green"
+			            }
+    });}
 }
 
 export const defaultHighlights = {

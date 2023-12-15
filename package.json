@@ -558,6 +558,67 @@
                     "type": "boolean",
                     "default": false,
                     "description": "Allow self signed https certificates on your org server, this is NOT safe"
+                },
+                "org.selectedCellIndicator": {
+                    "type": "object",
+                    "default": {
+			            "light": {
+      			            "textDecoration": "bold;",
+				            "border": "1px dashed black"
+			            },
+			            "dark": {
+      			            "textDecoration": "bold;",
+				            "border": "1px dashed green"
+			            }
+                    },
+                    "description": "The indicator box to use when moving around within a table"
+                },
+                "org.highlight": {
+                    "type": "object",
+                    "default": {
+                        "decorations": {"rangeBehavior": 3},
+                        "regexFlags": "gi",
+                        "minDelay": 50,
+                        "maxMatches": 250,
+                        "regexes": {
+                            "(?<=\\|\\s+)(PASSED)(?=\\s+\\|)": {
+                                "filterFileRegex": ".*\\.org$",
+                                "decorations": [
+                                    {
+                                        "overviewRulerColor": "#ffcc00",
+                                        "backgroundColor": "#00cc00",
+                                        "borderRadius": "4px",
+                                        "borderSpacing": "5px",
+                                        "color": "#ffffff",
+                                        "fontWeight": "bold",
+                                        "border": "1px dotted white"
+                                    }
+                                ]
+                            },
+                            "(?<=\\|\\s+)(FAILED)(?=\\s+\\|)": {
+                                "filterFileRegex": ".*\\.org$",
+                                "decorations": [
+                                    {
+                                        "backgroundColor": "#cc0000",
+                                        "borderRadius": "4px",
+                                        "borderSpacing": "5px",
+                                        "color": "#ffffff",
+                                        "fontWeight": "bold",
+                                        "border": "1px dotted white"
+                                    }
+                                ]
+                            },
+                            "(?<=\\|\\s+)([$]?\\s*[-]\\s*\\d*\\.?\\d+)(?=\\s+\\|)": {
+                                "filterFileRegex": ".*\\.org$",
+                                "decorations": [
+                                    {
+                                        "color": "#ffaaaa"
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "description": "List of regex based decorators can be useful for adding visual interest to your docs"
                 }
             }
         },
