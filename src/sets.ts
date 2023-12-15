@@ -108,12 +108,14 @@ export const defaultHighlights = {
         "display": "inline-block",
         "overviewRulerColor": "#ffcc00",
         "backgroundColor": "#00cc00",
+        "borderRadius": "4px",
+        "borderSpacing": "5px",
         "color": "#ffffff",
         "fontWeight": "bold",
         "border-radius": "15px 15px 15px 15px",
         "padding": "30px",
         "box-shadow": "0 0 15px 15px rgba(0, 0, 0, 0.1)",
-        "border": "1px dotted white"
+        "border": "1px dotted white",
       }
     ]
   },
