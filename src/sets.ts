@@ -119,6 +119,24 @@ export const defaultHighlights = {
       }
     ]
   },
+  "(?<=\\|\\s+)(FAILED)(?=\\s+\\|)": {
+    "filterFileRegex": ".*\\.org$",
+    "decorations": [
+      {
+        ";box-sizing": "content-box !important",
+        "display": "inline-block",
+        "backgroundColor": "#cc0000",
+        "borderRadius": "4px",
+        "borderSpacing": "5px",
+        "color": "#ffffff",
+        "fontWeight": "bold",
+        "border-radius": "15px 15px 15px 15px",
+        "padding": "30px",
+        "box-shadow": "0 0 15px 15px rgba(0, 0, 0, 0.1)",
+        "border": "1px dotted white",
+      }
+    ]
+  },
 }};
 
 const old = {
