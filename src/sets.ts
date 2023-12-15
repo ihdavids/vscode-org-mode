@@ -96,26 +96,24 @@ export class Sets {
 
 export const defaultHighlights = {
 "decorations": {"rangeBehavior": 3},
-"regexFlags": "gi",
-"minDelay": 50, // Minimum ms after change before re-highlight
-"maxMatches": 250, // Throttle maximum decoration updates in a doc to avoid lock ups
+"regexFlags": "gi", // Just use these, they are the right choice
+"minDelay": 50,     // Minimum ms after change before re-highlight
+"maxMatches": 250,  // Throttle maximum decoration updates in a doc to avoid lock ups
 "regexes": {
+  // Note lookbehind and lookahead are the only way to have captures not match things you don't want
+  // multiple matches work in that each numbered group is a subsequent decoration block
+  // Stupid vscode doesn't support css, only fake CSS 
   // Passed gets a green badge
   "(?<=\\|\\s+)(PASSED)(?=\\s+\\|)": {
     "filterFileRegex": ".*\\.org$",
     "decorations": [
       {
-        ";box-sizing": "content-box !important",
-        "display": "inline-block",
         "overviewRulerColor": "#ffcc00",
         "backgroundColor": "#00cc00",
         "borderRadius": "4px",
         "borderSpacing": "5px",
         "color": "#ffffff",
         "fontWeight": "bold",
-        "border-radius": "15px 15px 15px 15px",
-        "padding": "30px",
-        "box-shadow": "0 0 15px 15px rgba(0, 0, 0, 0.1)",
         "border": "1px dotted white",
       }
     ]
