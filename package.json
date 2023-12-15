@@ -357,7 +357,6 @@
                 "title": "Insert Table Separator",
                 "category": "Org"
             }
-
         ],
         "languages": [
             {
@@ -508,7 +507,7 @@
                     "type": "object",
                     "default": {
                         "todo": {
-                            "type":    "entry",
+                            "type": "entry",
                             "snippet": "* ${1:HEADING}\n   ${2:BODY}"
                         }
                     },
@@ -562,21 +561,23 @@
                 "org.selectedCellIndicator": {
                     "type": "object",
                     "default": {
-			            "light": {
-      			            "textDecoration": "bold;",
-				            "border": "1px dashed black"
-			            },
-			            "dark": {
-      			            "textDecoration": "bold;",
-				            "border": "1px dashed green"
-			            }
+                        "light": {
+                            "textDecoration": "bold;",
+                            "border": "1px dashed black"
+                        },
+                        "dark": {
+                            "textDecoration": "bold;",
+                            "border": "1px dashed green"
+                        }
                     },
                     "description": "The indicator box to use when moving around within a table"
                 },
                 "org.highlight": {
                     "type": "object",
                     "default": {
-                        "decorations": {"rangeBehavior": 3},
+                        "decorations": {
+                            "rangeBehavior": 3
+                        },
                         "regexFlags": "gi",
                         "minDelay": 50,
                         "maxMatches": 250,
@@ -896,6 +897,7 @@
         "@vscode/vsce": "^2.19.0",
         "date-fns": "^1.28.3",
         "isomorphic-ws": "^5.0.0",
+        "lodash": "^4.17.21",
         "node-fetch": "^2.6.12",
         "p-event": "^4.2.0",
         "rpc-websocket-client": "^1.1.4",
