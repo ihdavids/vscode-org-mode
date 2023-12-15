@@ -19,6 +19,15 @@ export class Sets {
   	public reload() {
 		this.settings = vscode.workspace.getConfiguration('org');
 	}
+
+    public init() {
+        // Set defaults for our settings
+        // Would be good to do this en masse for everything...
+        // With comments...
+        if (!Sets.get().settings.has('highlight')) {
+            vscode.workspace.getConfiguration ().update( 'highlight', defaultHighlights, vscode.ConfigurationTarget.Global);
+        }
+    }
     public static getProp<T>(name: string, defaultVal = undefined): T      
     { 
         return Sets.get().settings.get<T>(name, defaultVal); 
@@ -84,3 +93,91 @@ export class Sets {
     public static get popupLog(): boolean             { return Sets.getProp<boolean>("popupLog", false);         }
     public static get showTableStatus(): boolean             { return Sets.getProp<boolean>("showTableStatus", true);         }
 }
+
+export const defaultHighlights = {
+"decorations": {"rangeBehavior": 3},
+"regexFlags": "gi",
+"minDelay": 50, // Minimum ms after change before re-highlight
+"maxMatches": 250, // Throttle maximum decoration updates in a doc to avoid lock ups
+"regexes": {
+  "(?<=\\|\\s+)(PASSED)(?=\\s+\\|)": {
+    "filterFileRegex": ".*\\.org$",
+    "decorations": [
+      {
+        ";box-sizing": "content-box !important",
+        "display": "inline-block",
+        "overviewRulerColor": "#ffcc00",
+        "backgroundColor": "#00cc00",
+        "color": "#ffffff",
+        "fontWeight": "bold",
+        "border-radius": "15px 15px 15px 15px",
+        "padding": "30px",
+        "box-shadow": "0 0 15px 15px rgba(0, 0, 0, 0.1)",
+        "border": "1px dotted white"
+      }
+    ]
+  },
+}};
+
+const old = {
+  "((?:<!-- *)?(?:#|// @|//|./\\*+|<!--|--|\\* @|{!|{{!--|{{!) *TODO(?:\\s*\\([^)]+\\))?:?)((?!\\w)(?: *-->| *\\*/| *!}| *--}}| *}}|(?= *(?:[^:]//|/\\*+|<!--|@|--|{!|{{!--|{{!))|(?: +[^\\n@]*?)(?= *(?:[^:]//|/\\*+|<!--|@|--(?!>)|{!|{{!--|{{!))|(?: +[^@\\n]+)?))": {
+    "filterFileRegex": ".*(?<!CHANGELOG.md)$",
+    "decorations": [
+      {
+        "overviewRulerColor": "#ffcc00",
+        "backgroundColor": "#ffcc00",
+        "color": "#1f1f1f",
+        "fontWeight": "bold"
+      },
+      {
+        "backgroundColor": "#ffcc00",
+        "color": "#1f1f1f"
+      }
+    ]
+  },
+  "((?:<!-- *)?(?:#|// @|//|./\\*+|<!--|--|\\* @|{!|{{!--|{{!) *(?:FIXME|FIX|BUG|UGLY|DEBUG|HACK)(?:\\s*\\([^)]+\\))?:?)((?!\\w)(?: *-->| *\\*/| *!}| *--}}| *}}|(?= *(?:[^:]//|/\\*+|<!--|@|--|{!|{{!--|{{!))|(?: +[^\\n@]*?)(?= *(?:[^:]//|/\\*+|<!--|@|--(?!>)|{!|{{!--|{{!))|(?: +[^@\\n]+)?))": {
+    "filterFileRegex": ".*(?<!CHANGELOG.md)$",
+    "decorations": [
+      {
+        "overviewRulerColor": "#cc0000",
+        "backgroundColor": "#cc0000",
+        "color": "#1f1f1f",
+        "fontWeight": "bold"
+      },
+      {
+        "backgroundColor": "#cc0000",
+        "color": "#1f1f1f"
+      }
+    ]
+  },
+  "((?:<!-- *)?(?:#|// @|//|./\\*+|<!--|--|\\* @|{!|{{!--|{{!) *(?:REVIEW|OPTIMIZE|TSC)(?:\\s*\\([^)]+\\))?:?)((?!\\w)(?: *-->| *\\*/| *!}| *--}}| *}}|(?= *(?:[^:]//|/\\*+|<!--|@|--|{!|{{!--|{{!))|(?: +[^\\n@]*?)(?= *(?:[^:]//|/\\*+|<!--|@|--(?!>)|{!|{{!--|{{!))|(?: +[^@\\n]+)?))": {
+    "filterFileRegex": ".*(?<!CHANGELOG.md)$",
+    "decorations": [
+      {
+        "overviewRulerColor": "#00ccff",
+        "backgroundColor": "#00ccff",
+        "color": "#1f1f1f",
+        "fontWeight": "bold"
+      },
+      {
+        "backgroundColor": "#00ccff",
+        "color": "#1f1f1f"
+      }
+    ]
+  },
+  "((?:<!-- *)?(?:#|// @|//|./\\*+|<!--|--|\\* @|{!|{{!--|{{!) *(?:IDEA)(?:\\s*\\([^)]+\\))?:?)((?!\\w)(?: *-->| *\\*/| *!}| *--}}| *}}|(?= *(?:[^:]//|/\\*+|<!--|@|--|{!|{{!--|{{!))|(?: +[^\\n@]*?)(?= *(?:[^:]//|/\\*+|<!--|@|--(?!>)|{!|{{!--|{{!))|(?: +[^@\\n]+)?))": {
+    "filterFileRegex": ".*(?<!CHANGELOG.md)$",
+    "decorations": [
+      {
+        "overviewRulerColor": "#cc00cc",
+        "backgroundColor": "#cc00cc",
+        "color": "#1f1f1f",
+        "fontWeight": "bold"
+      },
+      {
+        "backgroundColor": "#cc00cc",
+        "color": "#1f1f1f"
+      }
+    ]
+  }
+};

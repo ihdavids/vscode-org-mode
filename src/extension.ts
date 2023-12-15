@@ -36,7 +36,8 @@ import { Sets } from './sets';
 import { jumpToMarker, setMarker } from './marker';
 import { activateTableExtension} from "./tables/commands"
 import * as tt from "./tables/context"
-
+import {Decorator} from './decorations/decorator';
+import Changes from './decorations/changes';
 
 export class OrgExtension {
     private static instance: OrgExtension;
@@ -64,6 +65,7 @@ export class OrgExtension {
     } 
 
     public activate(context: vscode.ExtensionContext) {
+        Sets.get().init();
         this.context  = context;
 		this.calendar = new Calendar(context);
         this.todolist = new TodoList<boolean>(context);
@@ -308,6 +310,11 @@ export function activate(context: vscode.ExtensionContext) {
 			}
 		}, null, context.subscriptions);
 
+        vscode.workspace.onDidChangeConfiguration( () => {
+            Decorator.init();
+            Decorator.decorate(undefined, true);
+        });
+
 		// current document
 		if (vscode.window.activeTextEditor) {
 			const editor = vscode.window.activeTextEditor;
@@ -315,6 +322,9 @@ export function activate(context: vscode.ExtensionContext) {
 				OrgExtension.get().update();
 			}
 		}
+
+        Decorator.init();
+        Decorator.decorate();
 }
 
 // tslint:disable-next-line:no-empty

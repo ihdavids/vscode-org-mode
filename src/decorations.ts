@@ -2,6 +2,7 @@
 import * as vscode from 'vscode';
 import { Parser } from './parser';
 import { Sets } from './sets';
+import {Decorator} from './decorations/decorator';
 
 export class Decoration implements vscode.Disposable {
 	private parser: Parser;
@@ -253,6 +254,7 @@ export class Decoration implements vscode.Disposable {
 			}
 			editor.setDecorations(this.tagType, tags);
 		}
+        Decorator.decorate ( undefined, true );
 	}
 
 }
