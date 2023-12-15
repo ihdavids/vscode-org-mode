@@ -24,8 +24,8 @@ export class Sets {
         // Set defaults for our settings
         // Would be good to do this en masse for everything...
         // With comments...
-        if (!Sets.get().settings.has('highlight')) {
-            vscode.workspace.getConfiguration ().update( 'highlight', defaultHighlights, vscode.ConfigurationTarget.Global);
+        if (!Sets.get().settings.has('org.highlight')) {
+            vscode.workspace.getConfiguration ().update( 'org.highlight', defaultHighlights, vscode.ConfigurationTarget.Global);
         }
     }
     public static getProp<T>(name: string, defaultVal = undefined): T      
@@ -123,22 +123,17 @@ export const defaultHighlights = {
     "filterFileRegex": ".*\\.org$",
     "decorations": [
       {
-        ";box-sizing": "content-box !important",
-        "display": "inline-block",
         "backgroundColor": "#cc0000",
         "borderRadius": "4px",
         "borderSpacing": "5px",
         "color": "#ffffff",
         "fontWeight": "bold",
-        "border-radius": "15px 15px 15px 15px",
-        "padding": "30px",
-        "box-shadow": "0 0 15px 15px rgba(0, 0, 0, 0.1)",
         "border": "1px dotted white",
       }
     ]
   },
   // Negative numbers appear in light red in our tables
-  "(?<=\\|\\s+)([$]\\s*[-]\\s*\\d*\\.?\\d+)(?=\\s+\\|)": {
+  "(?<=\\|\\s+)([$]?\\s*[-]\\s*\\d*\\.?\\d+)(?=\\s+\\|)": {
     "filterFileRegex": ".*\\.org$",
     "decorations": [
       {

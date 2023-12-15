@@ -47,7 +47,7 @@ export class Decorator {
   }
 
   static initConfig() {
-    Decorator.config = Sets.getProp<{}>('highlight',defaultHighlights)
+    Decorator.config = Sets.getProp<{}>('org.highlight',defaultHighlights)
   }
 
   static initRegexes() {
