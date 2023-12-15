@@ -100,6 +100,7 @@ export const defaultHighlights = {
 "minDelay": 50, // Minimum ms after change before re-highlight
 "maxMatches": 250, // Throttle maximum decoration updates in a doc to avoid lock ups
 "regexes": {
+  // Passed gets a green badge
   "(?<=\\|\\s+)(PASSED)(?=\\s+\\|)": {
     "filterFileRegex": ".*\\.org$",
     "decorations": [
@@ -119,6 +120,7 @@ export const defaultHighlights = {
       }
     ]
   },
+  // Failed gets a red badge
   "(?<=\\|\\s+)(FAILED)(?=\\s+\\|)": {
     "filterFileRegex": ".*\\.org$",
     "decorations": [
@@ -134,6 +136,15 @@ export const defaultHighlights = {
         "padding": "30px",
         "box-shadow": "0 0 15px 15px rgba(0, 0, 0, 0.1)",
         "border": "1px dotted white",
+      }
+    ]
+  },
+  // Negative numbers appear in light red in our tables
+  "(?<=\\|\\s+)([$]\\s*[-]\\s*\\d*\\.?\\d+)(?=\\s+\\|)": {
+    "filterFileRegex": ".*\\.org$",
+    "decorations": [
+      {
+        "color": "#ffaaaa",
       }
     ]
   },
