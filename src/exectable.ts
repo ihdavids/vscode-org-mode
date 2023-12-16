@@ -15,7 +15,7 @@ export async function execTable(): Promise<void> {
     if (!res.Ok) {
         Log.get().error("EXECT: ", src);
         Log.get().error("  > EXECT ERROR: ", JSON.stringify(res))
-        vscode.window.showErrorMessage("ERROR failed to exec table", res.Msg )
+        vscode.window.showErrorMessage("ERROR failed to exec table\n>> " + res.Msg)
     } else {
         Log.get().log("EXECT SUCCESS: ", src);
         Log.get().log("EXECT        : ");
