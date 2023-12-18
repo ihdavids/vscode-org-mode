@@ -367,6 +367,11 @@ export class ODb
         return await this.doPost(url, {Target: {Filename: src.filename, Id: src.id, Type: src.type }, Row: row});
     }
 
+    public static async execAllTable(fname: string): Promise<any> {
+        var url: URL = new URL(Sets.orgsConnection + `/execalltables`);
+        return await this.doPost(url, fname);
+    }
+
 };
 
 

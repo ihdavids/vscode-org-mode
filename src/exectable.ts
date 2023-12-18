@@ -28,3 +28,26 @@ export async function execTable(): Promise<void> {
 }
 
 
+export async function execAllTables(): Promise<void> {
+    //const src = await ODb.getHashTarget();
+    const fname = vscode.window.activeTextEditor.document.fileName;
+    const ress: any = await ODb.execAllTable(fname);
+    if (ress) {
+        ress.forEach(res => {
+    if (!res.Ok) {
+        Log.get().error("  > EXECT ERROR: ", JSON.stringify(res))
+        vscode.window.showErrorMessage("ERROR failed to exec table\n>> " + res.Msg)
+    } else {
+        Log.get().log("EXECT SUCCESS: ");
+        Log.get().log("EXECT        : ");
+        Log.get().log(res.Msg);
+        let editor = vscode.window.activeTextEditor;
+        vscode.window.showInformationMessage("ExecTable success: ", res.Msg )
+        // TODO: Table location needs to happen so we can swap
+        //const tableRange = locator.locate(editor.document, editor.selection.start.line);
+        //await editor.edit(e => e.replace(tableRange, res.Msg.trimEnd()));
+    }
+    });
+    }
+}
+

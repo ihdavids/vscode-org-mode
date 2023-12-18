@@ -276,6 +276,10 @@
                 "title": "Org: Execute Table"
             },
             {
+                "command": "org.execAllTables",
+                "title": "Org: Execute All Tables In File"
+            },
+            {
                 "command": "org.enable",
                 "title": "Org: Text Table Enable"
             },

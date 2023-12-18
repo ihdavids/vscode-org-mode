@@ -27,7 +27,7 @@ import { Calendar, CalendarMode } from './calendar';
 import { TodoList, chooseTodoView } from './todolist';
 import { CapturePage, refileHeading, archiveHeading, createJira } from './capture';
 import { dynamicEvalText, showFunctionNames, execBlock } from './execb';
-import { execTable } from './exectable';
+import { execAllTables, execTable } from './exectable';
 
 
 import { Parser, OrgTypes } from './parser';
@@ -211,6 +211,7 @@ export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(vscode.commands.registerCommand('org.dynamicEval', async () => await dynamicEvalText()));
 	context.subscriptions.push(vscode.commands.registerCommand('org.showFunctionNames', async () => await showFunctionNames()));
 	context.subscriptions.push(vscode.commands.registerCommand('org.execTable', async () => await execTable()));
+	context.subscriptions.push(vscode.commands.registerCommand('org.execAllTables', async () => await execAllTables()));
     context.subscriptions.push(nextDayPageCmd);
     context.subscriptions.push(prevDayPageCmd);
     context.subscriptions.push(showDayPageCmd);
