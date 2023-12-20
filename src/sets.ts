@@ -102,6 +102,16 @@ export class Sets {
 				            "border": "1px dashed green"
 			            }
     });}
+    public static get targetCellIndicator(): {[key:string]: string} { return Sets.getProp<{[key:string]: string}>("targetCellIndicator", {
+			            "light": {
+      			            "textDecoration": "bold;",
+				            "border": "1px dashed black"
+			            },
+			            "dark": {
+      			            "textDecoration": "bold;",
+				            "border": "1px dashed purple"
+			            }
+    });}
 }
 
 export const defaultHighlights = {

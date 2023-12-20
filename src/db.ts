@@ -372,6 +372,11 @@ export class ODb
         return await this.doPost(url, fname);
     }
 
+    public static async formulaDetails(src: NodeTarget, row: number): Promise<any> {
+        var url: URL = new URL(Sets.orgsConnection + `/tableformulainfo`);
+        return await this.doPost(url, {Target: {Filename: src.filename, Id: src.id, Type: src.type }, Row: row});
+    }
+
 };
 
 

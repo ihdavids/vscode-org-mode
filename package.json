@@ -576,6 +576,20 @@
                     },
                     "description": "The indicator box to use when moving around within a table"
                 },
+                "org.targetCellIndicator": {
+                    "type": "object",
+                    "default": {
+                        "light": {
+                            "textDecoration": "bold;",
+                            "border": "1px dashed black"
+                        },
+                        "dark": {
+                            "textDecoration": "bold;",
+                            "border": "1px dashed purple"
+                        }
+                    },
+                    "description": "The indicator box to use when moving around within a table"
+                },
                 "org.highlight": {
                     "type": "object",
                     "default": {

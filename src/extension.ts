@@ -28,6 +28,8 @@ import { TodoList, chooseTodoView } from './todolist';
 import { CapturePage, refileHeading, archiveHeading, createJira } from './capture';
 import { dynamicEvalText, showFunctionNames, execBlock } from './execb';
 import { execAllTables, execTable } from './exectable';
+import {ODb} from "./db"
+import { Log } from './log';
 
 
 import { Parser, OrgTypes } from './parser';
@@ -282,6 +284,7 @@ export function activate(context: vscode.ExtensionContext) {
 			}
 		}, null, context.subscriptions);
 
+        let formulaDetails = undefined;
         vscode.window.onDidChangeTextEditorSelection(event =>{
             if (OrgExtension.get().parser) {
                 if (event.selections.length > 0 && event.textEditor.document.languageId == 'org') {
@@ -292,11 +295,32 @@ export function activate(context: vscode.ExtensionContext) {
                         const tbl: any = litem;
                         const range = tbl.rowColCellFromPosition(event.selections[0].start);
 			            event.textEditor.setDecorations(Decoration.selectedCellType, [range.rng]);
+                        if (!formulaDetails || !formulaDetails.Ok) {
+                            let temp = async () => {
+                                const src = await ODb.getHashTarget();
+                                const row = vscode.window.activeTextEditor.selection.active.line;
+                                formulaDetails = await ODb.formulaDetails(src, row);
+                                //Log.get().log(formulaDetails)
+                            };
+                            temp();
+                        } else {
+                            //Log.get().log(formulaDetails);
+                            let ranges: vscode.Range[] = [];
+                            formulaDetails.Details.Targets.forEach((f) => {
+                                f.forEach((c) => {
+                                    const rng = new vscode.Range(new vscode.Position(c.Start.Row,c.Start.Col), new vscode.Position(c.End.Row, c.End.Col));
+                                    ranges.push(rng);
+                                });
+                            });
+                            event.textEditor.setDecorations(Decoration.targetCellType, ranges);
+                        }
                         return;
                     }
                 } 
                 if(OrgExtension.get().tableContext.setState(false)) {
 			        event.textEditor.setDecorations(Decoration.selectedCellType, []);
+                    formulaDetails = undefined;
+                        event.textEditor.setDecorations(Decoration.targetCellType, []);
                 }
             }
         }, null, context.subscriptions);
