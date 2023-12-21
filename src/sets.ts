@@ -112,6 +112,16 @@ export class Sets {
 				            "border": "1px dashed purple"
 			            }
     });}
+    public static get activeFormulaIndicator(): {[key:string]: string} { return Sets.getProp<{[key:string]: string}>("activeFormulaIndicator", {
+			            "light": {
+      			            "textDecoration": "bold;",
+				            "border": "1px dashed black"
+			            },
+			            "dark": {
+      			            "textDecoration": "bold;",
+				            "border": "1px dashed cyan"
+			            }
+    });}
 }
 
 export const defaultHighlights = {

@@ -136,6 +136,33 @@ export class OrgExtension {
 		}
 	}
 } 
+function setTableTargetBoxes(lineNum: number, col: number, formulaDetails : any, event: any) {
+    let included = []
+    formulaDetails.Details.Targets.forEach((formula, formulaIdx) => {
+        formula.forEach((c) => {
+            if ((lineNum >= c.Start.Row && lineNum <= c.End.Row) &&
+            (col >= c.Start.Col && col <= c.End.Col)) {
+                included.push(formulaIdx)
+            }
+        });
+    });
+    let targetBoxRanges: vscode.Range[] = [];
+    let activeFormulaRanges: vscode.Range[] = [];
+    //Log.get().log(JSON.stringify(formulaDetails));
+    formulaDetails.Details.Targets.forEach((formula, formulaIdx) => {
+        if (included.includes(formulaIdx)) {
+            const fml = formulaDetails.Details.Formulas[formulaIdx]
+            const rngf = new vscode.Range(new vscode.Position(fml.Start.Row,fml.Start.Col), new vscode.Position(fml.End.Row, fml.End.Col));
+            activeFormulaRanges.push(rngf);
+            formula.forEach((c) => {
+                const rng = new vscode.Range(new vscode.Position(c.Start.Row,c.Start.Col), new vscode.Position(c.End.Row, c.End.Col));
+                targetBoxRanges.push(rng);
+            });
+        }
+    });
+    event.textEditor.setDecorations(Decoration.targetCellType, targetBoxRanges);
+    event.textEditor.setDecorations(Decoration.activeFormulaType, activeFormulaRanges);
+}
 
 export function activate(context: vscode.ExtensionContext) {
     OrgExtension.get().activate(context);
@@ -289,6 +316,7 @@ export function activate(context: vscode.ExtensionContext) {
             if (OrgExtension.get().parser) {
                 if (event.selections.length > 0 && event.textEditor.document.languageId == 'org') {
                     const lineNum = event.selections[0].start.line;
+                    const col = event.selections[0].start.character;
                     const litem = OrgExtension.get().parser.doc.lineMap[lineNum];
                     if (litem && litem.isType(OrgTypes.Table)) {
                         OrgExtension.get().tableContext.setState(true);
@@ -300,27 +328,23 @@ export function activate(context: vscode.ExtensionContext) {
                                 const src = await ODb.getHashTarget();
                                 const row = vscode.window.activeTextEditor.selection.active.line;
                                 formulaDetails = await ODb.formulaDetails(src, row);
+                                if (formulaDetails && formulaDetails.Ok) {
+                                    setTableTargetBoxes(lineNum, col, formulaDetails, event);
+                                }
                                 //Log.get().log(formulaDetails)
                             };
                             temp();
                         } else {
-                            //Log.get().log(formulaDetails);
-                            let ranges: vscode.Range[] = [];
-                            formulaDetails.Details.Targets.forEach((f) => {
-                                f.forEach((c) => {
-                                    const rng = new vscode.Range(new vscode.Position(c.Start.Row,c.Start.Col), new vscode.Position(c.End.Row, c.End.Col));
-                                    ranges.push(rng);
-                                });
-                            });
-                            event.textEditor.setDecorations(Decoration.targetCellType, ranges);
+                            setTableTargetBoxes(lineNum, col, formulaDetails, event);
                         }
                         return;
                     }
                 } 
                 if(OrgExtension.get().tableContext.setState(false)) {
-			        event.textEditor.setDecorations(Decoration.selectedCellType, []);
                     formulaDetails = undefined;
-                        event.textEditor.setDecorations(Decoration.targetCellType, []);
+			        event.textEditor.setDecorations(Decoration.selectedCellType, []);
+                    event.textEditor.setDecorations(Decoration.targetCellType, []);
+                    event.textEditor.setDecorations(Decoration.activeFormulaType, []);
                 }
             }
         }, null, context.subscriptions);

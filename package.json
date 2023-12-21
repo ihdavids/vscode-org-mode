@@ -590,6 +590,20 @@
                     },
                     "description": "The indicator box to use when moving around within a table"
                 },
+                "org.activeFormulaIndicator": {
+                    "type": "object",
+                    "default": {
+                        "light": {
+                            "textDecoration": "bold;",
+                            "border": "1px dashed black"
+                        },
+                        "dark": {
+                            "textDecoration": "bold;",
+                            "border": "1px dashed cyan"
+                        }
+                    },
+                    "description": "The indicator box to use when moving around within a table"
+                },
                 "org.highlight": {
                     "type": "object",
                     "default": {

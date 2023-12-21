@@ -16,6 +16,7 @@ export class Decoration implements vscode.Disposable {
 	private blockType: vscode.TextEditorDecorationType[];
 	public static selectedCellType: vscode.TextEditorDecorationType = vscode.window.createTextEditorDecorationType(Sets.selectedCellIndicator);
 	public static targetCellType: vscode.TextEditorDecorationType = vscode.window.createTextEditorDecorationType(Sets.targetCellIndicator);
+	public static activeFormulaType: vscode.TextEditorDecorationType = vscode.window.createTextEditorDecorationType(Sets.activeFormulaIndicator);
 
 	constructor(parser: Parser) {
 		this.blockType = [];
