@@ -146,6 +146,12 @@ function setTableTargetBoxes(lineNum: number, col: number, formulaDetails : any,
             }
         });
     });
+    formulaDetails.Details.Formulas.forEach((formula, formulaIdx) => {
+        if ((lineNum >= formula.Start.Row && lineNum <= formula.End.Row) &&
+            (col >= formula.Start.Col && col <= formula.End.Col)) {
+                included.push(formulaIdx)
+        }
+    });
     let targetBoxRanges: vscode.Range[] = [];
     let activeFormulaRanges: vscode.Range[] = [];
     //Log.get().log(JSON.stringify(formulaDetails));
@@ -322,7 +328,9 @@ export function activate(context: vscode.ExtensionContext) {
                         OrgExtension.get().tableContext.setState(true);
                         const tbl: any = litem;
                         const range = tbl.rowColCellFromPosition(event.selections[0].start);
-			            event.textEditor.setDecorations(Decoration.selectedCellType, [range.rng]);
+                        if (range && range.rng) {
+			                event.textEditor.setDecorations(Decoration.selectedCellType, [range.rng]);             
+                        }
                         if (!formulaDetails || !formulaDetails.Ok) {
                             let temp = async () => {
                                 const src = await ODb.getHashTarget();
@@ -338,14 +346,13 @@ export function activate(context: vscode.ExtensionContext) {
                             setTableTargetBoxes(lineNum, col, formulaDetails, event);
                         }
                         return;
+                    } else if(OrgExtension.get().tableContext.setState(false)) {
+                        formulaDetails = undefined;
+			            event.textEditor.setDecorations(Decoration.selectedCellType, []);
+                        event.textEditor.setDecorations(Decoration.targetCellType, []);
+                        event.textEditor.setDecorations(Decoration.activeFormulaType, []);
                     }
                 } 
-                if(OrgExtension.get().tableContext.setState(false)) {
-                    formulaDetails = undefined;
-			        event.textEditor.setDecorations(Decoration.selectedCellType, []);
-                    event.textEditor.setDecorations(Decoration.targetCellType, []);
-                    event.textEditor.setDecorations(Decoration.activeFormulaType, []);
-                }
             }
         }, null, context.subscriptions);
 

@@ -247,11 +247,24 @@ export interface ColDef {
     width: number;
 }
 
+export class FormulaDef {
+    public Row: number;
+    public Start: number;
+    public End: number;
+
+    constructor(row: number, start: number, end: number) {
+        this.Start = start;
+        this.End = end;
+        this.Row = row;
+    }
+}
+
 function isSeparatorRow(text: string): boolean {
     return text.length > 1 && text[1] === to.horizontalSeparator;
 }
 
 const tableLineRe = /^\s*[|].*$/
+const tableFormulaRe = /^\s*[#][+]TBLFM[:]\s*(.*)$/
 export class Table implements Node {
     type:     OrgTypes = OrgTypes.Table;
     range:    vscode.Range;
@@ -261,6 +274,7 @@ export class Table implements Node {
 
     rows: RowDef[] = [];
     cols: ColDef[] = [];
+    formulas: FormulaDef[] = [];
 
     private data: string[][] = [];
     indent: number = 0;
@@ -275,6 +289,19 @@ export class Table implements Node {
         }
         return false;
     }
+
+    public static IsFormulaLine(): boolean {
+        const editor = vscode.window.activeTextEditor;
+        let row = editor.selection.start.line;
+        let line = editor.document.lineAt(row).text;
+        const mr = tableFormulaRe.exec(line);
+        if (mr) {
+            return true;
+        }
+        return false;
+
+    }
+
     IsLastRow(row: number): boolean{
         return row === (this.rows.length-1);
     }
@@ -432,6 +459,22 @@ export class Table implements Node {
                 .map(x => x.trim());
 
         this.addRow(RowType.Data, values);
+    }
+
+    parseFormulaLine(row: number, line: string, mtch: RegExpExecArray) {
+        const s = line.trim();
+        const full = mtch[0];
+        const rawf = mtch[1];
+        const start = full.length - rawf.length;
+        const forms = rawf.split("::");
+        let acc = start;
+        forms.forEach( (form) => {
+            const end = acc + form.length;
+            this.formulas.push(new FormulaDef(row, acc, end));
+            acc = end;
+        });
+                //this.formulas
+        // TODO: Add the formula
     }
 }
 
@@ -1217,6 +1260,12 @@ function* parseTable(gen, state: ParserState) {
     for (var lineData of gen) {
         let [rootNode, curNode, offset, curLine, line] = lineData;
         if (inTable) {
+            const form = tableFormulaRe.exec(line);
+            if (form) {
+                curTable.parseFormulaLine(curLine, line, form);
+                rootNode.lineMap[curLine] = curTable;
+                continue
+            }
             const em = tregexp.exec(line);
             if (!em) {
                 inTable = false;
@@ -1230,7 +1279,7 @@ function* parseTable(gen, state: ParserState) {
                     maxLen = line.length;
                 }
                 height += 1;
-                curTable.parseTableLine(line)
+                curTable.parseTableLine(line);
                 rootNode.lineMap[curLine] = curTable;
             }
             continue;
