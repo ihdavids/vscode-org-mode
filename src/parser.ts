@@ -343,7 +343,7 @@ export class Table implements Node {
             }
             counter += col.width + 3;
         }
-        if (result.col >= 0 && this.rows[result.row].type != RowType.Separator) {
+        if (result.row < this.rows.length && result.col >= 0 && this.rows[result.row].type != RowType.Separator) {
             result.rng = new vscode.Range(position.line, scol, position.line, ecol-1);
         }
         return result;

@@ -32,7 +32,7 @@ import {ODb} from "./db"
 import { Log } from './log';
 
 
-import { Parser, OrgTypes } from './parser';
+import { Parser, OrgTypes, Table } from './parser';
 import { Decoration } from './decorations';
 import { Sets } from './sets';
 import { jumpToMarker, setMarker } from './marker';
@@ -326,7 +326,7 @@ export function activate(context: vscode.ExtensionContext) {
                     const litem = OrgExtension.get().parser.doc.lineMap[lineNum];
                     if (litem && litem.isType(OrgTypes.Table)) {
                         OrgExtension.get().tableContext.setState(true);
-                        const tbl: any = litem;
+                        const tbl: Table = litem as Table;
                         const range = tbl.rowColCellFromPosition(event.selections[0].start);
                         if (range && range.rng) {
 			                event.textEditor.setDecorations(Decoration.selectedCellType, [range.rng]);             
