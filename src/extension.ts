@@ -19,6 +19,8 @@ import * as agenda from './agenda';
 import * as gantt from './gantt';
 import * as mindmap from './mindmap';
 import * as web from './web';
+import * as reveal from './revealjs';
+import * as impress from './impressjs';
 import * as daypage from './daypage';
 import * as odb from './db';
 import * as Util from './utils';
@@ -225,6 +227,8 @@ export function activate(context: vscode.ExtensionContext) {
     const showAgendaCmd = vscode.commands.registerTextEditorCommand('org.showAgenda', agenda.showAgenda);
     const showGanttCmd = vscode.commands.registerTextEditorCommand('org.showGantt', gantt.showGantt);
     const showGanttWeb = vscode.commands.registerTextEditorCommand('org.showWeb', web.showWeb);
+    const showReveal = vscode.commands.registerTextEditorCommand('org.showReveal', reveal.showReveal);
+    const showImpress = vscode.commands.registerTextEditorCommand('org.showImpress', impress.showImpress);
     const showMindMapCmd = vscode.commands.registerTextEditorCommand('org.showMindMap', mindmap.showMindMap);
     const connectToOrgsCmd = vscode.commands.registerTextEditorCommand('org.connectToOrgs', odb.connectToOrgs);
 

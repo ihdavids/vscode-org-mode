@@ -226,6 +226,28 @@ export class ODb
         return await this.doGet(url);
     }
 
+    public static async revealjs(query: string, retry: boolean = false) {
+        var url: URL = new URL(Sets.orgsConnection + "/file/revealjs");
+
+        let qry: string = `!IsArchived() && IsTodo()`;
+        if (query !== "") {
+            qry += ` && ${query}`
+        }
+        url.searchParams.append('query', qry);
+        return await this.doGet(url);
+    }
+
+    public static async impressjs(query: string, retry: boolean = false) {
+        var url: URL = new URL(Sets.orgsConnection + "/file/impressjs");
+
+        let qry: string = `!IsArchived() && IsTodo()`;
+        if (query !== "") {
+            qry += ` && ${query}`
+        }
+        url.searchParams.append('query', qry);
+        return await this.doGet(url);
+    }
+
     public static async query(query: string, retry: boolean = false) : Promise<any> {
         var url: URL = new URL(Sets.orgsConnection + "/search");
         let qry: string = `!IsArchived() && IsTodo()`;

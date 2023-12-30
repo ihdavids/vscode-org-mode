@@ -104,6 +104,14 @@
                 "title": "Org: Show Web"
             },
             {
+                "command": "org.showReveal",
+                "title": "Org: Show Reveal JS"
+            },
+            {
+                "command": "org.showImpress",
+                "title": "Org: Show Impress JS"
+            },
+            {
                 "command": "org.connectToOrgs",
                 "title": "Org: Connect To Orgs"
             },
