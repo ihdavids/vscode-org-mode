@@ -26,7 +26,10 @@ export async function showReveal(doc: vscode.TextEditor) {
         'reveal',
         'Reveal: ' + qry,
         vscode.ViewColumn.Two,
-        {enableScripts: true}
+        { 
+          enableScripts: true
+          //localResourceRoots: [vscode.Uri.file("/Users/idavids/dev/gtd/ian")]
+        }
       );
 
       let iteration = 0;
