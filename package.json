@@ -368,6 +368,11 @@
                 "command": "org.insertSeparator",
                 "title": "Insert Table Separator",
                 "category": "Org"
+            },
+            {
+                "command": "org.latexExport",
+                "title": "Latex Export",
+                "category": "Org"
             }
         ],
         "languages": [

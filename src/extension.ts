@@ -42,6 +42,7 @@ import { activateTableExtension} from "./tables/commands"
 import * as tt from "./tables/context"
 import {Decorator} from './decorations/decorator';
 import Changes from './decorations/changes';
+import { convertToLatex } from './export_latex';
 
 export class OrgExtension {
     private static instance: OrgExtension;
@@ -251,6 +252,7 @@ export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(vscode.commands.registerCommand('org.showFunctionNames', async () => await showFunctionNames()));
 	context.subscriptions.push(vscode.commands.registerCommand('org.execTable', async () => await execTable()));
 	context.subscriptions.push(vscode.commands.registerCommand('org.execAllTables', async () => await execAllTables()));
+	context.subscriptions.push(vscode.commands.registerTextEditorCommand('org.latexExport', convertToLatex));
     context.subscriptions.push(nextDayPageCmd);
     context.subscriptions.push(prevDayPageCmd);
     context.subscriptions.push(showDayPageCmd);

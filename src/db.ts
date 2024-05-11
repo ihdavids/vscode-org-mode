@@ -226,6 +226,19 @@ export class ODb
         return await this.doGet(url);
     }
 
+    public static async latex(query: string, retry: boolean = false): Promise<any> {
+        var url: URL = new URL(Sets.orgsConnection + "/file/latex");
+
+        /*
+        let qry: string = `!IsArchived() && IsTodo()`;
+        if (query !== "") {
+            qry += ` && ${query}`
+        }
+        */
+        url.searchParams.append('query', query);
+        return await this.doGet(url);
+    }
+
     public static async revealjs(query: string, retry: boolean = false) {
         var url: URL = new URL(Sets.orgsConnection + "/file/revealjs");
 
