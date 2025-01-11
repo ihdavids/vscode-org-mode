@@ -24,6 +24,7 @@ export enum OrgTypes {
     ClockEntry,
     SourceBlock,
     Table,
+    Roll,
 };
 
 export type Primitive = string | number | boolean
@@ -126,6 +127,37 @@ export class NumList extends List {
 export class CheckList extends List {
     type:     OrgTypes = OrgTypes.CheckList;
     state:    string;
+}
+
+export class Roll implements Node {
+    type:     OrgTypes = OrgTypes.Roll;
+    range:    vscode.Range;
+    numDice:     string;
+    diceType:     string;
+    parent?:  Headline;
+
+    getRollParser(): RegExp {
+        let r = /(^|\s)\/r(?<num>[0-9]+)d(?<type>[0-9]+)/
+        return r;
+    }
+
+    // You get a dict of protocol and id values
+    /*
+    getParse(): {[key:string]: string} {
+        let p = this.getRollParser();
+        let r = p.exec(this.numDice);
+        if (!r) {
+            return null;
+        }
+        return r.groups;
+    }*/
+
+    isType(type: OrgTypes):  boolean {
+        if (type == this.type) {
+            return true;
+        }
+        return false;
+    }
 }
 
 export class Link implements Node {
@@ -553,6 +585,7 @@ export class Headline implements Parent {
     parent?:   Headline;
     children:  Headline[];
     links:     Link[];
+    rolls:     Roll[];
     nodes:     Node[];
     comments:  {[key: string]: Comment};
     properties:  PropertyDrawer;
@@ -619,6 +652,7 @@ export class Headline implements Parent {
     constructor() {
         this.children = [];
         this.links    = [];
+        this.rolls    = [];
         this.nodes    = [];
         this.comments = {};
         this.sourceBlocks = [];
@@ -741,6 +775,7 @@ export class RootNode implements Parent {
     children: Headline[];
     nodes:    Node[];
     links:    Link[];
+    rolls:    Roll[];
     comments: {[key: string]: Comment};
     todos: string[];
     dones: string[];
@@ -750,6 +785,7 @@ export class RootNode implements Parent {
         this.nodes    = [];
         this.children = [];
         this.links    = [];
+        this.rolls    = [];
         this.comments = {};
     }
 
@@ -773,6 +809,10 @@ export class RootNode implements Parent {
 
     getLinks(): Link[] {
         return this.links;
+    }
+
+    getRolls(): Roll[] {
+        return this.rolls;
     }
 
     getComment(name: string, defaultVal: Comment | undefined = undefined): Comment | undefined {
@@ -905,6 +945,7 @@ enum ParserPhase {
     Links,
     SourceBlock,
     Table,
+    Roll,
 }
 
 class ParserState {
@@ -1334,6 +1375,30 @@ function* parseLinks(gen, state: ParserState) {
     }
 }
 
+function* parseRolls(gen, state: ParserState) {
+    for (var lineData of gen) {
+        const rollRegexp = /(^|\s)\/r(?<numdice>[0-9]+)d(?<dicetype>[0-9]+)/g
+        let [rootNode, curNode, offset, curLine, line] = lineData;
+        let m = rollRegexp.exec(line);
+        if (state.canParse(ParserPhase.Roll) && m) {
+            let rl = new Roll();
+            rl.numDice = m.groups.numdice;
+            rl.diceType = m.groups.dicetype;
+            rl.parent = curNode;
+            const startPos = new vscode.Position(curLine, m.index);
+            const endPos   = new vscode.Position(curLine, m.index + m[0].length);
+            rl.range     = new vscode.Range(startPos, endPos);
+           
+            rootNode.nodes.push(rl);
+            rootNode.rolls.push(rl);
+            curNode.rolls.push(rl);
+            curNode.nodes.push(rl);
+        }
+        yield lineData;
+    }
+
+}
+
 function* parseSDC(gen, state: ParserState) {
     for (var lineData of gen) {
         let [rootNode, curNode, offset, curLine, line] = lineData;
@@ -1402,6 +1467,7 @@ export function parseFileContents(contents: string) {
     gen     = parseSDC(gen,state);
     gen     = parseProperties(gen,state);
     gen     = parseLogbook(gen,state);
+    gen     = parseRolls(gen, state);
     gen     = parseLinks(gen,state);
     gen     = parseCheckList(gen,state);
     gen     = parseNumList(gen,state);
