@@ -26,7 +26,9 @@ export function addDoWhatIMean(doc: TextEditor, edit: vscode.TextEditorEdit)
             case OrgTypes.Roll:      {
                 var roll = <Roll>node;
                 //edit.insert(doc.selection[0],roll.numDice)
-                vscode.window.showInformationMessage("ROLL " + roll.numDice + " d " + roll.diceType + " : " + roll.eval());
+                let expr = roll.getExpr();
+                edit.replace(roll.range, expr);
+                vscode.window.showInformationMessage("ROLL: " + expr);
                 
             }
         }

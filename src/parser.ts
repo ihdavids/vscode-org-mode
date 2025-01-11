@@ -171,6 +171,16 @@ export class Roll implements Node {
         return accume;
     }
 
+    getExpr(): string {
+        let mod = ""
+        if (this.diceOp && (this.diceOp == "+" || this.diceOp == "-")) {
+            mod = `${this.diceOp}${this.diceMod}`;
+        }
+        let res = this.eval();
+        let rv = `/r${this.numDice}d${this.diceType}${mod}:${res}`;
+        return rv;
+    }
+
     // You get a dict of protocol and id values
     /*
     getParse(): {[key:string]: string} {
@@ -1407,7 +1417,7 @@ function* parseLinks(gen, state: ParserState) {
 
 function* parseRolls(gen, state: ParserState) {
     for (var lineData of gen) {
-        const rollRegexp = /(^|\s)\/r(?<numdice>[0-9]+)d(?<dicetype>[0-9]+)(\s*(?<diceOp>[+-])\s*(?<diceMod>[+-]?[0-9]+))*(\\s*[:]\\s*(?<diceResult>[0-9]+))?/g
+        const rollRegexp = /(?<spaces>^|\s)\/r(?<numdice>[0-9]+)d(?<dicetype>[0-9]+)(\s*(?<diceOp>[+-])\s*(?<diceMod>[+-]?[0-9]+))*(\s*[:]\s*(?<diceResult>[0-9]+))?/g
         let [rootNode, curNode, offset, curLine, line] = lineData;
         let m = rollRegexp.exec(line);
         if (state.canParse(ParserPhase.Roll) && m) {
@@ -1418,7 +1428,8 @@ function* parseRolls(gen, state: ParserState) {
             rl.diceMod = m.groups.diceMod;
             rl.diceResult = m.groups.diceResult;
             rl.parent = curNode;
-            const startPos = new vscode.Position(curLine, m.index);
+            const spaces = m.groups.spaces.length
+            const startPos = new vscode.Position(curLine, m.index+spaces);
             const endPos   = new vscode.Position(curLine, m.index + m[0].length);
             rl.range     = new vscode.Range(startPos, endPos);
            
