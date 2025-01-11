@@ -133,12 +133,42 @@ export class Roll implements Node {
     type:     OrgTypes = OrgTypes.Roll;
     range:    vscode.Range;
     numDice:     string;
-    diceType:     string;
-    parent?:  Headline;
+    diceType:    string;
+    diceOp:      string;
+    diceMod:     string;
+    diceResult:  string;
+    parent?:     Headline;
 
     getRollParser(): RegExp {
-        let r = /(^|\s)\/r(?<num>[0-9]+)d(?<type>[0-9]+)/
+        let r = /(^|\s)\/r(?<num>[0-9]+)d(?<type>[0-9]+)(\s*(?<op>[+-])\s*(?<mod>[+-]?[0-9]+))*(\\s*[:]\\s*(?<diceResult>[0-9]+))?/
         return r;
+    }
+
+    hasResult(): boolean {
+        return this.diceResult && this.diceResult != "";
+    }
+
+    eval(): Number {
+        let num = Number(this.numDice);
+        let amt = Number(this.diceType);
+        let mod = Number(this.diceMod);
+
+        let accume = 0;
+        for (let i = 0; i < num; ++i) {
+            amt = Math.ceil(amt*Math.random());
+            accume += amt;
+        }
+        if (this.diceOp == "+") {
+            accume += mod;
+        } else if (this.diceOp == "-") {
+            accume -= mod;
+        } else {
+            accume += 0;
+        }
+        if (accume == 0) {
+            accume = 1;
+        }
+        return accume;
     }
 
     // You get a dict of protocol and id values
@@ -1377,13 +1407,16 @@ function* parseLinks(gen, state: ParserState) {
 
 function* parseRolls(gen, state: ParserState) {
     for (var lineData of gen) {
-        const rollRegexp = /(^|\s)\/r(?<numdice>[0-9]+)d(?<dicetype>[0-9]+)/g
+        const rollRegexp = /(^|\s)\/r(?<numdice>[0-9]+)d(?<dicetype>[0-9]+)(\s*(?<diceOp>[+-])\s*(?<diceMod>[+-]?[0-9]+))*(\\s*[:]\\s*(?<diceResult>[0-9]+))?/g
         let [rootNode, curNode, offset, curLine, line] = lineData;
         let m = rollRegexp.exec(line);
         if (state.canParse(ParserPhase.Roll) && m) {
             let rl = new Roll();
             rl.numDice = m.groups.numdice;
             rl.diceType = m.groups.dicetype;
+            rl.diceOp = m.groups.diceOp;
+            rl.diceMod = m.groups.diceMod;
+            rl.diceResult = m.groups.diceResult;
             rl.parent = curNode;
             const startPos = new vscode.Position(curLine, m.index);
             const endPos   = new vscode.Position(curLine, m.index + m[0].length);
