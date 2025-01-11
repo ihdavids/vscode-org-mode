@@ -1936,7 +1936,7 @@
                     "include": "#literal"
                 },
                 {
-                    "include": "#role"
+                    "include": "#roll"
                 },
                 {
                     "include": "#code"
@@ -2081,17 +2081,20 @@
                 }
             ]
         },
-        "role": {
+        "roll": {
             "patterns": [
                 {
-                    "name": "variable.role.org",
-                    "match": "(^|\\s)([/]r)([0-9]+)(d)([0-9]+)",
+                    "name": "variable.roll.org",
+                    "match": "(^|\\s)[/]r([0-9]+)d([0-9]+)(\\s*[+-]\\s*([+-]?[0-9]+))*",
                     "captures": {
                         "2": {
                             "name": "keyword.control.numdice.org"
                         },
-                        "4": {
+                        "3": {
                             "name": "keyword.control.dicesize.org"
+                        },
+                        "5": {
+                            "name": "keyword.control.modifier.org"
                         }
                     }
                 }
