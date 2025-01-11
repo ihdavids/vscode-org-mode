@@ -28,7 +28,11 @@ export function addDoWhatIMean(doc: TextEditor, edit: vscode.TextEditorEdit)
                 //edit.insert(doc.selection[0],roll.numDice)
                 let expr = roll.getExpr();
                 edit.replace(roll.range, expr);
-                vscode.window.showInformationMessage("ROLL: " + expr);
+                let res = roll.getFormattedResults();
+                if (res.length > 0) {
+                    res = ` [${res}]`;
+                }
+                vscode.window.showInformationMessage(`ROLL: (${roll.getExprNoRes()})${res} = ${roll.getResult()}`);
                 
             }
         }

@@ -137,6 +137,7 @@ export class Roll implements Node {
     diceOp:      string;
     diceMod:     string;
     diceResult:  string;
+    diceResults: number[];
     parent?:     Headline;
 
     getRollParser(): RegExp {
@@ -154,9 +155,11 @@ export class Roll implements Node {
         let mod = Number(this.diceMod);
 
         let accume = 0;
+        this.diceResults = [];
         for (let i = 0; i < num; ++i) {
             amt = Math.ceil(amt*Math.random());
             accume += amt;
+            this.diceResults.push(amt);
         }
         if (this.diceOp == "+") {
             accume += mod;
@@ -168,17 +171,64 @@ export class Roll implements Node {
         if (accume == 0) {
             accume = 1;
         }
+        this.diceResult = `${accume}`;
         return accume;
     }
 
+    getExprNoRes(): string {
+        let mod = this.getMod();
+        let rv = `/r${this.numDice}d${this.diceType}${mod}`;
+        return rv;
+    }
     getExpr(): string {
-        let mod = ""
-        if (this.diceOp && (this.diceOp == "+" || this.diceOp == "-")) {
-            mod = `${this.diceOp}${this.diceMod}`;
-        }
         let res = this.eval();
+        let mod = this.getMod();
         let rv = `/r${this.numDice}d${this.diceType}${mod}:${res}`;
         return rv;
+    }
+
+
+    getResult(): string {
+        return this.diceResult;
+    }
+
+    getMod(space:string=""): string {
+        let mod = ""
+        if (this.diceOp && (this.diceOp == "+" || this.diceOp == "-")) {
+            mod = `${this.diceOp}${space}${this.diceMod}`;
+        }
+        return mod;
+    }
+
+    getResults(): string {
+        if (!this.diceResults || this.diceResults.length <= 0) {
+            this.eval();
+        }
+        let res = "";
+        for (let i = 0; i < this.diceResults.length; ++i) {
+            let r = this.diceResults[i];
+            if (res.length > 0) {
+                res += ` + ${r}`
+            } else {
+                res += ` ${r}`;
+            }
+        }
+        return res.trim();
+    }
+
+    numResults(): number {
+        if (!this.diceResults || this.diceResults.length <= 0) {
+            return 0;
+        }
+        return this.diceResults.length;
+    }
+
+    getFormattedResults(): string {
+        let mod = this.getMod(" ");
+        if (mod === "" && this.numResults() <= 1) {
+            return "";
+        }
+        return `${this.getResults()} ${mod}`.trim();
     }
 
     // You get a dict of protocol and id values
