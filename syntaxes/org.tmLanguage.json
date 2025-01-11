@@ -1936,6 +1936,9 @@
                     "include": "#literal"
                 },
                 {
+                    "include": "#role"
+                },
+                {
                     "include": "#code"
                 },
                 {
@@ -2075,6 +2078,22 @@
                 {
                     "name": "markup.italic.org",
                     "match": "^:.+"
+                }
+            ]
+        },
+        "role": {
+            "patterns": [
+                {
+                    "name": "variable.role.org",
+                    "match": "(^|\\s)([/]r)([0-9]+)(d)([0-9]+)",
+                    "captures": {
+                        "2": {
+                            "name": "keyword.control.numdice.org"
+                        },
+                        "4": {
+                            "name": "keyword.control.dicesize.org"
+                        }
+                    }
                 }
             ]
         },
