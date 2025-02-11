@@ -65,12 +65,13 @@ export async function execAllTables(): Promise<void> {
 
 export async function getRandomTableRow(): Promise<void> {
     const names = await ODb.tableNames();
+    let tableName = "";
     Log.get().log("HELLO WORLD");
-    if (names) {
+    if (names && names.Ok) {
         Log.get().log(names);
-        const templateName = await vscode.window.showQuickPick(names)
+        tableName = await vscode.window.showQuickPick(names.NamedTables)
     }
-    const output = await ODb.tableRandomRow("");
+    const output = await ODb.tableRandomRow(tableName);
     if (output && output.Ok) {
         let editor = vscode.window.activeTextEditor;
         const pos = editor.selection.active;
@@ -83,7 +84,7 @@ export async function getTableNames(): Promise<void> {
     if (output && output.Ok) {
         let editor = vscode.window.activeTextEditor;
         const pos = editor.selection.active;
-        await editor.edit(e => e.insert(pos, output.Msg.trimEnd()));
+        await editor.edit(e => e.insert(pos, output.NamedTables.trimEnd()));
     }
 }
 
