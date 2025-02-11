@@ -9,6 +9,12 @@ export const intersection = '+';
 
 type StringReducer = (previous: string, current: string, index: number) => string;
 
+// Table execution done by orgs is a process of asking orgs to evaluate the table,
+// return the entire table as a string, then have the editor replace the table.
+// WHY? Because that means you can undo in the editor but by doing all evaluation
+// .    at once in orgs it's much faster.
+
+
 export class OrgParser implements tt.Parser {
     parse(text: string): Table | undefined {
         if (!text || text.length === 0) {

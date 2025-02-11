@@ -412,6 +412,20 @@ export class ODb
         return await this.doPost(url, {Target: {Filename: src.filename, Id: src.id, Type: src.type }, Row: row});
     }
 
+    // Returns a random row of a table specified by table name
+    public static async tableRandomRow(src: string): Promise<any> {
+        var url: URL = new URL(Sets.orgsConnection + `/tablerandomget`);
+        url.searchParams.append('name', src);
+        return await this.doGet(url);
+        //return await this.doPost(url, {Target: {Filename: src.filename, Id: src.id, Type: src.type }, Row: row});
+    }
+
+    // Returns a list of all tables found in all org files
+    public static async tableNames(): Promise<any> {
+        var url: URL = new URL(Sets.orgsConnection + `/tablenames`);
+        return await this.doGet(url);
+    }
+
 };
 
 

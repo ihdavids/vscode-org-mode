@@ -8,6 +8,7 @@ import { Log } from './log';
 import { locator } from './tables/commands';
 
 
+// Execute an entire table and replace it in the editor
 export async function execTable(): Promise<void> {
     const src = await ODb.getHashTarget();
     const row = vscode.window.activeTextEditor.selection.active.line;
@@ -59,6 +60,30 @@ export async function execAllTables(): Promise<void> {
     if (output != "") {
         Log.get().log(output);
         vscode.window.showInformationMessage("Exec All Tables: [" + passed + " pass /" + total + " tot]")
+    }
+}
+
+export async function getRandomTableRow(): Promise<void> {
+    const names = await ODb.tableNames();
+    Log.get().log("HELLO WORLD");
+    if (names) {
+        Log.get().log(names);
+        const templateName = await vscode.window.showQuickPick(names)
+    }
+    const output = await ODb.tableRandomRow("");
+    if (output && output.Ok) {
+        let editor = vscode.window.activeTextEditor;
+        const pos = editor.selection.active;
+        await editor.edit(e => e.insert(pos, output.Msg.trimEnd()));
+    }
+}
+
+export async function getTableNames(): Promise<void> {
+    const output = await ODb.tableNames();
+    if (output && output.Ok) {
+        let editor = vscode.window.activeTextEditor;
+        const pos = editor.selection.active;
+        await editor.edit(e => e.insert(pos, output.Msg.trimEnd()));
     }
 }
 

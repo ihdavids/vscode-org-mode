@@ -5,6 +5,10 @@ export interface Parser {
     isSeparatorRow(text: string): boolean;
 }
 
+// TABLE Highlight cell and jump around.
+//       This is a work in progress to
+// .     make table navigation seamless
+
 export interface Stringifier {
     stringify(table: Table, range?: any): string;
 }

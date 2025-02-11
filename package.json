@@ -292,6 +292,10 @@
                 "title": "Org: Text Table Enable"
             },
             {
+                "command": "org.randomTableRow",
+                "title": "Org: Random Table Row"
+            },
+            {
                 "command": "org.formatUnderCursor",
                 "title": "Org: Format table under cursor"
             },
