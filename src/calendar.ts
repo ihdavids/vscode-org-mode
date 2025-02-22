@@ -8,6 +8,7 @@ import * as CC from './cursor-context';
 import { OrgDuration } from './duration';
 import './duration';
 import * as Datetime from './simple-datetime';
+import {draw_clock} from './asciiclock';
 
 export enum CalendarMode {
 	none = 'none',
@@ -360,7 +361,7 @@ export class Calendar implements vscode.TextDocumentContentProvider {
 		this.baseDate = date;
 		this.calendars = [];
 		this.text = this.getCalendars(date, count);
-		
+		/*	
 		var clocks = "🕐🕑🕒🕓🕔🕕🕖🕗🕘🕙🕚🕛🕜🕝🕞🕟🕠🕡🕢🕣🕤🕥🕦🕧";
 		if (this.hasTimestamp()) {
 			var h = this.date.getHours();
@@ -369,7 +370,12 @@ export class Calendar implements vscode.TextDocumentContentProvider {
 			}
 			this.text += "\n\nTime: " + clocks[(h*2) + Math.floor(this.date.getMinutes()/30)] + "\n\n";
 		}
-	
+	    */
+	   if (this.hasTimestamp()) {
+		// IANCLOCK	
+		const canvas = draw_clock(this.date, 36, 26);
+		this.text += canvas.get_canvas_as_str();
+	   }
 		this.text += "\n\n==================================\nt - jump to today\nc - toggle clock\n. - next day\n, - prev day\n==================================\n";
 	}
 

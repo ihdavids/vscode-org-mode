@@ -37,9 +37,7 @@ class AsciiCanvas
     public get_canvas_as_str() : string {
         let ret = "";
         for (let i = 0; i < this.lines; ++i) {
-            for (let j = 0; j < this.cols; ++j) {
-                ret += this.canvas[i].join("");
-            }
+            ret += this.canvas[i].join("");
             ret += "\n";
         }
         return ret;
@@ -204,7 +202,7 @@ class AsciiCanvas
 const x_scale_ratio = 1.75;
 
 // Draw our clock seconds hand
-function draw_second_hand(ascii_canvas, seconds, length, fill_char) {
+function draw_second_hand(ascii_canvas : AsciiCanvas, seconds, length, fill_char) {
     const x0 = Math.trunc(Math.ceil(ascii_canvas.cols / 2.0));
     const y0 = Math.trunc(Math.ceil(ascii_canvas.lines / 2.0));
     const x1 = x0 + Math.trunc(Math.cos((seconds + 45) * 6 * Math.PI / 180) * length * x_scale_ratio);
@@ -213,28 +211,28 @@ function draw_second_hand(ascii_canvas, seconds, length, fill_char) {
 }
 
 // Draw our clock minutes hand
-function draw_minute_hand(ascii_canvas, minutes, length, fill_char) {
-    const x0 = Math.trunc(Math.ceil(ascii_canvas.cols / 2.0));
-    const y0 = Math.trunc(Math.ceil(ascii_canvas.lines / 2.0));
-    const x1 = x0 + Math.trunc(Math.cos((minutes + 45) * 6 * Math.PI / 180) * length * x_scale_ratio);
-    const y1 = y0 + Math.trunc(Math.sin((minutes + 45) * 6 * Math.PI / 180) * length);
+function draw_minute_hand(ascii_canvas : AsciiCanvas, minutes, length, fill_char) {
+    const x0: number = Math.trunc(Math.ceil(ascii_canvas.cols / 2.0));
+    const y0: number = Math.trunc(Math.ceil(ascii_canvas.lines / 2.0));
+    const x1: number = x0 + Math.trunc(Math.cos((minutes + 45) * 6 * Math.PI / 180) * length * x_scale_ratio);
+    const y1: number = y0 + Math.trunc(Math.sin((minutes + 45) * 6 * Math.PI / 180) * length);
     ascii_canvas.add_line(Math.trunc(x0), Math.trunc(y0), Math.trunc(x1), Math.trunc(y1), fill_char);
 }
 
 // Draw our clocks hour hand
-function draw_hour_hand(ascii_canvas, hours, minutes, length, fill_char) {
-    const x0 = Math.trunc(Math.ceil(ascii_canvas.cols / 2.0));
-    const y0 = Math.trunc(Math.ceil(ascii_canvas.lines / 2.0));
-    const total_hours = hours + minutes / 60.0;
-    const x1 = x0 + Math.trunc(Math.cos((total_hours + 45) * 30 * Math.PI / 180) * length * x_scale_ratio);
-    const y1 = y0 + Math.trunc(Math.sin((total_hours + 45) * 30 * Math.PI / 180) * length);
+function draw_hour_hand(ascii_canvas :AsciiCanvas, hours, minutes, length, fill_char) {
+    const x0: number = Math.trunc(Math.ceil(ascii_canvas.cols / 2.0));
+    const y0: number = Math.trunc(Math.ceil(ascii_canvas.lines / 2.0));
+    const total_hours: number = hours + minutes / 60.0;
+    const x1: number = x0 + Math.trunc(Math.cos((total_hours + 45) * 30 * Math.PI / 180) * length * x_scale_ratio);
+    const y1: number = y0 + Math.trunc(Math.sin((total_hours + 45) * 30 * Math.PI / 180) * length);
     ascii_canvas.add_line(Math.trunc(x0), Math.trunc(y0), Math.trunc(x1), Math.trunc(y1), fill_char=fill_char);
 }
 
 // Draw clock face with hour and minute marks
 function draw_clock_face(ascii_canvas, radius, mark_char) {
-    const x0 = ascii_canvas.cols; // 2
-    const y0 = ascii_canvas.lines; // 2
+    const x0 = ascii_canvas.cols / 2;
+    const y0 = ascii_canvas.lines / 2;
     // draw marks first
     const max_mark = 12*5+1
     for (let mark = 1; mark < max_mark; ++mark) {
@@ -254,7 +252,7 @@ function draw_clock_face(ascii_canvas, radius, mark_char) {
 }
 
 // Draw an ascii clock
-function draw_clock(now, cols, lines) {
+export function draw_clock(now: Date, cols: number, lines: number): AsciiCanvas {
     if (cols < 25 || lines < 25) {
         console.log('Too little columns/lines for print out the clock!');
         return null;
@@ -287,14 +285,14 @@ function draw_clock(now, cols, lines) {
     if (center_x > 25) {
         const left_pos = Math.trunc(radius * x_scale_ratio) / 2 - 4;
         ascii_canvas.add_nine_patch_rect(Math.trunc(center_x + left_pos), Math.trunc(center_y - 1), 5, 3, single_line_border_chars);
-        ascii_canvas.add_text(Math.trunc(center_x + left_pos + 1), Math.trunc(center_y), now.strftime('%a'));
+        ascii_canvas.add_text(Math.trunc(center_x + left_pos + 1), Math.trunc(center_y), now.getDay().toString() /*now.strftime('%a')*/);
         ascii_canvas.add_nine_patch_rect(Math.trunc(center_x + left_pos + 5), Math.trunc(center_y - 1), 4, 3, single_line_border_chars);
-        ascii_canvas.add_text(Math.trunc(center_x + left_pos + 1 + 5), Math.trunc(center_y), now.strftime('%d'));
+        ascii_canvas.add_text(Math.trunc(center_x + left_pos + 1 + 5), Math.trunc(center_y), now.getDay().toString() /*now.strftime('%d')*/);
     }
     // add clock hands
     //draw_second_hand(ascii_canvas, now.second, second_hand_length, fill_char=second_hand_char)
-    draw_minute_hand(ascii_canvas, now.minute, minute_hand_length, minute_hand_char);
-    draw_hour_hand(ascii_canvas, now.hour, now.minute, hour_hand_length, hour_hand_char);
+    draw_minute_hand(ascii_canvas, now.getMinutes(), minute_hand_length, minute_hand_char);
+    draw_hour_hand(ascii_canvas, now.getHours(), now.getMinutes(), hour_hand_length, hour_hand_char);
     // print out canvas
     return ascii_canvas;
     // ascii_canvas.print_out()
