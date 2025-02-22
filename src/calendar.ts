@@ -360,7 +360,7 @@ export class Calendar implements vscode.TextDocumentContentProvider {
 		this.baseDate = date;
 		this.calendars = [];
 		this.text = this.getCalendars(date, count);
-		/*
+		
 		var clocks = "🕐🕑🕒🕓🕔🕕🕖🕗🕘🕙🕚🕛🕜🕝🕞🕟🕠🕡🕢🕣🕤🕥🕦🕧";
 		if (this.hasTimestamp()) {
 			var h = this.date.getHours();
@@ -369,7 +369,7 @@ export class Calendar implements vscode.TextDocumentContentProvider {
 			}
 			this.text += "\n\nTime: " + clocks[(h*2) + Math.floor(this.date.getMinutes()/30)] + "\n\n";
 		}
-		*/
+	
 		this.text += "\n\n==================================\nt - jump to today\nc - toggle clock\n. - next day\n, - prev day\n==================================\n";
 	}
 
@@ -437,7 +437,7 @@ export class Calendar implements vscode.TextDocumentContentProvider {
 	}
 
     regenCalendars(resetBaseDate: boolean = true) {
-		if (this.calendars === null || this.calendars.length <= 0 || this.findMonth(this.date) < 0) {
+		if (this.calendars === null || this.calendars.length <= 0 || this.findMonth(this.date) < 0 || this.hasTimestamp()) {
             if (resetBaseDate) {
 			    this.baseDate = this.date;
             }
