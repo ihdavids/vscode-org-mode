@@ -99,7 +99,7 @@ class AsciiCanvas
                     }
                 }
             } else {
-                for (let y = y0; y <= y1; y++) {
+                for (let y = y1; y <= y0; y++) {
                     let x = x0;
                     if (dy != 0) {
                         x = x1 + Math.trunc(Math.round(y - y1) * dx / dy)
@@ -199,7 +199,7 @@ class AsciiCanvas
     }
 }
 
-const x_scale_ratio = 1.75;
+const x_scale_ratio = 1.95;
 
 // Draw our clock seconds hand
 function draw_second_hand(ascii_canvas : AsciiCanvas, seconds, length, fill_char) {
@@ -214,8 +214,9 @@ function draw_second_hand(ascii_canvas : AsciiCanvas, seconds, length, fill_char
 function draw_minute_hand(ascii_canvas : AsciiCanvas, minutes, length, fill_char) {
     const x0: number = Math.trunc(Math.ceil(ascii_canvas.cols / 2.0));
     const y0: number = Math.trunc(Math.ceil(ascii_canvas.lines / 2.0));
-    const x1: number = x0 + Math.trunc(Math.cos((minutes + 45) * 6 * Math.PI / 180) * length * x_scale_ratio);
-    const y1: number = y0 + Math.trunc(Math.sin((minutes + 45) * 6 * Math.PI / 180) * length);
+    const s0: number = Math.cos((minutes + 45) * 6 * (Math.PI / 180));
+    const x1: number = x0 + Math.trunc(s0 * length * x_scale_ratio);
+    const y1: number = y0 + Math.trunc(Math.sin((minutes + 45) * 6 * (Math.PI / 180)) * length);
     ascii_canvas.add_line(Math.trunc(x0), Math.trunc(y0), Math.trunc(x1), Math.trunc(y1), fill_char);
 }
 
