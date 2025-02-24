@@ -145,8 +145,8 @@ class AsciiCanvas
     }
 
     public get_row(i) {
-        if (i > 0 && i < this.canvas.length) {
-            return this.canvas[i].join();
+        if (i >= 0 && i < this.canvas.length) {
+            return this.canvas[i].join("");
         }
         return '';
     }

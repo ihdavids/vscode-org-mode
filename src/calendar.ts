@@ -374,7 +374,42 @@ export class Calendar implements vscode.TextDocumentContentProvider {
 	   if (this.hasTimestamp()) {
 		// IANCLOCK	
 		const canvas = draw_clock(this.date, 36, 26);
-		this.text += canvas.get_canvas_as_str();
+		let texts = this.text.split("\n");
+		let max_len = 0;
+		for (let i = 0; i < texts.length; ++i) {
+			const len = texts[i].length;
+			if (max_len < len) {
+				max_len = len;
+			}
+		}
+		let offset = 0;
+		for (; offset < canvas.lines; offset++) {
+			let row = canvas.get_row(offset);
+			row = row.trim();
+			if (row !== "") {
+				break;
+			}
+		}
+		max_len += 2;
+		let idx = 0;
+		for (idx = 0; idx < texts.length; ++idx) {
+			const row = canvas.get_row(idx + offset);
+			let padding = "";
+			if (texts[idx].length < max_len) {
+				padding = " ".repeat(max_len - texts[idx].length);
+			}
+			texts[idx] += padding + row;
+		}
+		idx += offset;
+		if (idx < canvas.lines) {
+			const padding = " ".repeat(max_len);
+			for (; idx < canvas.lines; ++idx) {
+				const row = canvas.get_row(idx);
+				texts.push(padding + row);
+			}
+		}
+		//this.text += canvas.get_canvas_as_str();
+		this.text = texts.join("\n");
 	   }
 		this.text += "\n\n==================================\nt - jump to today\nc - toggle clock\n. - next day\n, - prev day\n==================================\n";
 	}
