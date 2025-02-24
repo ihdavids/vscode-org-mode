@@ -116,8 +116,8 @@ class AsciiCanvas
     public add_text(x: number, y: number, text: string) {
         for (let i = 0; i < text.length; i++) {
             const c = text[i];
-            if (this.check_coord_in_range(x+i, y)) {
-                this.canvas[y][x+i] = c;
+            if (this.check_coord_in_range(Math.trunc(x)+i, Math.trunc(y))) {
+                this.canvas[Math.trunc(y)][Math.trunc(x)+i] = c;
             }
         }
     }
@@ -254,16 +254,16 @@ function draw_clock_face(ascii_canvas, radius, mark_char) {
 
 // Draw an ascii clock
 export function draw_clock(now: Date, cols: number, lines: number): AsciiCanvas {
-    if (cols < 25 || lines < 25) {
+    if (cols < 15 || lines < 15) {
         console.log('Too little columns/lines for print out the clock!');
         return null;
     }
     // prepare chars
     const single_line_border_chars = ['.', '-', '.', '|', ' ', '|', '`', '-', "'"];
     const second_hand_char = '.';
-    const minute_hand_char = 'o';
-    const hour_hand_char = 'O';
-    const mark_char = '`';
+    const minute_hand_char = '▝';
+    const hour_hand_char = '▀';
+    const mark_char = '█';
     //if os.name == 'nt':
     //    single_line_border_chars = ('.', '-', '.', '|', ' ', '|', '`', '-', "'")  # ('\xDA', '\xC4', '\xBF', '\xB3', '\x20', '\xB3', '\xC0', '\xC4', '\xD9')
     //    second_hand_char = '.'  # '\xFA'

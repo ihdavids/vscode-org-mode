@@ -16,6 +16,22 @@
 			"comment": "weekday",
 			"name": "keyword.control.calendar",
 			"match": "\\b(Mo|Tu|We|Th|Fr)\\b"
+		},
+		{
+			"comment": "Clock Border",
+			"name": "keyword.comment.block.org",
+			"match": "█"
+		},
+		{
+			"comment": "Clock Hour",
+			"name": "variable.org",
+			"match": "▀"
+		},
+		{
+			"comment": "Clock Minute",
+			"name": "constant.numeric.calendar",
+			"match": "▝"
 		}
+
 	]
 }

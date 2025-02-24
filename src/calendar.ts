@@ -150,6 +150,7 @@ export class Calendar implements vscode.TextDocumentContentProvider {
 	//private config: Config;
 	private numberMonth: number;
 	private cursorType: vscode.TextEditorDecorationType;
+	private clockBorder: vscode.TextEditorDecorationType;
 
 	private baseDate: Date;
 	private date: Date;
@@ -214,6 +215,16 @@ export class Calendar implements vscode.TextDocumentContentProvider {
 			},
 			'dark': {
 				'backgroundColor': 'rgba(255, 0, 0, 1.0)'
+			}
+		});
+		this.clockBorder = vscode.window.createTextEditorDecorationType({
+			'light': {
+				'backgroundColor': 'rgba(255, 0, 0, 1.0)',
+				'color': 'rgba(255, 255, 255, 255)',
+			},
+			'dark': {
+				'backgroundColor': 'rgba(255, 0, 0, 1.0)',
+				'color': 'rgba(255, 0, 0, 0)',
 			}
 		});
 		this.baseDate = new Date();
@@ -373,7 +384,7 @@ export class Calendar implements vscode.TextDocumentContentProvider {
 	    */
 	   if (this.hasTimestamp()) {
 		// IANCLOCK	
-		const canvas = draw_clock(this.date, 36, 26);
+		const canvas = draw_clock(this.date, 20,20);
 		let texts = this.text.split("\n");
 		let max_len = 0;
 		for (let i = 0; i < texts.length; ++i) {
