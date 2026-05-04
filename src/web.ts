@@ -64,12 +64,12 @@ export async function showWeb(doc: vscode.TextEditor) {
     }, undefined, undefined); 
   
       // And schedule updates to the content every second
-      const interval = setInterval(updateWebview, 1000*3);
+      //const interval = setInterval(updateWebview, 1000*3);
 
       panel.onDidDispose(
         () => {
           // When the panel is closed, cancel any future updates to the webview content
-          clearInterval(interval);
+          //clearInterval(interval);
           console.log("CLOSE WEB");
         },
         null,

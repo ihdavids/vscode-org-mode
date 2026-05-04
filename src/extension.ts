@@ -32,6 +32,7 @@ import { dynamicEvalText, showFunctionNames, execBlock } from './execb';
 import { execAllTables, execTable, getRandomTableRow } from './exectable';
 import {ODb} from "./db"
 import { Log } from './log';
+import { Auth } from './auth';
 
 
 import { Parser, OrgTypes, Table } from './parser';
@@ -174,6 +175,7 @@ function setTableTargetBoxes(lineNum: number, col: number, formulaDetails : any,
 }
 
 export function activate(context: vscode.ExtensionContext) {
+    Auth.get().init(context);
     OrgExtension.get().activate(context);
 
     vscode.commands.executeCommand('setContext', 'hasMyFocus', false);
@@ -232,6 +234,8 @@ export function activate(context: vscode.ExtensionContext) {
     const showImpress = vscode.commands.registerTextEditorCommand('org.showImpress', impress.showImpress);
     const showMindMapCmd = vscode.commands.registerTextEditorCommand('org.showMindMap', mindmap.showMindMap);
     const connectToOrgsCmd = vscode.commands.registerTextEditorCommand('org.connectToOrgs', odb.connectToOrgs);
+    context.subscriptions.push(vscode.commands.registerCommand('org.login', async () => await Auth.get().ensureLoggedIn()));
+    context.subscriptions.push(vscode.commands.registerCommand('org.logout', async () => { await Auth.get().logout(); vscode.window.showInformationMessage('Logged out of Orgs server.'); }));
 
     const showDayPageCmd = vscode.commands.registerTextEditorCommand('org.showDayPageToday', daypage.showDayPageToday);
     const prevDayPageCmd = vscode.commands.registerTextEditorCommand('org.prevDayPage', daypage.prevDayPage);

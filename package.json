@@ -116,6 +116,14 @@
                 "title": "Org: Connect To Orgs"
             },
             {
+                "command": "org.login",
+                "title": "Org: Login"
+            },
+            {
+                "command": "org.logout",
+                "title": "Org: Logout"
+            },
+            {
                 "command": "org.tabHandler",
                 "title": "Org: Tab Handler"
             },
