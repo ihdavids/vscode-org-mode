@@ -67,6 +67,10 @@ export class Sets {
     public static get linkColoring(): string        { return Sets.getProp<string>("linkColoring","rgba(0, 128, 255, 1.0)");    }
     public static get tagColoring(): string         { return Sets.getProp<string>("tagColoring","rgba(128, 128,128, 1.0)");    }
     public static get allowSelfSigned(): boolean    { return Sets.getProp<boolean>("allowSelfSigned", true);         }
+    // Where worg is loaded from; empty means the orgs server's own address.
+    public static get worgUrl(): string             { return Sets.getProp<string>("worgUrl", "") || Sets.orgsConnection; }
+    public static get agendaView(): string          { return Sets.getProp<string>("agendaView", "worg");            }
+    public static get serverPathMap(): {[key:string]: string} { return Sets.getProp<{[key:string]: string}>("serverPathMap", {}); }
     // Pretty Bullets
     //  "◉" "○" "✸" "✿"
     //  ♥ ● ◇ ✚ ✜ ☯ ◆ ♠ ♣ ♦ ☢ ❀ ◆ ◖ ▶

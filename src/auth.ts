@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import * as https from 'https';
+import * as crypto from 'crypto';
 import { Sets } from './sets';
 import { URL } from 'url';
 import {Request, RequestInfo, Headers} from 'node-fetch';
@@ -14,7 +15,7 @@ async function fetch(url, ...args) {
     return callFetch(url, ...args);
 }
 
-interface AuthToken {
+export interface AuthToken {
     token: string;
     expiresAt: number; // unix timestamp ms
 }
@@ -26,6 +27,10 @@ export class Auth {
     private loginPanel: vscode.WebviewPanel | null = null;
     private loginPromiseResolve: ((value: boolean) => void) | null = null;
     private refreshTimer: ReturnType<typeof setTimeout> | null = null;
+    // Told whenever the token changes - logged in, refreshed or logged out - so
+    // anything holding a copy (the worg panels) can be handed the new one.
+    private tokenChanged = new vscode.EventEmitter<AuthToken | null>();
+    public readonly onTokenChanged = this.tokenChanged.event;
 
     private constructor() {}
 
@@ -61,6 +66,12 @@ export class Auth {
             return null;
         }
         return this.currentToken.token;
+    }
+
+    // The token with its expiry, for passing on to something that has to know
+    // when it runs out.
+    public getTokenInfo(): AuthToken | null {
+        return this.isLoggedIn() ? this.currentToken : null;
     }
 
     public async ensureLoggedIn(): Promise<boolean> {
@@ -121,6 +132,38 @@ export class Auth {
         return promise;
     }
 
+    // What is sent in place of the password: a hash of it with this user's salt
+    // from the server, so the password never leaves the machine. This is worg's
+    // clienthash.ts and the server's keystore.go ClientHash again - the prefix,
+    // separators and order must match both exactly.
+    //
+    // A server too old to answer GET /salt can only take the password itself.
+    private async secretFor(username: string, password: string, agent: https.Agent): Promise<string> {
+        let salt: string | null = null;
+        try {
+            const url = new URL(Sets.orgsConnection + '/salt');
+            url.searchParams.set('user', username);
+            const res = await fetch(new Request(url.toString(), {
+                method: 'GET',
+                headers: { 'Accept': 'application/json' },
+                agent: agent,
+            }));
+            if (res.ok) {
+                const data = await res.json();
+                salt = data.salt || null;
+            }
+        } catch (e) {
+            salt = null;
+        }
+        if (!salt) {
+            console.warn('orgs: the server did not answer GET /salt, so the password is sent as cleartext. It is probably older than this plugin.');
+            return password;
+        }
+        return 'sha256c:' + crypto.createHash('sha256')
+            .update('orgs-client-v1:' + username + ':' + salt + ':' + password, 'utf8')
+            .digest('hex');
+    }
+
     private async doLogin(username: string, password: string): Promise<boolean> {
         try {
             const url = new URL(Sets.orgsConnection + '/login');
@@ -136,7 +179,7 @@ export class Auth {
             const request: RequestInfo = new Request(url.toString(), {
                 method: 'POST',
                 headers: headers,
-                body: JSON.stringify({ username: username, password: password }),
+                body: JSON.stringify({ username: username, password: await this.secretFor(username, password, httpsAgent) }),
                 agent: httpsAgent,
             });
 
@@ -150,6 +193,7 @@ export class Auth {
                 this.currentToken = { token: data.token, expiresAt };
                 await this.context.globalState.update('orgs.authToken', this.currentToken);
                 this.scheduleRefresh();
+                this.tokenChanged.fire(this.currentToken);
                 return true;
             }
             return false;
@@ -159,10 +203,30 @@ export class Auth {
         }
     }
 
+    // A token from a login made somewhere else - worg's own form, inside a
+    // worg panel - kept exactly as one of ours would be: saved, so it outlives
+    // the panel and VS Code, and refreshed from here on. Null is a logout.
+    public async adopt(token: string | null, expiresAt?: number) {
+        if (!token) {
+            if (this.currentToken) {
+                await this.logout();
+            }
+            return;
+        }
+        if (this.currentToken && this.currentToken.token === token) {
+            return;
+        }
+        this.currentToken = { token, expiresAt: expiresAt || Date.now() + 60 * 60 * 1000 };
+        await this.context.globalState.update('orgs.authToken', this.currentToken);
+        this.scheduleRefresh();
+        this.tokenChanged.fire(this.currentToken);
+    }
+
     public async logout() {
         this.cancelRefresh();
         this.currentToken = null;
         await this.context.globalState.update('orgs.authToken', undefined);
+        this.tokenChanged.fire(null);
     }
 
     private cancelRefresh() {
@@ -218,6 +282,7 @@ export class Auth {
                 this.currentToken = { token: data.token, expiresAt };
                 await this.context.globalState.update('orgs.authToken', this.currentToken);
                 this.scheduleRefresh();
+                this.tokenChanged.fire(this.currentToken);
             }
         } catch (e) {
             console.log('Token refresh error: ' + e.message);

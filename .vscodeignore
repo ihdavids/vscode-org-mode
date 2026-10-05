@@ -7,3 +7,26 @@ src/**
 .gitignore
 tsconfig.json
 vsc-extension-quickstart.md
+
+# dev / editor clutter
+.nvmrc
+.project
+CLAUDE.md
+coverconfig.json
+tslint.json
+*.vsix
+
+# scratch org files
+test2.org
+todo.org
+
+# docs (the marketplace README doesn't use these)
+docs/**
+
+# syntax generator sources (only generated *.tmLanguage.json are needed)
+syntaxes/populate-syntax.js
+syntaxes/org.tmLanguage.template.json
+
+# README screenshots (vsce rewrites links to GitHub)
+images/screenshots/**
+images/logo.png

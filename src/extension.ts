@@ -33,6 +33,7 @@ import { execAllTables, execTable, getRandomTableRow } from './exectable';
 import {ODb} from "./db"
 import { Log } from './log';
 import { Auth } from './auth';
+import { WorgPanel, WORG_VIEWS, worgCommand } from './worg';
 
 
 import { Parser, OrgTypes, Table } from './parser';
@@ -227,7 +228,17 @@ export function activate(context: vscode.ExtensionContext) {
     const updateEffortPropertyCmd = vscode.commands.registerTextEditorCommand('org.updateEffortProperty', props.updateEffortPropertyCommand);
     const tablHandlerCmd = vscode.commands.registerTextEditorCommand('org.tabHandler', folding.tabHandler);
 
-    const showAgendaCmd = vscode.commands.registerTextEditorCommand('org.showAgenda', agenda.showAgenda);
+    // The agenda is worg's unless the classic one is asked for.
+    const showAgendaCmd = vscode.commands.registerCommand('org.showAgenda', async () => {
+        if (Sets.agendaView === 'classic' && vscode.window.activeTextEditor) {
+            return agenda.showAgenda(vscode.window.activeTextEditor);
+        }
+        return WorgPanel.show('Agenda');
+    });
+    // Every other worg view, one command each, straight from the palette.
+    for (const v of WORG_VIEWS.filter(v => v.app !== 'Agenda')) {
+        context.subscriptions.push(vscode.commands.registerCommand(worgCommand(v.app), async () => WorgPanel.show(v.app)));
+    }
     const showGanttCmd = vscode.commands.registerTextEditorCommand('org.showGantt', gantt.showGantt);
     const showGanttWeb = vscode.commands.registerTextEditorCommand('org.showWeb', web.showWeb);
     const showReveal = vscode.commands.registerTextEditorCommand('org.showReveal', reveal.showReveal);

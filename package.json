@@ -30,6 +30,24 @@
     "activationEvents": [
         "onLanguage:org",
         "onCommand:org.showAgenda",
+        "onCommand:org.showWorgSearch",
+        "onCommand:org.showWorgStoredQueries",
+        "onCommand:org.showWorgKanban",
+        "onCommand:org.showWorgGanttChart",
+        "onCommand:org.showWorgColumns",
+        "onCommand:org.showWorgClockReport",
+        "onCommand:org.showWorgTables",
+        "onCommand:org.showWorgFiles",
+        "onCommand:org.showWorgLinks",
+        "onCommand:org.showWorgMindMap",
+        "onCommand:org.showWorgCollections",
+        "onCommand:org.showWorgContacts",
+        "onCommand:org.showWorgCode",
+        "onCommand:org.showWorgDrill",
+        "onCommand:org.showWorgDiff",
+        "onCommand:org.showWorgPresentation",
+        "onCommand:org.showWorgVoiceNotes",
+        "onCommand:org.showWorgStarmap",
         "onCommand:org.showGantt",
         "onCommand:org.showMindMap",
         "onCommand:org.showWeb",
@@ -92,12 +110,84 @@
                 "title": "Org: Show Agenda"
             },
             {
+                "command": "org.showWorgSearch",
+                "title": "Org: Show Search"
+            },
+            {
+                "command": "org.showWorgStoredQueries",
+                "title": "Org: Show Saved Queries"
+            },
+            {
+                "command": "org.showWorgKanban",
+                "title": "Org: Show Kanban"
+            },
+            {
+                "command": "org.showWorgGanttChart",
+                "title": "Org: Show Gantt Chart"
+            },
+            {
+                "command": "org.showWorgColumns",
+                "title": "Org: Show Column View"
+            },
+            {
+                "command": "org.showWorgClockReport",
+                "title": "Org: Show Clock Report"
+            },
+            {
+                "command": "org.showWorgTables",
+                "title": "Org: Show Tables"
+            },
+            {
+                "command": "org.showWorgFiles",
+                "title": "Org: Show Files"
+            },
+            {
+                "command": "org.showWorgLinks",
+                "title": "Org: Show Links"
+            },
+            {
+                "command": "org.showWorgMindMap",
+                "title": "Org: Show Mind Map"
+            },
+            {
+                "command": "org.showWorgCollections",
+                "title": "Org: Show Collections"
+            },
+            {
+                "command": "org.showWorgContacts",
+                "title": "Org: Show Contacts"
+            },
+            {
+                "command": "org.showWorgCode",
+                "title": "Org: Show Code"
+            },
+            {
+                "command": "org.showWorgDrill",
+                "title": "Org: Show Flashcards"
+            },
+            {
+                "command": "org.showWorgDiff",
+                "title": "Org: Show Diff & History"
+            },
+            {
+                "command": "org.showWorgPresentation",
+                "title": "Org: Show Presentation"
+            },
+            {
+                "command": "org.showWorgVoiceNotes",
+                "title": "Org: Show Voice Notes"
+            },
+            {
+                "command": "org.showWorgStarmap",
+                "title": "Org: Show Starmap"
+            },
+            {
                 "command": "org.showGantt",
-                "title": "Org: Show Gantt"
+                "title": "Org: Show Gantt (Classic)"
             },
             {
                 "command": "org.showMindMap",
-                "title": "Org: Show Mind Map"
+                "title": "Org: Show Mind Map (Classic)"
             },
             {
                 "command": "org.showWeb",
@@ -587,6 +677,25 @@
                     "default": false,
                     "description": "Allow self signed https certificates on your org server, this is NOT safe"
                 },
+                "org.worgUrl": {
+                    "type": "string",
+                    "default": "",
+                    "description": "Where the worg views are loaded from. Empty uses org.orgsConnection. Use the server's http address if its https certificate is self-signed - a webview will not load it."
+                },
+                "org.agendaView": {
+                    "type": "string",
+                    "enum": [
+                        "worg",
+                        "classic"
+                    ],
+                    "default": "worg",
+                    "description": "Which agenda Org: Show Agenda opens: worg's, or the older built-in one."
+                },
+                "org.serverPathMap": {
+                    "type": "object",
+                    "default": {},
+                    "description": "When the orgs server is on another machine: server path prefix -> local path prefix, used to open headings clicked in a worg view."
+                },
                 "org.selectedCellIndicator": {
                     "type": "object",
                     "default": {
@@ -939,8 +1048,10 @@
         "generate-syntax": "node syntaxes/populate-syntax.js"
     },
     "devDependencies": {
+        "@types/got": "^9.6.12",
         "@types/mocha": "^2.2.48",
         "@types/node": "^6.14.13",
+        "@vscode/vsce": "^2.32.0",
         "codecov": "^3.1.0",
         "mocha": "^6.2.3",
         "tslint": "^5.14.0",
@@ -950,8 +1061,6 @@
         "vscode-coverage-test-runner": "^1.0.0"
     },
     "dependencies": {
-        "@types/got": "^9.6.12",
-        "@vscode/vsce": "^2.19.0",
         "date-fns": "^1.28.3",
         "isomorphic-ws": "^5.0.0",
         "lodash": "^4.17.21",
