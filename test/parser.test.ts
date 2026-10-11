@@ -1,6 +1,5 @@
 
 import * as assert from 'assert';
-import * as vscode from 'vscode';
 import * as par    from '../src/parser';
 
 suite("Parser Tests", () => {

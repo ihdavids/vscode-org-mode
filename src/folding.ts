@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import {Range, TextDocument, Position, TextEditor, TextEditorEdit, Selection} from "vscode";
+import { TextDocument } from "vscode";
 
 export async function autoFold(doc: TextDocument)
 {
@@ -12,7 +12,7 @@ export async function autoFold(doc: TextDocument)
 
 export async function tabHandler(doc: vscode.TextEditor)
 {
-    let line : string = doc.document.lineAt(doc.selection.active).text;
+    const line : string = doc.document.lineAt(doc.selection.active).text;
     if (/^\s*:([a-zA-Z0-9]+):\s*$/.test(line))
     {
         await vscode.commands.executeCommand('editor.toggleFold');

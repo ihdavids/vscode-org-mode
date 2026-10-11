@@ -1,0 +1,56 @@
+#+TITLE: Website relaunch
+#+TODO: TODO NEXT WAITING | DONE CANCELLED
+#+COLUMNS: %40ITEM %TODO %PRIORITY %EFFORT{:} %OWNER %TAGS
+
+* Website relaunch [2/5]                                           :project:
+  The new site goes live at the end of the month. Budget in [[file:budget.org][budget.org]].
+** DONE [#A] Agree the sitemap                                      :design:
+   CLOSED: [{{YESTERDAY}} 16:10]
+   :PROPERTIES:
+   :EFFORT:   1:00
+   :OWNER:    Sam
+   :END:
+** NEXT [#A] Write the launch post                                 :writing:
+   SCHEDULED: <{{TODAY}} 09:30>
+   :PROPERTIES:
+   :EFFORT:   2:00
+   :OWNER:    Ian
+   :END:
+   :LOGBOOK:
+   CLOCK: [{{TODAY}} 08:15]--[{{TODAY}} 09:20] =>  1:05
+   :END:
+   Draft in [[file:notes.org::*Design notes][the design notes]].
+** TODO [#B] Move the blog archive                                     :dev:
+   DEADLINE: <{{IN3}}>
+   :PROPERTIES:
+   :EFFORT:   3:30
+   :OWNER:    Alex
+   :END:
+   :LOGBOOK:
+   CLOCK: [{{YESTERDAY}} 14:00]--[{{YESTERDAY}} 16:30] =>  2:30
+   :END:
+** WAITING Sign-off from legal                                       :legal:
+   SCHEDULED: <{{YESTERDAY}}>
+   :PROPERTIES:
+   :EFFORT:   0:30
+   :OWNER:    Sam
+   :END:
+** DONE Pick the fonts                                              :design:
+   CLOSED: [{{YESTERDAY}} 11:00]
+   :PROPERTIES:
+   :EFFORT:   0:45
+   :OWNER:    Sam
+   :END:
+* Routines
+** TODO Morning walk                                                :health:
+   SCHEDULED: <{{TODAY}} .+1d>
+   :PROPERTIES:
+   :STYLE:    habit
+   :END:
+** TODO Weekly review
+   SCHEDULED: <{{IN1}}>
+* Inbox
+* Ideas
+  - a dark theme for the docs
+  - an RSS feed
+  - zebra stripes in the footer

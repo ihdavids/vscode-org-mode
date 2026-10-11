@@ -1,38 +1,52 @@
 
+/* SDOC: Developers
+* Decorations
+  The pretty-printing - link markup hidden, a heading's stars shown as one
+  bullet, headings styled, source blocks shaded - is drawn from one pass
+  over the lines (=decorations-scan.ts= =scanLines=), a moment after typing
+  stops (=OrgExtension.update=). Each decoration type is made once, in the
+  constructor, and disposed with the extension; nothing is created per
+  update.
+EDOC */
+
 import * as vscode from 'vscode';
-import { Parser } from './parser';
+import { scanLines, Span } from './decorations-scan';
 import { Sets } from './sets';
 import {Decorator} from './decorations/decorator';
 
 export class Decoration implements vscode.Disposable {
-	private parser: Parser;
-	private descRegex: RegExp;
 	private linkType: vscode.TextEditorDecorationType;
 	private tagType: vscode.TextEditorDecorationType;
 	private hideType: vscode.TextEditorDecorationType;
 	private starTypes: vscode.TextEditorDecorationType[];
 	private prefixStarType: vscode.TextEditorDecorationType;
 	private headingType: vscode.TextEditorDecorationType[];
-	private blockType: vscode.TextEditorDecorationType[];
+	private blockType: vscode.TextEditorDecorationType;
 	public static selectedCellType: vscode.TextEditorDecorationType = vscode.window.createTextEditorDecorationType(Sets.selectedCellIndicator);
 	public static targetCellType: vscode.TextEditorDecorationType = vscode.window.createTextEditorDecorationType(Sets.targetCellIndicator);
 	public static activeFormulaType: vscode.TextEditorDecorationType = vscode.window.createTextEditorDecorationType(Sets.activeFormulaIndicator);
 
-	constructor(parser: Parser) {
-		this.blockType = [];
-		this.parser = parser;
+	constructor() {
+		// Source blocks: a shade and a rule down the left, in the theme's colours.
+		this.blockType = vscode.window.createTextEditorDecorationType({
+			isWholeLine: true,
+			backgroundColor: new vscode.ThemeColor('textCodeBlock.background'),
+			borderWidth: '0 0 0 2px',
+			borderStyle: 'solid',
+			borderColor: new vscode.ThemeColor('editorIndentGuide.background'),
+		});
 		this.headingType = [];
-		let formatting = Sets.headingFormatting;
+		const formatting = Sets.headingFormatting;
 		// We allow per heading text decorations to make your documents more interesting to read
-		for (var i = 0; i < 8; i++) {
-			if (i < formatting.length) {
-				let f = formatting[i];
+		for (let i = 0; i < 8; i++) {
+			{
+				const f = i < formatting.length && formatting[i] ? formatting[i] : {};
 				if (Object.keys(f).length <= 0) {
 					this.headingType[i] = vscode.window.createTextEditorDecorationType({'textDecoration': ``,});
 				} else {
 					let props = '';
-					for (let k in f) {
-						let v = f[k];
+					for (const k in f) {
+						const v = f[k];
 						props += k + ": " + v + ";";
 					}
 					//font-size: 20px; 
@@ -80,7 +94,6 @@ export class Decoration implements vscode.Disposable {
 		});
 		*/
 		// links
-		this.descRegex = new RegExp('\\]\\[');
 		this.linkType = vscode.window.createTextEditorDecorationType({
 			'light': {
 				'color': Sets.linkColoring,
@@ -135,119 +148,62 @@ export class Decoration implements vscode.Disposable {
 	}
 
 	dispose(): void {
+		[this.linkType, this.tagType, this.hideType, this.prefixStarType, this.blockType]
+			.concat(this.starTypes, this.headingType).forEach(t => t && t.dispose());
 	}
 
-	addPrefix(hidestar, prefs, h, level: number, blocks, editor, headings, tags) {
-		while (prefs.length <= level) {
-			prefs.push([])
+	// Pretty-print the editor's file: link markup hidden, the stars of a
+	// heading shown as one bullet, headings styled, source blocks shaded. One
+	// pass over the lines (decorations-scan.ts), so it keeps up with typing.
+	async updateDecorations(editor: vscode.TextEditor | undefined = vscode.window.activeTextEditor): Promise<void> {
+		if (!editor || editor.document.languageId !== 'org') {
+			return;
 		}
-		if (h && h.range) {
+		const doc = editor.document;
+		const lines: string[] = [];
+		for (let i = 0; i < doc.lineCount; i++) {
+			lines.push(doc.lineAt(i).text);
+		}
+		const found = scanLines(lines);
+		const range = (s: Span) => new vscode.Range(s.line, s.start, s.line, s.end);
 
-			let clevel = h.level
-			let hlevel = h.level-1;
-			if (hlevel < headings.length && h.range.start && h.range.end) {
-				headings[hlevel].push(new vscode.Range(new vscode.Position(h.fullLine.start.line, h.fullLine.start.character + hlevel + 2), new vscode.Position(h.noTagsFullLine.end.line, h.noTagsFullLine.end.character + hlevel)));
-			}
-			if (h.tags.length > 0) {
-				tags.push(h.tagsRange);
-			}
-			let blks = h.getSourceBlocks();
-			for (let b of blks) {
-				let height = b.height*100;
-				let clevel = b.parent.level*10;
-
-				let editorBackgroundFormula = 'var(--vscode-editor-background)';
-				let bgColor = `linear-gradient(to right, ${editorBackgroundFormula}, ${editorBackgroundFormula})`;
-				let id = this.blockType.push(vscode.window.createTextEditorDecorationType({
-					'before': {
-					'contentText': '',
-					'textDecoration': `;box-sizing: content-box !important; display: inline-block;
-						width: 90%;
-						height: ${height}%;
-						left: ${clevel}px;
-						border-radius: 5px;
-						position: absolute;
-						background-origin: padding-box, border-box;
-						background: linear-gradient(to right,rgba(0.1,0.1,.1,1.0),transparent 80%), ${bgColor};
-						z-index: -100;
-						border-left: 2px solid grey;
-						`,
-					}
-					}));
-				editor.setDecorations(this.blockType[id-1], [b.range]);
-			}
-			if (level > 0) {
-				const start = h.range.start;
-				const end = new vscode.Position(h.range.start.line, h.range.start.character + level);
-				const ran = new vscode.Range(start, end);
-				hidestar.push(ran);
-			}
-			const start = new vscode.Position(h.range.start.line, h.range.start.character + level);
-			const end = new vscode.Position(h.range.start.line, h.range.start.character + level + 1);
-			const ran = new vscode.Range(start, end);
-			prefs[level].push(ran);
-		}
-		for(let c of h.children) {
-			this.addPrefix(hidestar, prefs, c, c.level-1, blocks, editor, headings, tags);
-		}
-	}
-
-	async updateDecorations(): Promise<void> {
-		const editor = vscode.window.activeTextEditor;
-		if (!editor) {
-			return Promise.resolve();
-		}
-		const shouldUnderline = Sets.underlineTopHeading;
-
-		for (let x of this.blockType) {
-			editor.setDecorations(x, []);
-		}
-		this.blockType = []
-		// Links
+		const link: vscode.Range[] = [];
+		const hide: vscode.Range[] = [];
 		if (Sets.prettyLinks) {
-			const link: vscode.Range[] = [];
-			const hide: vscode.Range[] = [];
-			for (let l of this.parser.doc.getLinks()) {
-				const start = l.range.start;
-				const end = l.range.end;
-				const text = editor.document.getText(l.range);
-				const match = this.descRegex.exec(text);
-				const offset = (match) ? match.index + 2 : 2;
-				hide.push(new vscode.Range(start.line, start.character, start.line, start.character + offset))
-				hide.push(new vscode.Range(end.line, end.character - 2, end.line, end.character));
-				link.push(new vscode.Range(start.line, start.character + offset, end.line, end.character - 2));
+			for (const l of found.links) {
+				l.hide.forEach(h => hide.push(range(h)));
+				link.push(range(l.text));
 			}
-			editor.setDecorations(this.linkType, link);
-			editor.setDecorations(this.hideType, hide);
 		}
+		editor.setDecorations(this.linkType, link);
+		editor.setDecorations(this.hideType, hide);
 
-		// Bullets
+		const bullets: vscode.Range[][] = this.starTypes.map(() => []);
+		const hidestar: vscode.Range[] = [];
+		const headings: vscode.Range[][] = this.headingType.map(() => []);
+		const tags: vscode.Range[] = [];
 		if (Sets.prettyBullets) {
-			const prefix: vscode.Range[][] = [];
-			const hidestar: vscode.Range[] = [];
-			const headings: vscode.Range[][] = [[],[],[],[],[],[],[],[]];
-			const sourceBlocks: vscode.Range[] = [];
-			const tags: vscode.Range[] = [];
-			const level = 0;
-			for (let l of this.parser.doc.children) {
-				this.addPrefix(hidestar, prefix, l, 0, sourceBlocks, editor, headings, tags);
-			}
-			for (const [idx, _] of this.starTypes.entries()) {
-				if (idx < prefix.length) {
-					editor.setDecorations(this.starTypes[idx], prefix[idx]);
-				} else {
-					editor.setDecorations(this.starTypes[idx], []);
+			for (const h of found.headings) {
+				if (h.level > 1) {
+					hidestar.push(new vscode.Range(h.line, 0, h.line, h.level - 1));
+				}
+				if (bullets.length) {
+					bullets[(h.level - 1) % bullets.length].push(new vscode.Range(h.line, h.level - 1, h.line, h.level));
+				}
+				if (h.level - 1 < headings.length) {
+					headings[h.level - 1].push(range(h.title));
+				}
+				if (h.tags) {
+					tags.push(range(h.tags));
 				}
 			}
-			editor.setDecorations(this.prefixStarType, hidestar);
-			if (shouldUnderline) {
-				for (let i in headings) {
-					editor.setDecorations(this.headingType[i], headings[i]);
-				}
-			}
-			editor.setDecorations(this.tagType, tags);
 		}
-        Decorator.decorate ( undefined, true );
+		this.starTypes.forEach((t, i) => editor.setDecorations(t, bullets[i]));
+		editor.setDecorations(this.prefixStarType, hidestar);
+		const underline = Sets.underlineTopHeading;
+		this.headingType.forEach((t, i) => editor.setDecorations(t, underline ? headings[i] : []));
+		editor.setDecorations(this.tagType, tags);
+		editor.setDecorations(this.blockType, found.blocks.map(b => new vscode.Range(b.start, 0, b.end, 0)));
+		Decorator.decorate(undefined, true);
 	}
-
 }

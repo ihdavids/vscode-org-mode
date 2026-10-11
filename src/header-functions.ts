@@ -2,9 +2,9 @@ import * as vscode from 'vscode';
 import * as Utils from './utils';
 import * as context from './cursor-context';
 import { Sets } from './sets';
-import { window, Disposable } from 'vscode';
-import {Range, TextDocument, Position, TextEditor, TextEditorEdit, Selection} from "vscode";
-import { Headline, OrgTypes, Node, Parent } from './parser';
+import { window } from 'vscode';
+import { TextEditor, TextEditorEdit } from "vscode";
+import { Headline, OrgTypes, Parent } from './parser';
 import { OrgExtension  } from "./extension";
 
 export function insertHeadingRespectContent(textEditor: vscode.TextEditor, edit: vscode.TextEditorEdit) {
@@ -133,7 +133,7 @@ export async function chooseAndChangeTodo(doc: TextEditor, edit: vscode.TextEdit
        return; 
     }
     let range = ctx.statusRange;
-    let todos = ctx.getAllTodos();
+    const todos = ctx.getAllTodos();
     if (todos.indexOf("") < 0) {
         todos.splice(0,0,"");
     }
@@ -163,7 +163,7 @@ export async function chooseAndChangeTodo(doc: TextEditor, edit: vscode.TextEdit
 function insertTag(node: Headline, doc: TextEditor, name: string) {
     if (node && !node.tags.some( x => x === name)) {
         node.tags.push(name);
-        let headlineText = node.getHeadline();
+        const headlineText = node.getHeadline();
         return doc.edit( (edit) => {
             edit.replace(node.fullLine, headlineText);
             //vscode.workspace.applyEdit(edit);

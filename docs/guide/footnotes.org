@@ -1,0 +1,19 @@
+#+TITLE: Footnotes
+#+DOC_ORDER: 8
+
+
+    #+CAPTION: Hovering a footnote reference shows the note.
+    [[./images/footnote.png]]
+
+    | Key / command                 | Does                                                   |
+    |-------------------------------+--------------------------------------------------------|
+    | Ctrl+Alt+O Ctrl+F             | Insert the next numbered footnote, and go and write it. On a footnote: go between it and its definition |
+    | F12 (=gd=) on =[fn:1]=        | Go to the definition                                   |
+    | Shift+F12 (=gr=)              | Every reference to the footnote                        |
+    | Hover                         | The note's text                                        |
+    | Type =[fn:=                   | The labels in use, with the start of each note         |
+
+    A new footnote's definition goes at the end of the =* Footnotes= heading,
+    which is made at the end of the file when there is none. Inline notes
+    (=[fn:label:the text]=) and anonymous ones (=[fn::the text]=) show on
+    hover too.

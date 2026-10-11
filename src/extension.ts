@@ -16,34 +16,48 @@ import * as dwim from './dwim';
 import * as props from './properties';
 import * as folding from './folding';
 import * as agenda from './agenda';
-import * as gantt from './gantt';
-import * as mindmap from './mindmap';
-import * as web from './web';
-import * as reveal from './revealjs';
-import * as impress from './impressjs';
 import * as daypage from './daypage';
 import * as odb from './db';
-import * as Util from './utils';
-import * as CC from './cursor-context';
 import { Calendar, CalendarMode } from './calendar';
 import { TodoList, chooseTodoView } from './todolist';
-import { CapturePage, refileHeading, archiveHeading, createJira } from './capture';
-import { dynamicEvalText, showFunctionNames, execBlock } from './execb';
-import { execAllTables, execTable, getRandomTableRow } from './exectable';
+import { CapturePage, createJira } from './capture';
+import { dynamicEvalText, showFunctionNames } from './execb';
+import { getRandomTableRow } from './exectable';
 import {ODb} from "./db"
-import { Log } from './log';
 import { Auth } from './auth';
 import { WorgPanel, WORG_VIEWS, worgCommand } from './worg';
 
 
-import { Parser, OrgTypes, Table } from './parser';
+import { Parser } from './parser';
 import { Decoration } from './decorations';
 import { Sets } from './sets';
 import { jumpToMarker, setMarker } from './marker';
-import { activateTableExtension} from "./tables/commands"
+import { activateTableExtension } from "./tables/commands"
+import { activateTableView } from "./tables/view"
+import { activateOutline } from "./outline/commands"
+import { activateLinks } from "./links/providers"
+import { activateCompletion } from "./completion"
+import { activateBlocks } from "./blocks"
+import { activateRefile } from "./refile"
+import { activateTime } from "./time"
+import { activateExport } from "./export"
+import { activateOrgsTools } from "./orgs-tools"
+import { activateAgendaView } from "./agenda-view"
+import { activateMenu } from "./menu"
+import { settled } from "./org-files"
+import { activatePreview } from "./preview"
+import { activateNarrow } from "./narrow"
+import { activateStats } from "./stats"
+import { activateColumns } from "./columns"
+import { activateClockView } from "./clock-view"
+import { activatePomodoro } from "./pomodoro"
+import { activateMediaPanel } from "./media-panel"
+import { activateFootnotes } from "./footnotes"
+import { activateQuickCapture } from "./quick-capture"
+import { activateConnection } from "./connection"
+import { activateWalkthrough } from "./walkthrough"
 import * as tt from "./tables/context"
 import {Decorator} from './decorations/decorator';
-import Changes from './decorations/changes';
 import { convertToLatex } from './export_latex';
 
 export class OrgExtension {
@@ -55,7 +69,7 @@ export class OrgExtension {
     capPage: CapturePage;
     parser: Parser;
     decore: Decoration;
-    private updateTimer: NodeJS.Timer | undefined;
+    private updateTimer: NodeJS.Timeout | undefined;
     tableContext: tt.Context;
 
     constructor()
@@ -77,31 +91,38 @@ export class OrgExtension {
 		this.calendar = new Calendar(context);
         this.todolist = new TodoList<boolean>(context);
         this.parser   = new Parser();
-        this.decore   = new Decoration(this.parser);
+        this.decore   = new Decoration();
 		this.capPage  = new CapturePage(context);
 
-        const statusItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
-        this.tableContext = new tt.Context(tt.ContextType.TableMode, "$(book) Table Mode", statusItem);
-        if (Sets.showTableStatus) {
-            statusItem.show();
-        }
+        // Table mode needs no status item of its own: in a table, the cell's
+        // reference shows (tables/view.ts), and says when table keys are off.
+        this.tableContext = new tt.Context(tt.ContextType.TableMode, "Table Mode");
     }
 
     async timestamp(mode: CalendarMode): Promise<void> {
-        let x = await this.calendar.openCalendarEditor(mode);
+        const x = await this.calendar.openCalendarEditor(mode);
         await x.writeToEditor(this.calendar.hasTimestamp());
         return Promise.resolve();
     }
 
     async capture(): Promise<void> {
-        let x = await this.capPage.openCaptureEditor();
+        const x = await this.capPage.openCaptureEditor();
         //await x.writeToEditor(this.calendar.hasTimestamp());
         return Promise.resolve();
     }
 
+    // The server rewrites the file the way org writes it.
     async reformat(): Promise<void> {
-        const fname = vscode.window.activeTextEditor.document.fileName;
-        odb.ODb.reformat(fname);
+        const editor = vscode.window.activeTextEditor;
+        if (!editor || (editor.document.isDirty && !await editor.document.save())) {
+            return;
+        }
+        const res: any = await odb.ODb.reformat(editor.document.fileName);
+        if (!res || !res.Ok) {
+            vscode.window.showErrorMessage('Could not reformat: ' + (res && res.Msg || 'the orgs server did not answer'));
+            return;
+        }
+        await settled([editor.document.fileName]);
     }
 
 	dispose(): void {
@@ -109,12 +130,19 @@ export class OrgExtension {
 		this.decore.dispose();
 	}
 
-	async update(): Promise<void> {
-        // Run the Decorator system to pretty up the buffer.
-        if (this.parser && this.decore) {
-		    await this.parser.parse();
-		    this.decore.updateDecorations();
-        }
+	// Pretty-print the active file. Typing sends a burst of these; only the
+	// last, a moment after the burst, does the work.
+	private decorateTimer: NodeJS.Timeout | undefined;
+	async update(delay: number = 40): Promise<void> {
+		if (this.decorateTimer) {
+			clearTimeout(this.decorateTimer);
+		}
+		this.decorateTimer = setTimeout(() => {
+			this.decorateTimer = undefined;
+			if (this.decore) {
+				this.decore.updateDecorations();
+			}
+		}, delay);
 	}
 
     public async showTodoList(name: string) {
@@ -131,7 +159,7 @@ export class OrgExtension {
 			clearTimeout(this.updateTimer);
 			this.updateTimer = undefined;
 		}
-		this.updateTimer = setTimeout(this.update, delay, this);
+		this.updateTimer = setTimeout(() => this.update(), delay);
 	}
 
 	stopUpdate(): void {
@@ -141,40 +169,6 @@ export class OrgExtension {
 		}
 	}
 } 
-function setTableTargetBoxes(lineNum: number, col: number, formulaDetails : any, event: any) {
-    let included = []
-    formulaDetails.Details.Targets.forEach((formula, formulaIdx) => {
-        formula.forEach((c) => {
-            if ((lineNum >= c.Start.Row && lineNum <= c.End.Row) &&
-            (col >= c.Start.Col && col <= c.End.Col)) {
-                included.push(formulaIdx)
-            }
-        });
-    });
-    formulaDetails.Details.Formulas.forEach((formula, formulaIdx) => {
-        if ((lineNum >= formula.Start.Row && lineNum <= formula.End.Row) &&
-            (col >= formula.Start.Col && col <= formula.End.Col)) {
-                included.push(formulaIdx)
-        }
-    });
-    let targetBoxRanges: vscode.Range[] = [];
-    let activeFormulaRanges: vscode.Range[] = [];
-    //Log.get().log(JSON.stringify(formulaDetails));
-    formulaDetails.Details.Targets.forEach((formula, formulaIdx) => {
-        if (included.includes(formulaIdx)) {
-            const fml = formulaDetails.Details.Formulas[formulaIdx]
-            const rngf = new vscode.Range(new vscode.Position(fml.Start.Row,fml.Start.Col), new vscode.Position(fml.End.Row, fml.End.Col));
-            activeFormulaRanges.push(rngf);
-            formula.forEach((c) => {
-                const rng = new vscode.Range(new vscode.Position(c.Start.Row,c.Start.Col), new vscode.Position(c.End.Row, c.End.Col));
-                targetBoxRanges.push(rng);
-            });
-        }
-    });
-    event.textEditor.setDecorations(Decoration.targetCellType, targetBoxRanges);
-    event.textEditor.setDecorations(Decoration.activeFormulaType, activeFormulaRanges);
-}
-
 export function activate(context: vscode.ExtensionContext) {
     Auth.get().init(context);
     OrgExtension.get().activate(context);
@@ -194,8 +188,8 @@ export function activate(context: vscode.ExtensionContext) {
     const selectNodeCmd = vscode.commands.registerTextEditorCommand('org.selectNode', SubtreeFunctions.selectNode);
 
     const insertTimestampCmd = vscode.commands.registerTextEditorCommand('org.timestamp', TimestampFunctions.insertTimestamp);
-    const clockInCmd = vscode.commands.registerTextEditorCommand('org.clockin', TimestampFunctions.clockIn);
-    const clockOutCmd = vscode.commands.registerTextEditorCommand('org.clockout', TimestampFunctions.clockOut);
+    const clockInCmd = vscode.commands.registerCommand('org.clockin', () => vscode.window.activeTextEditor && TimestampFunctions.clockIn(vscode.window.activeTextEditor, undefined));
+    const clockOutCmd = vscode.commands.registerCommand('org.clockout', () => TimestampFunctions.clockOut(vscode.window.activeTextEditor, undefined));
     const clockActiveCmd = vscode.commands.registerTextEditorCommand('org.clockactive', TimestampFunctions.clockActive);
     const updateClockCmd = vscode.commands.registerTextEditorCommand('org.updateclock', TimestampFunctions.updateClock);
 
@@ -239,11 +233,6 @@ export function activate(context: vscode.ExtensionContext) {
     for (const v of WORG_VIEWS.filter(v => v.app !== 'Agenda')) {
         context.subscriptions.push(vscode.commands.registerCommand(worgCommand(v.app), async () => WorgPanel.show(v.app)));
     }
-    const showGanttCmd = vscode.commands.registerTextEditorCommand('org.showGantt', gantt.showGantt);
-    const showGanttWeb = vscode.commands.registerTextEditorCommand('org.showWeb', web.showWeb);
-    const showReveal = vscode.commands.registerTextEditorCommand('org.showReveal', reveal.showReveal);
-    const showImpress = vscode.commands.registerTextEditorCommand('org.showImpress', impress.showImpress);
-    const showMindMapCmd = vscode.commands.registerTextEditorCommand('org.showMindMap', mindmap.showMindMap);
     const connectToOrgsCmd = vscode.commands.registerTextEditorCommand('org.connectToOrgs', odb.connectToOrgs);
     context.subscriptions.push(vscode.commands.registerCommand('org.login', async () => await Auth.get().ensureLoggedIn()));
     context.subscriptions.push(vscode.commands.registerCommand('org.logout', async () => { await Auth.get().logout(); vscode.window.showInformationMessage('Logged out of Orgs server.'); }));
@@ -258,24 +247,17 @@ export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(vscode.commands.registerCommand('org.chooseTodoView', chooseTodoView));
 	context.subscriptions.push(vscode.commands.registerCommand('org.capture', async () => OrgExtension.get().capture()));
 	context.subscriptions.push(vscode.commands.registerCommand('org.reformat', async () => OrgExtension.get().reformat()));
-	context.subscriptions.push(vscode.commands.registerCommand('org.refile', async () => await refileHeading()));
-	context.subscriptions.push(vscode.commands.registerCommand('org.archive', async () => await archiveHeading()));
 	context.subscriptions.push(vscode.commands.registerCommand('org.setMarker', async () => await setMarker()));
 	context.subscriptions.push(vscode.commands.registerCommand('org.jumpToMarker', async () => await jumpToMarker()));
 	context.subscriptions.push(vscode.commands.registerCommand('org.createJira', async () => await createJira()));
 	context.subscriptions.push(vscode.commands.registerCommand('org.dynamicEval', async () => await dynamicEvalText()));
 	context.subscriptions.push(vscode.commands.registerCommand('org.showFunctionNames', async () => await showFunctionNames()));
-	context.subscriptions.push(vscode.commands.registerCommand('org.execTable', async () => await execTable()));
-	context.subscriptions.push(vscode.commands.registerCommand('org.execAllTables', async () => await execAllTables()));
     context.subscriptions.push(vscode.commands.registerCommand('org.randomTableRow', async () => await getRandomTableRow()))
 	context.subscriptions.push(vscode.commands.registerTextEditorCommand('org.latexExport', convertToLatex));
     context.subscriptions.push(nextDayPageCmd);
     context.subscriptions.push(prevDayPageCmd);
     context.subscriptions.push(showDayPageCmd);
     context.subscriptions.push(showAgendaCmd);
-    context.subscriptions.push(showGanttCmd);
-    context.subscriptions.push(showMindMapCmd);
-    context.subscriptions.push(showGanttWeb);
     context.subscriptions.push(connectToOrgsCmd);
     context.subscriptions.push(tablHandlerCmd);
     context.subscriptions.push(insertPropertyDrawerCmd);
@@ -324,6 +306,28 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(updateClockCmd);
 
     activateTableExtension(context);
+    activateTableView(context, OrgExtension.get().tableContext);
+    activateOutline(context);
+    activateLinks(context);
+    activateCompletion(context);
+    activateBlocks(context);
+    activateRefile(context);
+    activateTime(context);
+    activateExport(context);
+    activateOrgsTools(context);
+    activateAgendaView(context);
+    activateMenu(context);
+    activatePreview(context);
+    activateNarrow(context);
+    activateStats(context);
+    activateColumns(context);
+    activateClockView(context);
+    activatePomodoro(context);
+    activateMediaPanel(context);
+    activateFootnotes(context);
+    activateQuickCapture(context);
+    activateConnection(context);
+    activateWalkthrough(context);
 
     const provider = new OrgFoldingAndOutlineProvider();
     vscode.languages.registerFoldingRangeProvider('org', provider);
@@ -333,54 +337,13 @@ export function activate(context: vscode.ExtensionContext) {
 
     		// open new document
 		vscode.window.onDidChangeActiveTextEditor(editor => {
-            OrgExtension.get().tableContext.setState(false);
 			if (editor && editor.document.languageId === 'org') {
-				OrgExtension.get().update();
+				OrgExtension.get().update(0);
 			}
 		}, null, context.subscriptions);
 
-        let formulaDetails = undefined;
-        vscode.window.onDidChangeTextEditorSelection(event =>{
-            if (OrgExtension.get().parser) {
-                if (event.selections.length > 0 && event.textEditor.document.languageId == 'org') {
-                    const lineNum = event.selections[0].start.line;
-                    const col = event.selections[0].start.character;
-                    const litem = OrgExtension.get().parser.doc.lineMap[lineNum];
-                    if (litem && litem.isType(OrgTypes.Table)) {
-                        OrgExtension.get().tableContext.setState(true);
-                        const tbl: Table = litem as Table;
-                        const range = tbl.rowColCellFromPosition(event.selections[0].start);
-                        if (range && range.rng) {
-			                event.textEditor.setDecorations(Decoration.selectedCellType, [range.rng]);             
-                        }
-                        if (!formulaDetails || !formulaDetails.Ok) {
-                            let temp = async () => {
-                                const src = await ODb.getHashTarget();
-                                const row = vscode.window.activeTextEditor.selection.active.line;
-                                formulaDetails = await ODb.formulaDetails(src, row);
-                                if (formulaDetails && formulaDetails.Ok) {
-                                    setTableTargetBoxes(lineNum, col, formulaDetails, event);
-                                }
-                                //Log.get().log(formulaDetails)
-                            };
-                            temp();
-                        } else {
-                            setTableTargetBoxes(lineNum, col, formulaDetails, event);
-                        }
-                        return;
-                    } else if(OrgExtension.get().tableContext.setState(false)) {
-                        formulaDetails = undefined;
-			            event.textEditor.setDecorations(Decoration.selectedCellType, []);
-                        event.textEditor.setDecorations(Decoration.targetCellType, []);
-                        event.textEditor.setDecorations(Decoration.activeFormulaType, []);
-                    }
-                } 
-            }
-        }, null, context.subscriptions);
-
 		// modify current document
 		vscode.workspace.onDidChangeTextDocument(event => {
-            OrgExtension.get().tableContext.setState(false);
 			const editor = vscode.window.activeTextEditor;
 			if (editor && event.document === editor.document &&
 				editor.document.languageId === 'org') {

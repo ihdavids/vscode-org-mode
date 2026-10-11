@@ -1,6 +1,5 @@
 
 import * as vscode from 'vscode';
-import * as assert from 'assert';
 
 interface TestEditorOptions {
     language?: string;
@@ -12,7 +11,7 @@ type ReadonlyPath = { [path: string]: boolean | null | 'toggle' } | undefined;
 const key = 'files.readonlyPath';
 
 function setReadOnly(doc: vscode.TextDocument, value: boolean | null | 'toggle' = 'toggle') {
-    // eslint-disable-next-line @typescript-eslint/naming-convention
+     
     const noGlobs = { '/settings/folder': true, '**/settings.json': true };
     if (anyGlobMatches(noGlobs, doc)) { return; } // IGNORE WHEN EDITING settings.json
     const path = doc.fileName;
@@ -70,7 +69,7 @@ export class Page {
 
     async insert(text: string) {
         await this.editor.edit(async (edit) => {
-            let pos = this.editor.selection.active;
+            const pos = this.editor.selection.active;
             await edit.insert(pos, text);
         });
     }

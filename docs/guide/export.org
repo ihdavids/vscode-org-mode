@@ -1,0 +1,32 @@
+#+TITLE: Exporting
+#+DOC_ORDER: 16
+
+    | Key                | Does                                               |
+    |--------------------+----------------------------------------------------|
+    | Ctrl+Alt+O E       | Export the file                                    |
+    | Ctrl+Alt+O Shift+E | Export just the subtree the cursor is in           |
+
+    Pick a format - only those the orgs server has exporters for are offered -
+    and the result is written next to the org file, with buttons to open it
+    or show it in Finder:
+
+    | Format             | Writes                     |
+    |--------------------+----------------------------|
+    | HTML               | =notes.html=               |
+    | PDF                | =notes.pdf= (through LaTeX: the server needs pdflatex) |
+    | LaTeX              | =notes.tex=                |
+    | Reveal.js slides   | =notes-slides.html=        |
+    | Impress.js slides  | =notes-impress.html=       |
+    | Markdown           | =notes.md=                 |
+
+    A subtree's file is named after its heading - =notes-plans-for-2027.html=
+    - and titled by it, as org's subtree export is; the file's =#+OPTIONS:=,
+    =#+HTML_HEAD:= and other settings come along.
+
+    The exporters are set in the server's yaml (=server.exporters=). The
+    exported text comes back to VS Code and is written here, so it works with
+    a server on another machine - except a subtree's PDF, which the server
+    writes itself and so needs the server on this machine.
+
+    To preview rather than export, see *Show Web*, *Show Reveal JS* and the
+    worg *Presentation* view.

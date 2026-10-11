@@ -4,6 +4,8 @@ import * as Utils from './utils';
 import { Sets } from './sets';
 import {ODb} from "./db"
 import { Log } from './log';
+import { refreshClock } from './time';
+import { settled } from './org-files';
 
 export function insertTimestamp(textEditor: vscode.TextEditor, edit: vscode.TextEditorEdit) {
     const document = Utils.getActiveTextEditorEdit();
@@ -15,97 +17,51 @@ export function insertTimestamp(textEditor: vscode.TextEditor, edit: vscode.Text
     edit.insert(cursorPos, dateString);
 }
 
-class TimerIcon {
-    // https://code.visualstudio.com/api/references/icons-in-labels
-    public colors: string[];
-    private statusVar: vscode.StatusBarItem;
-    private nextColor: number;
-    private timer: NodeJS.Timer;
-
-    constructor() {
-        this.colors = ["red","black"];
-    }
-
-    public start() {
-        this.statusVar = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right,100);
-        this.statusVar.color = this.colors[0];
-        this.nextColor = 0;
-        this.statusVar.text = "$(clock~spin)";
-        this.statusVar.tooltip = "Org Mode Clock Running...";
-        let colorChange = () => {
-            this.nextColor = 1 - this.nextColor; 
-            this.statusVar.color=this.colors[this.nextColor];
-        }
-        this.timer = setInterval(colorChange, 1000);
-        this.statusVar.show();
-    }
-
-    public stop() {
-        if (this.statusVar) {
-            clearInterval(this.timer);
-            this.statusVar.hide();
-        }
-    }
-}
-let clockIcon: TimerIcon = new TimerIcon();
-
+// The server writes the LOGBOOK, so the file is saved first; the status bar
+// clock (time.ts) shows what is running.
 export async function clockIn(textEditor: vscode.TextEditor, edit: vscode.TextEditorEdit) {
+    const doc = textEditor.document;
+    if (doc.isDirty && !await doc.save()) {
+        return;
+    }
     const src = await ODb.getHashTarget();
     const res = await ODb.clockIn(src);
-    if (!res.Ok) {
+    if (!res || !res.Ok) {
         Log.get().error("CLOCK IN: ", src);
-        Log.get().error("  > CLOCK IN ERROR: ", JSON.stringify(res))
-    } else {
-        Log.get().log("CLOCK IN RESULT: ", res, src);
-        clockIcon.start();
+        Log.get().error("  > CLOCK IN ERROR: ", JSON.stringify(res));
+        vscode.window.showErrorMessage('Clock in failed: ' + (res && res.Msg || 'the orgs server did not answer'));
     }
-    /*
-    const document = Utils.getActiveTextEditorEdit();
-    const cursorPos = Utils.getCursorPosition();
-    const line = Utils.getLine(document, cursorPos);
-
-    if (line.indexOf('CLOCK:') === -1) {
-        edit.insert(cursorPos, 'CLOCK: ');
-    }
-    
-    insertDateTime(edit, cursorPos);
-    */
+    await settled([doc.fileName]);
+    await refreshClock();
 }
 
 export async function clockOut(textEditor: vscode.TextEditor, edit: vscode.TextEditorEdit) {
+    const doc = textEditor && textEditor.document;
+    if (doc && doc.isDirty && !await doc.save()) {
+        return;
+    }
     const res = await ODb.clockOut();
-    if (!res.Ok) {
+    if (!res || !res.Ok) {
         Log.get().error("CLOCK OUT: ");
-        Log.get().error("  > CLOCK OUT ERROR: ", JSON.stringify(res))
-    } else {
-        Log.get().log("CLOCK OUT RESULT: ", res);
-        clockIcon.stop();
+        Log.get().error("  > CLOCK OUT ERROR: ", JSON.stringify(res));
+        vscode.window.showErrorMessage('Clock out failed: ' + (res && res.Msg || 'the orgs server did not answer'));
     }
-    /*
-    const document = Utils.getActiveTextEditorEdit();
-    const cursorPos = Utils.getCursorPosition();
-    const line = Utils.getLine(document, cursorPos);
-
-    const separator = Sets.clockInOutSeparator;
-    const separatorIndex = line.indexOf(separator);
-    if (separatorIndex !== -1) {
-        const initPos = new vscode.Position(cursorPos.line, separatorIndex);
-        const endPos = new vscode.Position(cursorPos.line, line.length);
-        const range = new vscode.Range(initPos, endPos);
-        edit.replace(range, '');
-    }
-    edit.insert(cursorPos, separator)
-    insertDateTime(edit, cursorPos);
-    */
+    await settled(vscode.workspace.textDocuments.filter(d => d.languageId === 'org').map(d => d.uri.fsPath));
+    await refreshClock();
 }
 
+// Whether the clock is running, and since when.
 export async function clockActive(textEditor: vscode.TextEditor, edit: vscode.TextEditorEdit) {
-    const res = await ODb.clockActive();
-    if (!res.Ok) {
-        Log.get().error("CLOCK ACTIVE: ");
-        Log.get().error("  > CLOCK ACTIVE ERROR: ", JSON.stringify(res))
+    const res: any = await ODb.clockActive();
+    if (!res) {
+        return;
+    }
+    if (res.Active) {
+        const since = new Date(res.Time.Start);
+        vscode.window.showInformationMessage(`The clock is running on "${String(res.Target.Id).split('::').pop()}" since ${since.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}.`, 'Go there')
+            .then(go => go && vscode.commands.executeCommand('org.jumpToClock'));
     } else {
-        Log.get().log("CLOCK ACTIVE RESULT: ", res);
+        vscode.window.showInformationMessage('The clock is not running.');
     }
 }
 

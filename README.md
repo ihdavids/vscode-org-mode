@@ -105,6 +105,27 @@ The extension can be activated in two ways:
 
 Detailed documentation is kept in the [GitHub Wiki](https://github.com/vscode-org-mode/vscode-org-mode/wiki).
 
+The manual is in [docs/manual](docs/manual/basic-editing.org). Start with [the keys](docs/manual/keys.org) - or press <kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>O</kbd> <kbd>M</kbd> in an org file for a menu of everything.
+
+| Page | Covers |
+|------|--------|
+| [Keys](docs/manual/keys.org) | Every key, with the VSCodeVim ones |
+| [The outline](docs/manual/outline.org) | Tab cycling, moving, sorting, narrowing, statistics cookies |
+| [Links](docs/manual/links.org) | Following (F12), backlinks (Shift+F12), inserting, image previews |
+| [Completion](docs/manual/completion.org) | Tags, keywords, properties, blocks and link targets |
+| [Tables](docs/manual/tables.org) | Aligning, formulas, sorting, plotting |
+| [Dates and properties](docs/manual/dates.org) | Timestamps, CREATED, CUSTOM_ID, ID |
+| [Footnotes](docs/manual/footnotes.org) | Following, inserting, hover |
+| [Column view](docs/manual/column-view.org) | Headings and properties as an editable table, with totals |
+| [Previews and panels](docs/manual/previews.org) | Web and slide previews, Gantt, mind map, pictures and maths |
+| [Connecting](docs/manual/connecting.org) | The server address, logging in, the status bar |
+| [The agenda](docs/manual/agenda.org) | Today and the week in the side bar, with actions |
+| [Running code](docs/manual/running-code.org) | Source blocks, calls, dynamic blocks, tangling |
+| [Refiling and archiving](docs/manual/refile-archive.org) | Moving subtrees between files |
+| [Clocking](docs/manual/clocking.org) | The clock, the Clock view, the focus timer |
+| [Exporting](docs/manual/export.org) | HTML, PDF, LaTeX and slides, of a file or a subtree |
+| [The server's tools](docs/manual/orgs-tools.org) | Habits, encryption, attachments, history, new files, search |
+
 ## Contributing
 
 We welcome contributions to the GitHub repo. Here are basic guidelines for conventions.

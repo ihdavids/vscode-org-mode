@@ -3,11 +3,10 @@ import * as utils from "./utils";
 import * as checkbox from "./checkbox";
 import * as list from "./lists";
 import * as vscode from "vscode";
-import { Sets } from './sets';
 //import { Uri, window, Disposable } from 'vscode';
 //import { QuickPickItem } from 'vscode';
 //import { workspace } from 'vscode';
-import {Range, TextDocument, Position, TextEditor, TextEditorEdit, Selection} from "vscode";
+import { TextEditor } from "vscode";
 //import getCursorContext, { DATE, TODO, LIST, CHECK, NODE, IContextData, INodeData } from './cursor-context';
 import * as header from './header-functions'
 import { OrgExtension  } from "./extension";
@@ -24,9 +23,9 @@ export function addDoWhatIMean(doc: TextEditor, edit: vscode.TextEditorEdit)
             case OrgTypes.NumList:   list.appendNumberedListCommand(doc);        break;
             case OrgTypes.Link:      links.jumpToLink(<Link>node,doc, edit);     break;
             case OrgTypes.Roll:      {
-                var roll = <Roll>node;
+                const roll = <Roll>node;
                 //edit.insert(doc.selection[0],roll.numDice)
-                let expr = roll.getExpr();
+                const expr = roll.getExpr();
                 edit.replace(roll.range, expr);
                 let res = roll.getFormattedResults();
                 if (res.length > 0) {
@@ -41,12 +40,12 @@ export function addDoWhatIMean(doc: TextEditor, edit: vscode.TextEditorEdit)
 
 function insertNewNode(n: Headline, doc: TextEditor, edit: vscode.TextEditorEdit)
 {
-    let stars: string = "*".repeat(n.level);
+    const stars: string = "*".repeat(n.level);
 
     let endPos: vscode.Position =  new vscode.Position(n.range.end.line-1, 0);
 
     endPos = utils.eatEmptyLines(doc, endPos, n.range.start);
-    let lineCtx: string = utils.getLine(utils.getActiveTextEditorEdit(), endPos);
+    const lineCtx: string = utils.getLine(utils.getActiveTextEditorEdit(), endPos);
     endPos = new vscode.Position(endPos.line, lineCtx.length);
     if (lineCtx.length > 0) {
         edit.insert(endPos,"\n" + stars + " ");

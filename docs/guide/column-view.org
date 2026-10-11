@@ -1,0 +1,27 @@
+#+TITLE: Column view
+#+DOC_ORDER: 9
+
+    *Column View* (Ctrl+Alt+O Shift+C) shows the file's headings as rows and
+    their keyword, priority, properties and tags as columns, beside the
+    editor - and you can edit any cell.
+
+    #+CAPTION: The column view beside the file: keyword, priority, effort, owner and tags, with each heading's effort totalled from what is under it.
+    [[./images/columns.png]]
+
+
+    - The columns are the file's =#+COLUMNS:= line's:
+      #+BEGIN_SRC org
+      #+COLUMNS: %40ITEM %TODO %PRIORITY %EFFORT(Estimate){:} %OWNER %TAGS
+      #+END_SRC
+      Without one: heading, state, priority, effort, the properties the file
+      uses most, and tags.
+    - A column summed with ={:}= (times like =1:30=) or ={+}= (numbers) shows
+      each heading the total of the headings under it, in grey where the
+      heading has no value of its own. Effort is summed by default.
+    - Tab moves between cells; Enter (or leaving the cell) keeps a change,
+      Escape puts it back. State and priority are lists to pick from.
+      Emptying a property cell takes the property out.
+    - The › beside a heading goes to it.
+
+    Edits go straight into the document - one undo each, no server needed -
+    and the view follows the org file you are in.

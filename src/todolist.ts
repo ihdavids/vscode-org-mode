@@ -5,16 +5,10 @@ import { parse } from 'path';
 import * as vscode from 'vscode';
 import { Page } from "./page";
 import { Signal } from "./signal";
-import * as Util from './utils';
-import * as CC from './cursor-context';
-import { OrgDuration } from './duration';
 import './duration';
-import * as Datetime from './simple-datetime';
 import { Sets } from './sets';
 import { ODb } from './db';
 import { OrgExtension  } from "./extension";
-import { format } from 'date-fns';
-import { mainModule } from 'process';
 
 export function limitLen(name, len) {
     if (name.length > len) { 
@@ -204,10 +198,10 @@ export class TodoList<RETURNTYPE> implements vscode.TextDocumentContentProvider 
         r += `${limitLenRight("Date",this.showDate)}`;
         let lns = "";
         if (dsp) {
-            let prop = dsp['properties']
+            const prop = dsp['properties']
             if (prop) {
                 for (const k in prop) {
-                    let v = prop[k];
+                    const v = prop[k];
                     if (v) {
                         r += `${limitLen(k,v)}`;
                         lns += `${limitLen('-'.repeat(v),v)}`;
@@ -231,10 +225,10 @@ export class TodoList<RETURNTYPE> implements vscode.TextDocumentContentProvider 
         }
         r += `${limitLenRight(d,this.showDate)}`;
         if (dsp) {
-            let prop = dsp['properties']
+            const prop = dsp['properties']
             if (prop) {
                 for (const k in prop) {
-                    let v = prop[k];
+                    const v = prop[k];
                     if (v) {
                         r += `${this.formatProperty(k,v,evt)}`;
                     }
@@ -246,7 +240,7 @@ export class TodoList<RETURNTYPE> implements vscode.TextDocumentContentProvider 
     }
 
     findSelection(line: number) {
-        for (var evt of this.latestData) {
+        for (const evt of this.latestData) {
             if (evt && evt.Headline) {
                 if (evt.todoLine === line) {
                     return evt;
@@ -266,8 +260,8 @@ export class TodoList<RETURNTYPE> implements vscode.TextDocumentContentProvider 
 	async regenContent() {
         try {
         if (this.page) {
-            let query = this.cfg['query'];
-            let data = await ODb.query(query);
+            const query = this.cfg['query'];
+            const data = await ODb.query(query);
             if (data !== null && this.isIterable(data)) {
                 this.latestData = data;
                 this.text = `QUERY:  ${query}\n\n`;
@@ -277,7 +271,7 @@ export class TodoList<RETURNTYPE> implements vscode.TextDocumentContentProvider 
                 if (this.filter && this.filter.trim() !== "") {
                     re = new RegExp(this.filter);
                 }
-                for (var evt of data) {
+                for (const evt of data) {
                     if (evt && evt.Headline && (!re || re.exec(evt.Headline))) {
                         line += 1;
                         this.text += this.formatContent(evt)
@@ -296,7 +290,7 @@ export class TodoList<RETURNTYPE> implements vscode.TextDocumentContentProvider 
 	}
 
     async open(name: string): Promise<boolean> {
-        let configs = Sets.todoConfigs;
+        const configs = Sets.todoConfigs;
         this.cfg = null;
         if (name in configs) {
             this.cfg = configs[name];
@@ -310,10 +304,10 @@ export class TodoList<RETURNTYPE> implements vscode.TextDocumentContentProvider 
         await this.page.show();
 		await this.redraw();
 
-		let clearSelection = setTimeout(function (self) {
+		const clearSelection = setTimeout(function (self) {
             // Change the selection: start and end position of the new
             // selection is same, so it is not to select replaced text;
-            var postion = self.page.editor.selection.end; 
+            const postion = self.page.editor.selection.end; 
             self.page.editor.selection = new vscode.Selection(postion, postion);
             //self.page.editor.selection.active = self.editor.selection.anchor;
         }, 100, this);
@@ -335,15 +329,14 @@ export class TodoList<RETURNTYPE> implements vscode.TextDocumentContentProvider 
 
 
 async function selectTodoView(): Promise<string | undefined> {
-    let configs = Sets.todoConfigs;
-    let names = [];
+    const configs = Sets.todoConfigs;
+    const names = [];
     Object.entries(configs).forEach( ([key,value]) => names.push(key));
     return vscode.window.showQuickPick(names);
 }
 
 export async function chooseTodoView(doc: vscode.TextEditor, edit: vscode.TextEditorEdit) {
-    await ODb.get();
-    let todoName = await selectTodoView();
+    const todoName = await selectTodoView();
     if (todoName !== undefined) {
         await OrgExtension.get().showTodoList(todoName);
     }
@@ -351,8 +344,8 @@ export async function chooseTodoView(doc: vscode.TextEditor, edit: vscode.TextEd
 
 export async function setEffortInView(doc: vscode.TextEditor, edit: vscode.TextEditorEdit) {
     if (doc && doc.selection) {
-        let sline = doc.selection.active.line;
-        let evt = OrgExtension.get().getTodoList().findSelection(sline);
+        const sline = doc.selection.active.line;
+        const evt = OrgExtension.get().getTodoList().findSelection(sline);
         let effort = "";
         if (evt) {
             effort = await vscode.window.showInputBox({
@@ -360,9 +353,9 @@ export async function setEffortInView(doc: vscode.TextEditor, edit: vscode.TextE
                 placeHolder: '1d',
             });
             if (effort) {
-                let res: any = await ODb.setProperty(evt.Hash, "EFFORT", effort);
+                const res: any = await ODb.setProperty(evt.Hash, "EFFORT", effort);
                 if (!res || !res.Ok) {
-                    vscode.window.showErrorMessage("EFFORT UPDATE FAILED: ", res)
+                    vscode.window.showErrorMessage('Could not set the effort: ' + (res && res.Msg || 'the orgs server did not answer'));
                 } else {
                     // Redraw the window
                     await (OrgExtension.get().getTodoList()).regenContent();
@@ -374,7 +367,7 @@ export async function setEffortInView(doc: vscode.TextEditor, edit: vscode.TextE
 }
 
 export async function searchTodosInView(doc: vscode.TextEditor, edit: vscode.TextEditorEdit) {
-    let box = vscode.window.createInputBox();
+    const box = vscode.window.createInputBox();
     box.value = "";
     box.onDidChangeValue(async (strLine: string) => {
             console.log(strLine);
@@ -404,14 +397,14 @@ export async function searchTodosInView(doc: vscode.TextEditor, edit: vscode.Tex
 
 export async function gotoTodoInView(doc: vscode.TextEditor, edit: vscode.TextEditorEdit) {
     if (doc && doc.selection) {
-        let sline = doc.selection.active.line;
-        let evt = OrgExtension.get().getTodoList().findSelection(sline);
+        const sline = doc.selection.active.line;
+        const evt = OrgExtension.get().getTodoList().findSelection(sline);
         //console.log(evt);
-        let openPath = evt.Filename;
+        const openPath = evt.Filename;
         await vscode.workspace.openTextDocument(openPath).then(textDoc => {
                 vscode.window.showTextDocument(textDoc).then( nDoc => {
-                  let line = evt.LineNum;
-                  let pos = new vscode.Position(line,0);
+                  const line = evt.LineNum;
+                  const pos = new vscode.Position(line,0);
                   nDoc.selection = new vscode.Selection(pos, pos);
                   nDoc.revealRange(new vscode.Range(pos, pos),vscode.TextEditorRevealType.InCenter);
                 });

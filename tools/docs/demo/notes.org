@@ -1,0 +1,20 @@
+#+TITLE: Notes
+
+* Design notes
+  The sitemap is in [[file:plan.org::*Agree the sitemap][the plan]], and this is the logo:
+
+  [[./images/logo.png]]
+
+  Pages should load in $t < 2\,\mathrm{s}$ for most visits[fn:1]; the
+  average over $n$ visits is
+
+  \[ \bar{t} = \frac{1}{n}\sum_{i=1}^{n} t_i \]
+
+* Checking the numbers
+#+BEGIN_SRC python
+visits = [1.2, 0.8, 1.9, 1.1]
+print(round(sum(visits) / len(visits), 2))
+#+END_SRC
+
+* Footnotes
+[fn:1] Measured from the CDN logs, last month.

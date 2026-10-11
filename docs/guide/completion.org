@@ -1,0 +1,22 @@
+#+TITLE: Completion
+#+DOC_ORDER: 6
+
+    Suggestions come up as you type, from this file first, then the
+    workspace, then the orgs server (every tag and property it knows) when you
+    are logged in.
+
+    #+CAPTION: Typing a colon at the end of a heading offers the tags the file uses most, then the ones the orgs server knows.
+    [[./images/completion.png]]
+
+
+    | Where you type                          | You are offered                               |
+    |-----------------------------------------+-----------------------------------------------|
+    | after the stars of a heading            | TODO keywords - yours, and the file's =#+TODO:= |
+    | after a =:= at the end of a heading     | Tags, the ones used most first; pick one and the next is offered |
+    | =#+= at the start of a line             | Keywords; =BEGIN_SRC=, =BEGIN_QUOTE=... come with their =#+END= |
+    | after =#+BEGIN_SRC=                     | Languages, the ones this file uses first      |
+    | =:= in a =:PROPERTIES:= drawer          | Property names                                |
+    | after =:NAME:= in a drawer              | That property's values, from everywhere       |
+    | after =[[=                              | Headings, custom ids and targets, and other org files |
+
+    Lower case =#+begin_src= gives lower case keywords.

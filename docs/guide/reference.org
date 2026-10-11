@@ -1,0 +1,6 @@
+#+TITLE: Reference
+#+DOC_ORDER: 90
+
+Everything the plugin has, listed: every command with what it does and its
+keys, and every setting. These are written from the plugin's own
+=package.json= when the manual is built, so they are always complete.

@@ -22,8 +22,8 @@ class hnode {
     if (this.attribs.id === id) {
       return this;
     }
-    for (var n of this.children) {
-      var x = n.findById(id);
+    for (const n of this.children) {
+      const x = n.findById(id);
       if (x) {
         return x;
       }
@@ -47,7 +47,7 @@ class hnode {
   getChildren(): string {
     let rv = "";
     if (this.children.length > 0) {
-      for(var node of this.children) {
+      for(const node of this.children) {
         rv += node.render();
       }
       return rv;
@@ -94,7 +94,7 @@ class hnode {
 }
 
 function toTimeStr(hrs: number): string {
-  let lmins = (hrs % 1 * 60)
+  const lmins = (hrs % 1 * 60)
   let rstr = `${Math.floor(hrs)}`
   if (lmins > 0) {
     rstr = `${rstr}:${String(lmins).padStart(2,'0')}`
@@ -103,22 +103,22 @@ function toTimeStr(hrs: number): string {
 }
 
 function createEvent(evt, height, top, left, units): hnode {
-  let node: hnode = new hnode('div');
-  let timeStart = getInMinutes(evt.Date.Start)/60 + startHour;
+  const node: hnode = new hnode('div');
+  const timeStart = getInMinutes(evt.Date.Start)/60 + startHour;
   let timeEnd   = getInMinutes(evt.Date.End)/60 + startHour;
   if (timeEnd <= timeStart) {
     timeEnd = timeStart + .5;
   }
 
-  let timeStr = `${toTimeStr(timeStart)} - ${toTimeStr(timeEnd)}`
-  let filename = evt.Filename.replaceAll("\\","/");
+  const timeStr = `${toTimeStr(timeStart)} - ${toTimeStr(timeEnd)}`
+  const filename = evt.Filename.replaceAll("\\","/");
   console.log(filename);
-  let linenum  = evt.LineNum;
+  const linenum  = evt.LineNum;
   node.className = "agd-event";
   let num = 0;
   if (evt.Tags !== null && evt.Tags !== undefined) {
     evt.Tags.forEach(element => {
-      let x = Number(element)
+      const x = Number(element)
       if (x !== Number.NaN) {
         num = x
       }
@@ -145,15 +145,15 @@ function createEvent(evt, height, top, left, units): hnode {
   return node;
 }
 
-let containerHeight = 720;
-let containerWidth = 600;
+const containerHeight = 720;
+const containerWidth = 600;
 let collisions = [];
 let width = [];
 let leftOffSet = [];
-let startHour = 9
-let endHour   = 21
-let minutesinDay = 60* (endHour - startHour)
-let timeFormat = 12
+const startHour = 9
+const endHour   = 21
+const minutesinDay = 60* (endHour - startHour)
+const timeFormat = 12
 
 function clamp(x) {
   if (x < 0) {
@@ -162,11 +162,11 @@ function clamp(x) {
   return x
 }
 
-var currentDay = new Date();
+const currentDay = new Date();
 
 
 function getInMinutes(d) {
-  let startMinutes = startHour * 60;
+  const startMinutes = startHour * 60;
   if (d) {
     if (typeof d === 'string') {
       if (d === "0001-01-01T00:00:00Z") {
@@ -174,7 +174,7 @@ function getInMinutes(d) {
       }
       d = new Date(d);
     }
-    let stime = (d.getHours() * 60 + d.getMinutes()) - startMinutes;
+    const stime = (d.getHours() * 60 + d.getMinutes()) - startMinutes;
     return stime;
   } else {
     return 0;
@@ -189,15 +189,15 @@ function getCollisions (events) {
     return;
   }
   // 26 because end + 60 + extra hour to be safe
-  for (var i = 0; i <= 26; i ++) {
-    var time = [];
-    for (var j = 0; j < events.length; j++) {
+  for (let i = 0; i <= 26; i ++) {
+    const time = [];
+    for (let j = 0; j < events.length; j++) {
       time.push(0);
     }
     collisions.push(time);
   }
 
-  let didClamp = false;
+  const didClamp = false;
   events.forEach((event, id) => {
     if (event.Date === null) {
       return;
@@ -259,7 +259,7 @@ function getAttributes (events) {
     return;
   }
 
-  for (var i = 0; i < events.length; i++) {
+  for (let i = 0; i < events.length; i++) {
     width.push(0);
     leftOffSet.push(0);
   }
@@ -267,7 +267,7 @@ function getAttributes (events) {
   collisions.forEach((period) => {
 
     // number of events in that period
-    let count = period.reduce((a,b) => {
+    const count = period.reduce((a,b) => {
       return b ? a + 1 : a;
     })
 
@@ -291,14 +291,14 @@ function getAttributes (events) {
 
 
 function createTimeBlocks() {
-  let agd = new hnode('div');
+  const agd = new hnode('div');
   agd.id = 'agenda';
   agd.className = "agd-container"
-  var timings = new hnode('div');
+  const timings = new hnode('div');
   timings.className = "agd-timings";
   agd.prepend(timings);
   
-  var days = new hnode('div');
+  const days = new hnode('div');
   days.className = "agd-days";
   days.id = "events";
 
@@ -343,8 +343,8 @@ function createTimeBlocks() {
 }
 
 function createTimeMarker (events: hnode, height, top, left, units, out_of_day) {
-  let node = new hnode('div'); 
-  let dot  = new hnode('div');
+  const node = new hnode('div'); 
+  const dot  = new hnode('div');
   if (!out_of_day) {
     dot.className  = "agd-dot"
     node.className = "agd-timeMarker";
@@ -359,7 +359,7 @@ function createTimeMarker (events: hnode, height, top, left, units, out_of_day) 
   node.style.top    = top + "px";
   node.style.left   = left + "px";
 
-  let r = height*4;
+  const r = height*4;
   dot.style.width  = r + "px";
   dot.style.height = r + "px";
   dot.style.top    = top - (r/2) + (height/2) + "px";
@@ -381,27 +381,27 @@ function getWebviewContent(webview, title: string, agd) {
     let id = 0;
     getCollisions(agd);
     getAttributes(agd);
-    let scr = new hnode('script');
+    const scr = new hnode('script');
     scr.innerText = `
         const vscode = acquireVsCodeApi(); 
         function itemClicked(jumpTo, lineNo){
             vscode.postMessage({command: "open", text: jumpTo, line: lineNo});
         }`;
-    let scrStr = scr.render();
-    var time = createTimeBlocks();
-    var evts = time.findById('events');
+    const scrStr = scr.render();
+    const time = createTimeBlocks();
+    const evts = time.findById('events');
     if (agd !== null) {
-    for (var item of agd) {
+    for (const item of agd) {
       if (item.Date === null) {
         continue;
       }
       let s = getInMinutes(item.Date.Start);
-      let e = getInMinutes(item.Date.End);
+      const e = getInMinutes(item.Date.End);
       if (s < 0) {
         s = 0;
       }
-      let height = (e - s) / minutesinDay * containerHeight;
-      let top = s / minutesinDay * containerHeight; 
+      const height = (e - s) / minutesinDay * containerHeight;
+      const top = s / minutesinDay * containerHeight; 
       let units = width[id];
       if (!units) {units = 1};
       let left = (containerWidth / width[id]) * (leftOffSet[id] - 1) + 10;
@@ -412,11 +412,11 @@ function getWebviewContent(webview, title: string, agd) {
       id += 1;
     }}
     const now   = new Date();
-    let nowMins = getInMinutes(now);
-    let height = 2;
+    const nowMins = getInMinutes(now);
+    const height = 2;
     let top = nowMins / minutesinDay * containerHeight; 
-    let units = 1;
-    let left = 100; // this is the agd-timings style
+    const units = 1;
+    const left = 100; // this is the agd-timings style
     let out_of_day = false;
     if (top > containerHeight) {
       top = containerHeight+2;
@@ -462,11 +462,11 @@ export async function showAgenda(doc: vscode.TextEditor) {
         {enableScripts: true}
       );
 
-      let iteration = 0;
+      const iteration = 0;
       const updateWebview = async () => {
-        let agd = await ODb.agendaRest();
+        const agd = await ODb.agendaRest();
         panel.title = 'Agenda';
-        let cont = getWebviewContent(panel.webview, 'Agenda', agd);
+        const cont = getWebviewContent(panel.webview, 'Agenda', agd);
         panel.webview.html = cont;
       };
 

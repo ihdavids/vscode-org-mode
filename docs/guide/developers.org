@@ -1,0 +1,58 @@
+#+TITLE: Developers
+#+DOC_ORDER: 95
+
+How the plugin is put together, for anybody changing it. The sections after
+this one are written in the code itself, beside what they describe, as
+=SDOC= comment blocks.
+
+* Building, testing, and this manual
+  #+BEGIN_SRC sh
+  npm install
+  npm run compile      # TypeScript into out/
+  npm run lint         # ESLint
+  npm run test:unit    # the model tests, in node
+  npm test             # and the extension tests, in a VS Code
+  tools/docs/build.sh  # this manual: docs/iorg.org and docs/iorg.html
+  tools/docs/build.sh --screenshots   # ...taking the screenshots again
+  #+END_SRC
+
+  The manual is built with =docex= from the orgs repository (expected beside
+  this one, at =../orgs=, or wherever =ORGS_DIR= says). It reads three things:
+
+  - the guides in =docs/guide/= - each names its place with =#+DOC_ORDER:=
+    (and =#+DOC_SECTION:= to sit inside another);
+  - =SDOC= blocks in the TypeScript sources, written like this, which file
+    under /Developers/:
+    #+BEGIN_EXAMPLE
+    /* SDOC: Developers
+    * The tables model
+      What it is for...
+    EDOC */
+    #+END_EXAMPLE
+  - the key, command and setting references, which
+    =tools/docs/reference.js= writes from =package.json= and
+    =tools/docs/command-notes.json= (one line about each command - add one
+    when you add a command).
+
+  The screenshots are taken by =tools/docs/screenshots.js=: it opens VS Code
+  on a demo workspace (=tools/docs/demo/=) with an orgs server behind it,
+  plays the scenes in =tools/docs/scenes.js=, and captures each through the
+  Chrome DevTools Protocol.
+
+* The shape of the code
+  The newer code keeps each feature's logic in a model with no vscode in
+  it, tested in plain node, under a thin layer that talks to the editor:
+
+  | Model                     | Editor side                                        |
+  |---------------------------+----------------------------------------------------|
+  | =src/tables/model.ts=      | =src/tables/commands.ts=, =view.ts=, =calc.ts=, =plot.ts= |
+  | =src/tables/formulas.ts=   | (formula targets, for the highlight and the editor) |
+  | =src/outline/model.ts=     | =src/outline/commands.ts=, =refile.ts=, =stats.ts= |
+  | =src/links/model.ts=       | =src/links/providers.ts=                           |
+  | =src/decorations-scan.ts=  | =src/decorations.ts=                               |
+  | =src/columns-model.ts=     | =src/columns.ts=                                   |
+  | =src/footnotes-model.ts=   | =src/footnotes.ts=                                 |
+  | =src/lines.ts=             | =src/edit-lines.ts= (one minimal edit per change)  |
+
+  Everything that needs the orgs server goes through =src/db.ts= (=ODb=);
+  =src/auth.ts= logs in, or notices a server that needs no login.

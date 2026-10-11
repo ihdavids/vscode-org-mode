@@ -1,5 +1,4 @@
 import * as assert from 'assert';
-import * as vscode from 'vscode';
 import * as dur    from '../src/duration';
 import * as dat    from '../src/simple-datetime';
 

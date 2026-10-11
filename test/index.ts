@@ -1,25 +1,15 @@
-//
-// PLEASE DO NOT MODIFY / DELETE UNLESS YOU KNOW WHAT YOU ARE DOING
-//
-// This file is providing the test runner to use when running extension tests.
-// By default the test runner in use is Mocha based.
-//
-// You can provide your own test runner if you want to override it by exporting
-// a function run(testRoot: string, clb: (error:Error) => void) that the extension
-// host can call to run the tests. The test runner is expected to use console.log
-// to report the results back to the caller. When the tests are finished, return
-// a possible error to the callback or null if none.
+// The extension tests, as the Extension Host runs them: every *.test.js
+// beside this file, or those named in TEST_FILES (comma separated).
+import * as path from 'path';
+import * as fs from 'fs';
+import * as Mocha from 'mocha';
 
-var testRunner = require('vscode-coverage-test-runner');
-
-// You can directly control Mocha options by uncommenting the following lines
-// See https://github.com/mochajs/mocha/wiki/Using-mocha-programmatically#set-options for more info
-testRunner.configure({
-    ui: 'tdd', 		// the TDD UI is being used in extension.test.ts (suite, test, etc.)
-    useColors: true // colored output from test results
-});
-
-module.exports = testRunner;
-
-import * as vscode from "vscode";
-vscode.commands.executeCommand('workbench.action.closeAllEditors');
+export function run(): Promise<void> {
+    const mocha = new Mocha({ ui: 'tdd', color: true, timeout: 20000 });
+    const named = (process.env.TEST_FILES || '').split(',').filter(f => f);
+    const files = named.length ? named : fs.readdirSync(__dirname).filter(f => f.endsWith('.test.js'));
+    files.forEach(f => mocha.addFile(path.join(__dirname, f)));
+    return new Promise((resolve, reject) => {
+        mocha.run(failures => failures ? reject(new Error(`${failures} test${failures === 1 ? '' : 's'} failed`)) : resolve());
+    });
+}

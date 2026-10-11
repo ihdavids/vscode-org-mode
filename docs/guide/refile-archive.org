@@ -1,0 +1,29 @@
+#+TITLE: Refiling and archiving
+#+DOC_ORDER: 14
+
+
+    #+CAPTION: Refile offers every heading the orgs server can file under, with the headings above it and its file.
+    [[./images/refile.png]]
+
+    | Key                | Does                                                         |
+    |--------------------+--------------------------------------------------------------|
+    | Ctrl+Alt+O W       | Refile the subtree under any heading (or a file's top level) |
+    | Ctrl+Alt+O Shift+W | Copy the subtree there, leaving it where it is too           |
+    | Ctrl+Alt+O A       | Archive the subtree                                          |
+    |                    | *Archive All Done*: every finished subtree in the file, after asking |
+
+    Refile and Copy offer every heading the orgs server can file under -
+    type to find one; each shows the headings above it and its file. Each
+    file's top level is offered too, for filing at its end.
+
+    *Several at once:* select across several headings and Refile, Copy or
+    Archive takes them all (a heading inside another selected one goes with
+    its parent). The server finds them all before it moves any, so nothing
+    is lost to lines moving under it.
+
+    Archive sends a subtree where its =:ARCHIVE:= property, or the file's
+    =#+ARCHIVE:= line, says - by default =<file>.org_archive= - with the time,
+    its old place and its state noted on it, as org does.
+
+    The orgs server does the moving, so the file is saved first; the editor
+    shows the result as soon as the server has written it.

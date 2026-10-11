@@ -1,6 +1,5 @@
-import { window, workspace } from 'vscode';
+import { window } from 'vscode';
 import { getUniq } from './utils';
-import { Sets } from './sets';
 import { Headline } from './parser';
 
 export default function (h: Headline, action: string) {
@@ -8,7 +7,7 @@ export default function (h: Headline, action: string) {
     if (todoString === undefined)  {
         todoString = "";
     }
-    let todoKeywords = getUniq(h.getAllTodos());
+    const todoKeywords = getUniq(h.getAllTodos());
     if (todoKeywords.indexOf("") < 0) {
         todoKeywords.splice(0,0,"");
     }

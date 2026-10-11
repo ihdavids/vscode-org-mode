@@ -25,8 +25,6 @@
 // duration, i.e., a duration that doesn't depend on user's settings,
 // through optional arguments. 
 
-import { print } from "util";
-
 const RE_DURATION_PARSER       = new RegExp(`\\s*(?<pn>[+-])?\\s*((?<years>[0-9.]+)y)?\\s*((?<days>[0-9.]+)d)?\\s*((?<hours>[0-9.]+)h)?\\s*((?<mins>[0-9.]+)min)?\\s*((?<thours>[0-9]+)\\:(?<tmins>[0-9]+)(\\:(?<tsecs>[0-9]+))?)?`);
 
 declare global { interface DateConstructor {
@@ -36,18 +34,18 @@ declare global { interface DateConstructor {
     minDiff(a: Date, b: Date): number;
 }}
 Date.minDiff = function(a,b) {
-    var ms = a.getTime() - b.getTime(); 
+    const ms = a.getTime() - b.getTime(); 
     return ms / (1000.0 * 60.0);     // Diference in mins
 };
 Date.diff = function(a,b) {
     return new OrgDuration(Date.minDiff(a,b));
 };
 Date.dayDiff = function(a,b) {
-    var ms = a.getTime() - b.getTime(); 
+    const ms = a.getTime() - b.getTime(); 
     return ms / (1000 * 3600 * 24); // Diference in Days
 };
 Date.hourDiff = function(a,b) {
-    var ms = a.getTime() - b.getTime(); 
+    const ms = a.getTime() - b.getTime(); 
     return ms / (1000 * 3600);      // Diference in Hours
 };
 // Extend Date with time modifiers
@@ -64,14 +62,14 @@ declare global{ interface Date {
 }}
 Date.prototype.addDays = function (days: number): Date {
     if (!days) return this;
-    let date = this;
+    const date = this;
     date.setDate(date.getDate() + days);
  
     return date;
  };
  
  Date.prototype.isToday = function (): boolean{
-    let today = new Date();
+    const today = new Date();
     return this.isSameDate(today);
  };
  Date.prototype.isAnotherMonth = function (date: Date): boolean {
@@ -107,7 +105,7 @@ Date.prototype.addDuration = function(d) {
     return this;
 };
 Date.prototype.isToday = function (): boolean{
-    let today = new Date();
+    const today = new Date();
     return this.isSameDate(today);
  };
 
@@ -161,7 +159,7 @@ export class OrgDuration {
     }
 
     public static parse(txt: string, need: boolean = false) {
-        let m = RE_DURATION_PARSER.exec(txt);
+        const m = RE_DURATION_PARSER.exec(txt);
         let isNeg = false;
         if(m) {
             let mtot = 0.0;
@@ -218,7 +216,7 @@ export class OrgDuration {
         }
         const change = ["january","febuary","march","april","may","june","july","august","september","october","november","december"];
         const tokens = txt.split(' ');
-        let monthOffset = 0;
+        const monthOffset = 0;
         let dayOffset   = 0;
 
         const now = new Date();
@@ -237,7 +235,7 @@ export class OrgDuration {
         if(dayOffset == 0) {
             dayOffset = day
         }
-        let dt = now;
+        const dt = now;
         dt.setMonth(monthOffset);
         dt.setDate(dayOffset);
         return Date.diff(dt, now);

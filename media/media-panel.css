@@ -1,0 +1,9 @@
+body { background: var(--vscode-editor-background); color: var(--vscode-editor-foreground); font-family: var(--vscode-font-family); font-size: var(--vscode-font-size); margin: 0; padding: 12px 16px; }
+header { font-weight: 600; margin-bottom: 12px; color: var(--vscode-descriptionForeground); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+figure { margin: 0 0 12px; padding: 8px; border-radius: 4px; cursor: pointer; border: 1px solid transparent; }
+figure:hover { border-color: var(--vscode-focusBorder); }
+figure img { max-width: 100%; display: block; border-radius: 2px; }
+figcaption { color: var(--vscode-descriptionForeground); font-size: 11px; margin-top: 4px; }
+figure.math { overflow-x: auto; }
+figure.error, figure.missing { color: var(--vscode-errorForeground); white-space: pre-wrap; font-family: var(--vscode-editor-font-family); font-size: 12px; }
+.empty { color: var(--vscode-descriptionForeground); }

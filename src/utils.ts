@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import {Position, TextEditor} from "vscode";
+import { Position } from "vscode";
 import { Log } from './log';
 
 export function getCursorPosition() {
@@ -23,8 +23,8 @@ export function getLine(document: vscode.TextDocument, lineNum: vscode.Position)
 export function eatEmptyLines(textEditor: vscode.TextEditor, pos: Position, startPos: Position, endOfLine: number = 0) {
     let eatingEmpties = 0;
     let endPos        = pos;
-    for (var l = pos.line; l > 0 && l > startPos.line; --l ) {
-            let tempPos    = new vscode.Position(l, 0);
+    for (let l = pos.line; l > 0 && l > startPos.line; --l ) {
+            const tempPos    = new vscode.Position(l, 0);
             const tempLine = getLine(textEditor.document, tempPos);
             if (tempLine === undefined || tempLine.trim().length == 0) {
                 endPos         = tempPos;
@@ -95,7 +95,7 @@ export function findBeginningOfSectionWithHeader(document: vscode.TextDocument, 
 export function findParentByIndentAndLineRe(doc: vscode.TextDocument, pos: vscode.Position, re : RegExp) : vscode.Position {
     let row      = pos.line;
     let content  = doc.lineAt(pos).text;
-    let indent   = getIndent(content).length;
+    const indent   = getIndent(content).length;
     row         -= 1;
     let found    = false;
     // Look upward 
@@ -109,7 +109,7 @@ export function findParentByIndentAndLineRe(doc: vscode.TextDocument, pos: vscod
                 found = true;
                 break;
             }
-            let curIndent = getIndent(content).length;
+            const curIndent = getIndent(content).length;
             if(curIndent < indent)
             {
                 found = true;
@@ -129,7 +129,7 @@ export function findParentByIndentAndLineRe(doc: vscode.TextDocument, pos: vscod
 export function findParentByIndent(doc: vscode.TextDocument, pos: vscode.Position) : vscode.Position {
     let row      = pos.line;
     let content  = doc.lineAt(pos).text;
-    let indent   = getIndent(content).length;
+    const indent   = getIndent(content).length;
     row         -= 1;
     let found    = false;
     // Look upward 
@@ -143,7 +143,7 @@ export function findParentByIndent(doc: vscode.TextDocument, pos: vscode.Positio
                 found = true;
                 break;
             }
-            let curIndent = getIndent(content).length;
+            const curIndent = getIndent(content).length;
             if(curIndent < indent)
             {
                 found = true;
@@ -286,7 +286,7 @@ export function findEndOfContent(document: vscode.TextDocument, pos: vscode.Posi
 
     let rv = null;
     if (curLine < document.lineCount-1 || !inSub) {
-        let linePos = curPos.line - 1;
+        const linePos = curPos.line - 1;
         /*
         if (lastNonEmpty < linePos) {
             linePos = lastNonEmpty;
@@ -426,7 +426,7 @@ const indentRe : RegExp  = /^(\s*).*$/;
 // RETURNS: a string with the indent of this line.
 export function getIndent(content:string) : string
 {
-    let match  = content.match(indentRe);
+    const match  = content.match(indentRe);
     if(match && match[1])
     {
         return match[1]
@@ -444,11 +444,11 @@ export function getLineIndent(doc: vscode.TextDocument, pos: vscode.Position) {
 
 
 export function jumpToHeading(file: string, line: number) {
-    var openPath = vscode.Uri.file(file);
+    const openPath = vscode.Uri.file(file);
     Log.get().log(openPath);
     vscode.workspace.openTextDocument(openPath).then(textDoc => {
         vscode.window.showTextDocument(textDoc).then( doc => {
-            let npos : Position = new Position(line, 0); 
+            const npos : Position = new Position(line, 0); 
             doc.revealRange(new vscode.Range(npos, npos));
             doc.selection = new vscode.Selection(npos, npos);
         });

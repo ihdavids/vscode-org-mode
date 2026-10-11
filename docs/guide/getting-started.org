@@ -1,0 +1,55 @@
+#+TITLE: Getting started
+#+DOC_ORDER: 1
+
+* Installing
+  Install IOrg from a =.vsix= (Extensions view, =...= menu, /Install from
+  VSIX.../) or build one: =npm install && npx vsce package=. Open any
+  =.org= file and it starts.
+
+  Then run *Org: Open A Practice File*, or the walkthrough (/Help > Get
+  Started/, then /Get started with IOrg/), which takes you through the
+  essentials a step at a time.
+
+  #+CAPTION: The walkthrough: each step ticks itself off as you do it.
+  [[./images/walkthrough.png]]
+
+* What works on its own, and what needs the orgs server
+  Editing works with nothing else: the outline, TODO keywords, tables (and
+  their alignment, sorting and plotting), links, footnotes, completion,
+  statistics cookies, the column view, narrowing and the decorations.
+
+  The *orgs server* reads all your org files and does what spans files or
+  runs things: the agenda, clocking, refile and archive, table formulas,
+  running source blocks, exporting, capture, habits, encryption,
+  attachments, history and search. It lives at
+  [[https://github.com/ihdavids/orgs][github.com/ihdavids/orgs]]; start it with =orgs serve=
+  in the directory with its =orgs.yaml=.
+
+* Connecting
+  Set *Org: Orgs Connection* (=org.orgsConnection=) to the server's address -
+  =http://localhost:8010=, or =https://…= for one with a certificate
+  (=org.allowSelfSigned= accepts a self-signed one).
+
+  A server that wants a login asks once, and the plugin keeps you logged in.
+  A server started with =noAuth: true= wants none: the plugin asks the server
+  when it starts (and whenever the address changes) and skips the login.
+
+* The status bar
+  In an org file, the left of the status bar says how the server is:
+
+  | Shows                | Means                                              |
+  |----------------------+----------------------------------------------------|
+  | ☁ orgs               | Connected                                          |
+  | 👤 orgs: log in      | The server wants a login                           |
+  | ⚠ orgs (highlighted) | The server is not answering                        |
+
+  Click it to log in or out, check again, open worg, or change the address.
+  It checks again every couple of minutes and when you come back to the
+  window. In a table it also shows the cell (=@2$3=) and its formula; on the
+  right, the running clock and any timer.
+
+* Using VSCodeVim
+  Everything works in insert mode. In normal mode Tab folds headings and
+  moves between table cells, and Alt+H/J/K/L move headings, rows and
+  columns. *Org: Set Up Vim Table Keys* adds =<leader>t…= mappings for the
+  table commands. See [[*Keys][Keys]].

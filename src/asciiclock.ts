@@ -1,4 +1,3 @@
-import { Utils } from "./utils";
 
 class AsciiCanvas
 {
@@ -18,7 +17,7 @@ class AsciiCanvas
         this.fill_char = fill_char;
         this.canvas = []
         for (let i = 0; i < this.lines; ++i) {
-            let line = [];
+            const line = [];
             for (let j = 0; j < this.cols; ++j) {
                 line.push(this.fill_char);
             }
@@ -163,7 +162,7 @@ class AsciiCanvas
             outline_3x3_chars = default_outline_3x3_chars
         }
         // filter chars
-        let filtered_outline_3x3_chars = []
+        const filtered_outline_3x3_chars = []
         for (let index = 0; index < 9; ++index) {
             let char = outline_3x3_chars[index];
             if (!char) {
@@ -271,7 +270,7 @@ export function draw_clock(now: Date, cols: number, lines: number): AsciiCanvas 
     //    hour_hand_char = 'O'  # 'o'
     //    mark_char = '`'  # '\xF9'
     // create ascii canvas for clock and eval vars
-    let ascii_canvas = new AsciiCanvas(cols, lines);
+    const ascii_canvas = new AsciiCanvas(cols, lines);
     const center_x = Math.trunc(Math.ceil(cols / 2.0));
     const center_y = Math.trunc(Math.ceil(lines / 2.0));
     const radius = center_y - 5;

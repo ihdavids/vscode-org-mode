@@ -66,7 +66,7 @@ export class OrgStringifier implements tt.Stringifier {
     stringify(table: Table, range: any= null): string {
         const result = [];
         let width  = 0;
-        let height = table.rows.length;
+        const height = table.rows.length;
         this.indent = table.getIndent();
         for (let i = 0; i < table.rows.length; ++i) {
             let rowString = '';

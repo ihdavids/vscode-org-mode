@@ -1,0 +1,42 @@
+#+TITLE: Running code
+#+DOC_ORDER: 13
+
+    One key runs whatever the cursor is on: *Ctrl+Alt+O R*.
+
+    #+CAPTION: A source block with its Run link, and its results written under it.
+    [[./images/code.png]]
+
+
+    | The cursor is in                         | Run does                                      |
+    |------------------------------------------+-----------------------------------------------|
+    | a table, or its =#+TBLFM:= line          | Recalculates it (see [[file:tables.org][Tables]]) |
+    | a =#+BEGIN_SRC= block                    | Runs it and writes =#+RESULTS:= under it       |
+    | a =#+CALL:= line                         | Runs the named block it calls                  |
+    | a line with =src_python{…}= or =call_x()= | Runs the inline code, results after it        |
+    | a =#+BEGIN:= dynamic block               | Refreshes it (a clocktable, a column view...)  |
+
+    Small *Run*, *Update* and *Recalculate* links sit above blocks, calls and
+    formula lines; click them instead. =org.blockCodeLens= turns them off.
+
+    | Command                        | Does                                         |
+    |--------------------------------+----------------------------------------------|
+    | Run All Blocks In File         | Every block, call and inline code, top to bottom |
+    | Update All Dynamic Blocks      | Every =#+BEGIN:= block in the file           |
+    | Tangle File                    | Writes out each block with a =:tangle= header, and offers to open the result |
+
+    The orgs server does the running, from the file on disk, so the file is
+    saved first; the results appear as soon as the server has written them.
+    A source block above with =:tangle= gets a *Tangle file* link too.
+
+* Turning it on
+    Running source blocks is off on a new orgs server, because a source block
+    is a program. Turn it on, for the languages you want, in its yaml:
+
+    #+BEGIN_SRC yaml
+    babel:
+      enable: true
+      languages: ["python", "sh"]
+    #+END_SRC
+
+    Until then Run says so, rather than failing quietly. Dynamic blocks and
+    tables need nothing turned on.

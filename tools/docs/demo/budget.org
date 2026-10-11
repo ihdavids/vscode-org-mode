@@ -1,0 +1,24 @@
+#+TITLE: Budget
+
+* Launch budget
+  What we planned to spend, and what we have.
+
+#+NAME: budget
+#+PLOT: title:"Planned and spent" ind:1 deps:(2 3) with:histograms
+| Month | Planned | Spent | Left |
+|-------+---------+-------+------|
+| Jul   |    1200 |  1100 |  100 |
+| Aug   |    1500 |  1620 | -120 |
+| Sep   |    1800 |  1410 |  390 |
+| Oct   |    2400 |   950 | 1450 |
+|-------+---------+-------+------|
+| Total |    6900 |  5080 | 1820 |
+#+TBLFM: $4=$2-$3::@>$2=vsum(@I..@II)::@>$3=vsum(@I..@II)::@>$4=vsum(@I..@II)
+
+* Hosting
+| Item     | Monthly | Months | Cost |
+|----------+---------+--------+------|
+| Servers  |      80 |     12 |  960 |
+| CDN      |      25 |     12 |  300 |
+| Domain   |       2 |     12 |   24 |
+#+TBLFM: $4=$2*$3

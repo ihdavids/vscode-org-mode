@@ -1,5 +1,4 @@
 import * as vscode from 'vscode';
-import * as path from 'path';
 import {ODb} from "./db"
 import {OrgExtension} from "./extension"
 import * as fs from 'fs';
@@ -7,7 +6,7 @@ import * as fs from 'fs';
 let curDay: Date = new Date();
 
 function addDays(date, days) {
-  var result = new Date(date);
+  const result = new Date(date);
   result.setDate(result.getDate() + days);
   return result;
 }
@@ -21,14 +20,11 @@ export async function gotoDayPage(increment: number) {
     while(maxTests) {
         maxTests -= 1;
         curDay = addDays(curDay, increment);
-        let page = await ODb.getdaypage(curDay);
-        vscode.window.showInformationMessage("DAY PAGE", page)
-        console.log("DP", page);
+        const page = await ODb.getdaypage(curDay);
         if (page != null && fileExists(page[0])) {
-            let pageName = page[0];
-            var openPath = vscode.Uri.file(pageName);
-            console.log("DP2:", openPath);
-            var textDoc = await vscode.workspace.openTextDocument(openPath);
+            const pageName = page[0];
+            const openPath = vscode.Uri.file(pageName);
+            const textDoc = await vscode.workspace.openTextDocument(openPath);
             if (textDoc) {
                 await vscode.window.showTextDocument(textDoc);
                 return;
@@ -38,34 +34,34 @@ export async function gotoDayPage(increment: number) {
 }
 
 export async function prevDayPage(doc: vscode.TextEditor, edit: vscode.TextEditorEdit) {
-    var inc = await ODb.getdaypageIncrement();
+    const inc = await ODb.getdaypageIncrement();
     gotoDayPage(-inc);
 }
 
 export async function nextDayPage(doc: vscode.TextEditor, edit: vscode.TextEditorEdit) {
-    var inc = await ODb.getdaypageIncrement();
+    const inc = await ODb.getdaypageIncrement();
     gotoDayPage(inc);
 }
 
 
 export async function showDayPageToday(doc: vscode.TextEditor, edit: vscode.TextEditorEdit) {
-    let page = await ODb.daypage();
+    const page = await ODb.daypage();
     curDay = new Date();
-    console.log("DP", page);
     if (page != null && fileExists(page[0])) {
-        let pageName = page[0];
+        const pageName = page[0];
         var openPath = vscode.Uri.file(pageName);
-        console.log(openPath);
         vscode.workspace.openTextDocument(openPath).then(textDoc => {
             vscode.window.showTextDocument(textDoc);
         });
     } else {
-        let page = await ODb.createdaypage();
-        vscode.window.showInformationMessage("DAY PAGE", page)
+        const page: any = await ODb.createdaypage();
+        if (!Array.isArray(page)) {
+            vscode.window.showErrorMessage('Could not make today\'s day page: ' + (page && page.Msg || page || 'the orgs server did not answer'));
+            return;
+        }
         if (page != null && fileExists(page[0])) {
-            let pageName = page[0];
+            const pageName = page[0];
             var openPath = vscode.Uri.file(pageName);
-            console.log(openPath);
             vscode.workspace.openTextDocument(openPath).then(textDoc => {
                 vscode.window.showTextDocument(textDoc);
             });

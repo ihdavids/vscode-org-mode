@@ -1,0 +1,40 @@
+#+TITLE: The server's tools
+#+DOC_ORDER: 17
+
+    Everything here asks the orgs server, so you need to be logged in to one.
+
+* Habits
+    *Habits* lists your habits - headings with =:STYLE: habit= and a repeating
+    =SCHEDULED:= - those due today first, each with its last seven days
+    (=●= done, =○= missed) and its streak. Pick one to mark it done today:
+    the repeater moves on and the logbook notes it, as org does. Pick one that
+    is done today to take it back.
+
+* Encryption
+    *Encrypt Heading* encrypts the body of the heading the cursor is under;
+    *Decrypt Heading* either shows it beside the file (which stays encrypted)
+    or decrypts it in the file. The server does it with gpg, set up under
+    =crypt:= in its yaml: with a key nothing is asked; with a passphrase you
+    are asked for it, unless the server is holding it unlocked.
+
+* Attachments
+    *Attach File* (Ctrl+Alt+O Shift+A) attaches files to the heading the
+    cursor is under, copying them into its attachment folder and giving it an
+    =:ID:= if it needs one. *Open Attachment* lists them, newest first, and
+    opens the one you pick - from disk when the server is on this machine,
+    downloaded when it is not.
+
+* File history
+    *File History* lists the commits that changed the file (if it is in a git
+    repository); pick one to see it side by side with the file as it is now.
+
+* New files
+    *New File* (Ctrl+Alt+O N) starts a file from one of the server's
+    templates, or empty, in its first org directory unless you give a path,
+    and opens it.
+
+* Searching
+    *Search All Files* (Ctrl+Alt+O F) searches the text of every org file as
+    you type - a regular expression, case ignored - and shows each match with
+    its file and line. *Search This File* (Ctrl+Alt+O Shift+F) does the same
+    in the current one. Enter goes to the match.

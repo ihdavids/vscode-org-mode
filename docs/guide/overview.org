@@ -1,0 +1,35 @@
+IOrg brings Emacs Org mode to VS Code: outlines that fold with Tab, TODOs
+and an agenda, tables that align themselves and work out their own formulas,
+links you follow with F12, a clock, capture, refiling, running code and
+exporting - and, with the orgs server, all of it across every org file you
+have.
+
+#+CAPTION: An org file in VS Code: headings with their keywords, priorities and tags, a table with its formula, links, and the agenda in the side bar.
+[[./images/hero.png]]
+
+* Find what you need
+  - *A key:* [[*Keys][Keys]] has the ones worth knowing; [[*Every key binding][Every key binding]]
+    lists them all, by where they work, with the macOS spelling beside each.
+  - *A command:* [[*Commands][Commands]] lists every one, by subject, with what it does and its key.
+  - *A setting:* [[*Settings][Settings]].
+  - *Anything:* type in the search box at the top of this page - a key
+    (=ctrl+alt+o=), a command (=refile=) or a word (=formula=). The arrow keys
+    step through what it finds.
+  - *In VS Code:* =Ctrl+Alt+O M= opens a menu of every org command, with the
+    ones that fit where the cursor is first and each one's key beside it.
+
+* At a glance
+  | To                                 | Press                                    |
+  |------------------------------------+------------------------------------------|
+  | Fold or unfold a heading           | =Tab= on the heading                     |
+  | See the whole file's outline       | =Shift+Tab= on a heading                 |
+  | Move a heading and what is under it | =Alt+Up= / =Alt+Down=                   |
+  | Cycle a TODO keyword               | =Alt+Left= / =Alt+Right=                 |
+  | Go to the next table cell          | =Tab= in a table                         |
+  | Follow a link                      | =F12=, or Ctrl+click                     |
+  | Insert a link                      | =Ctrl+Alt+O K=                           |
+  | Run the block, or table, under the cursor | =Ctrl+Alt+O R=                    |
+  | Refile a subtree                   | =Ctrl+Alt+O W=                           |
+  | Insert a timestamp                 | =Ctrl+Alt+O .=                           |
+  | Capture a thought from anywhere    | =Ctrl+Alt+O Q=                           |
+  | Everything else                    | =Ctrl+Alt+O M=                           |

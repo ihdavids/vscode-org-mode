@@ -1,0 +1,144 @@
+#+TITLE: Tables
+#+DOC_ORDER: 4
+
+    Type a table the way you would write one by hand and press Tab: it is
+    aligned and the cursor moves on.
+
+    #+BEGIN_EXAMPLE
+    |Item|Qty|Price      Tab        | Item  | Qty | Price |
+    |-                    ===>       |-------+-----+-------|
+    |apple|3|1.50                    | apple |   3 |  1.50 |
+    #+END_EXAMPLE
+
+    Columns that are mostly numbers line up on the right, as org has them.
+    Link markup that the editor hides does not count towards a column's width.
+
+* Moving about
+    | Key         | Does                                                          |
+    |-------------+---------------------------------------------------------------|
+    | Tab         | Align and go to the next cell; past the last cell, a new row |
+    | Shift+Tab   | Align and go to the previous cell                             |
+    | Enter       | Down a row in the same column; a new row over a rule or at the end |
+    | Shift+Enter | Copy the cell down (an empty cell takes the one above); numbers count up |
+
+    Tab on a line typed as =|-= turns it into a full rule.
+
+* Changing the shape
+    | Key                         | Does                                   |
+    |-----------------------------+----------------------------------------|
+    | Alt+Up / Alt+Down           | Move the row                           |
+    | Alt+Left / Alt+Right        | Move the column                        |
+    | Alt+Shift+Down              | Insert a row below                     |
+    | Alt+Shift+Up                | Delete the row                         |
+    | Alt+Shift+Right             | Insert a column to the right           |
+    | Alt+Shift+Left              | Delete the column                      |
+    | Ctrl+-                      | A rule under the row                   |
+    | Ctrl+Alt+O Enter            | A rule under the row, and on below it  |
+    | Ctrl+Q Ctrl+F               | Align                                  |
+    | Ctrl+Q Space                | Clear the cell                         |
+    | Ctrl+Q Ctrl+Q               | Turn table keys off (and on again)     |
+
+    Everything else is in the table menu, *Ctrl+Alt+O M*: split a cell onto a
+    new row, join the row below, sort, transpose, sum a column, plot, import,
+    and more. Type to filter it.
+
+* Alignment and width cookies
+    A row of cookies sets how each column sits and how wide it shows:
+
+    #+BEGIN_EXAMPLE
+    | <c>  | <r> | <12>                              |
+    | Name | Age | Notes                             |
+    #+END_EXAMPLE
+
+    =<l>=, =<r>= and =<c>= align a column. =<N>= shows the column N
+    characters wide: what does not fit is hidden and ends in an ellipsis,
+    until the cursor is in the cell. =<r8>= does both.
+
+* Formulas
+    Formulas live on the =#+TBLFM:= line under the table and are worked out
+    by the orgs server. Recalculating sends the table as it reads in the
+    editor - unsaved changes too - and puts the answer back, so it is one undo
+    and needs no save.
+
+    #+CAPTION: The cursor in a cell worked out by a formula: the formula is outlined on the #+TBLFM: line, the status bar shows the cell and its formula, and hovering says the same with links to edit it or recalculate.
+    [[./images/table.png]]
+
+
+    | Key                | Does                                            |
+    |--------------------+-------------------------------------------------|
+    | Ctrl+Alt+O R       | Recalculate the table                           |
+    | Ctrl+Alt+O Shift+R | Recalculate every table in the file             |
+    | Ctrl+Alt+O =       | Edit the formula for the cell under the cursor  |
+
+    - With the cursor in a cell, the status bar shows the cell's reference
+      (=@3$2=) and the formula that fills it; hovering shows it too. The cells
+      that formula writes are outlined.
+    - Type =$1*2= after an === in a cell (=$1*2) and press Tab: it becomes a
+      formula for the whole column. =:== makes one for that cell alone.
+    - =highlight($3, "red")=, =red($3)=, =green($3)= ... and
+      =gradient($2, $2, "red", "yellow", "green")= colour the cells they fill
+      after a recalculation. The colours go when the table is next changed.
+    - =org.tableAutoRecalc=: ="marked"= (the default) recalculates when Tab
+      or Enter leaves a row with =#= in its first column, as org does;
+      ="always"= on every Tab and Enter; ="off"= only when asked.
+    - =org.tableRecalcOnSave= recalculates every table when the file is saved.
+
+    Recalculating needs a reachable orgs server you are logged in to.
+
+* Making tables
+    - *Create Table*: a header, a rule and empty rows, sized as you ask.
+    - *Convert Selection To Table*: the selection, or the paragraph the
+      cursor is in, split on tabs, commas, semicolons or runs of spaces. A
+      first row of words over rows of numbers gets a rule under it.
+    - *Paste As Table* and *Import CSV As Table* do the same with the
+      clipboard or a file.
+
+* Finding tables
+    - *Go To Table* lists every table the orgs server knows, with its name,
+      heading, size and formula count (this file's tables without a server).
+    - *Insert Table Name* inserts a =#+NAME:= for =remote(name, @2$3)=.
+
+* Sorting, turning, adding up
+    - *Sort Table Rows* (Ctrl+Alt+O O) sorts the rows between the rules
+      around the cursor by its column: alphabetical, numeric or by date, either
+      way. The likely one is offered first.
+    - *Transpose Table* turns rows into columns.
+    - *Sum Table Column* adds up the column (or the selected rows of it) and
+      copies the total. Times like =1:30= add up as times.
+
+* Plotting
+    *Plot Table* (Ctrl+Alt+O G) opens a chart beside the editor that follows
+    the table as you edit it. Without anything else, the first column of words
+    is the x axis and the columns of numbers are the series: words give bars,
+    numbers and dates give lines, and times plot as hours. An org-plot line
+    above the table says otherwise:
+
+    #+CAPTION: A table and its chart. The chart follows the table as it changes; Table shows the numbers, Save SVG keeps a copy.
+    [[./images/plot.png]]
+
+
+    #+BEGIN_EXAMPLE
+    #+PLOT: title:"Sales" ind:1 deps:(2 3) with:histograms
+    #+END_EXAMPLE
+
+    =with:lines=, =points= and =histograms= pick lines, dots and bars. The
+    chart has a table view and saves as svg.
+
+* Vim
+    The table keys work with VSCodeVim. In insert mode everything above works
+    as it does without vim. In normal mode Tab and Shift+Tab move between
+    cells, Enter keeps its vim meaning, and:
+
+    | Key                         | Does                                          |
+    |-----------------------------+-----------------------------------------------|
+    | Alt+H / J / K / L           | Move the column left, the row down or up, the column right |
+    | Alt+Shift+J / Alt+Shift+K   | Insert a row below / delete the row           |
+    | Alt+Shift+L / Alt+Shift+H   | Insert a column right / delete the column     |
+
+    *Set Up Vim Table Keys* adds leader mappings to your vim settings:
+    =<leader>tt= opens the table menu, =<leader>tr= recalculates,
+    =<leader>t== edits a formula, =<leader>ts= sorts, =<leader>t-= adds a
+    rule, =<leader>to= / =<leader>tO= add a row below / above,
+    =<leader>td= deletes a row, =<leader>ti= / =<leader>tx= add / delete a
+    column, =<leader>tp= plots and =<leader>tc= converts to a table. Keys
+    you have already mapped are left alone.

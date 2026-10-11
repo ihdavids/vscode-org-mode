@@ -1,0 +1,57 @@
+#+TITLE: Links
+#+DOC_ORDER: 5
+
+    Links are VS Code's own navigation. Nothing new to learn: the keys you use
+    for code work on links.
+
+    #+CAPTION: Hovering an image link shows the picture.
+    [[./images/links.png]]
+
+
+    | Key                           | Does                                                  |
+    |-------------------------------+-------------------------------------------------------|
+    | F12, Ctrl+click (=gd= in vim) | Follow the link under the cursor                      |
+    | Shift+F12 (=gr= in vim)       | On a heading: every link to it, from every org file   |
+    | Hover                         | An image link shows the picture; a link to a heading shows the heading |
+    | Ctrl+Alt+O K                  | Insert a link                                         |
+    | Ctrl+Alt+O Shift+K            | Store a link to where you are                         |
+    | Ctrl+Alt+O Shift+O            | Open the link under the cursor (urls in the browser)  |
+
+* What links point at
+
+    #+CAPTION: Shift+F12 on a heading: every link to it, from every org file, in VS Code's references view.
+    [[./images/backlinks.png]]
+
+    | Link                               | Goes to                                          |
+    |------------------------------------+--------------------------------------------------|
+    | =[[*Heading]]=                     | The heading with that title in this file         |
+    | =[[#custom-id]]=                   | The heading with that =:CUSTOM_ID:=              |
+    | =[[id:5f2c…]]=                     | The heading with that =:ID:=, in any file        |
+    | =[[file:notes.org]]=               | Another file                                     |
+    | =[[file:notes.org::*Heading]]=     | A heading in another file (also =::#id=, =::42= for a line) |
+    | =[[target]]=                       | A =<<target>>=, else a heading of that name, else the text |
+    | =[[https://…]]=, =mailto:=         | Opened outside VS Code                           |
+    | =[[./pics/cat.png]]=               | An image: hover to see it                        |
+
+    An =id:= that is not in the workspace is asked of the orgs server.
+
+* Making links
+    *Insert Link* offers every heading in the workspace - this file's first -
+    plus "a web address…" and "a file…". Type to find a heading anywhere.
+    It links by =:ID:= when the heading has one, by =:CUSTOM_ID:= next, by
+    title otherwise, and asks for a description (empty for none). With text
+    selected, that text is the description.
+
+    #+CAPTION: Insert Link offers every heading in the workspace - type to find one.
+    [[./images/insert-link.png]]
+
+
+    *Store Link* remembers the heading you are under; Insert Link then offers
+    it first, from any file, with the right relative path. The link also goes
+    on the clipboard.
+
+    Typing =[[= offers the headings, custom ids and targets of this file and
+    the workspace's other org files (see [[file:completion.org][Completion]]).
+
+    For a link that survives the heading being renamed or moved, give it an
+    ID first: *Insert ID* (see [[file:dates.org][Dates and properties]]).

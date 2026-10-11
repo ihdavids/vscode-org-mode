@@ -173,7 +173,7 @@ export class Decorator {
       const decorations = Decorator.decorations[textEditor['id']];
       let hadDecorations = false;
       if ( decorations ) {
-        for ( let ranges of decorations.values () ) {
+        for ( const ranges of decorations.values () ) {
           if ( ranges.find ( range => _.includes ( lineNrs, range.start.line ) || _.includes ( lineNrs, range.end.line ) ) ) {
             hadDecorations = true;
             break;

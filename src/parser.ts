@@ -1,10 +1,7 @@
 import * as vscode from 'vscode';
 import { Sets } from './sets';
-import { isHeaderLine } from './utils';
 import { DateType, OrgDate } from './simple-datetime'
-import { listenerCount } from 'stream';
 //import * as tt from "./todolist";
-import * as tt from "./tables/tttable";
 import * as to from "./tables/ttorg";
 
 export enum OrgTypes {
@@ -141,7 +138,7 @@ export class Roll implements Node {
     parent?:     Headline;
 
     getRollParser(): RegExp {
-        let r = /(^|\s)\/r(?<num>[0-9]+)d(?<type>[0-9]+)(\s*(?<op>[+-])\s*(?<mod>[+-]?[0-9]+))*(\\s*[:]\\s*(?<diceResult>[0-9]+))?/
+        const r = /(^|\s)\/r(?<num>[0-9]+)d(?<type>[0-9]+)(\s*(?<op>[+-])\s*(?<mod>[+-]?[0-9]+))*(\\s*[:]\\s*(?<diceResult>[0-9]+))?/
         return r;
     }
 
@@ -149,10 +146,10 @@ export class Roll implements Node {
         return this.diceResult && this.diceResult != "";
     }
 
-    eval(): Number {
-        let num = Number(this.numDice);
+    eval(): number {
+        const num = Number(this.numDice);
         let amt = Number(this.diceType);
-        let mod = Number(this.diceMod);
+        const mod = Number(this.diceMod);
 
         let accume = 0;
         this.diceResults = [];
@@ -176,14 +173,14 @@ export class Roll implements Node {
     }
 
     getExprNoRes(): string {
-        let mod = this.getMod();
-        let rv = `/r${this.numDice}d${this.diceType}${mod}`;
+        const mod = this.getMod();
+        const rv = `/r${this.numDice}d${this.diceType}${mod}`;
         return rv;
     }
     getExpr(): string {
-        let res = this.eval();
-        let mod = this.getMod();
-        let rv = `/r${this.numDice}d${this.diceType}${mod}:${res}`;
+        const res = this.eval();
+        const mod = this.getMod();
+        const rv = `/r${this.numDice}d${this.diceType}${mod}:${res}`;
         return rv;
     }
 
@@ -206,7 +203,7 @@ export class Roll implements Node {
         }
         let res = "";
         for (let i = 0; i < this.diceResults.length; ++i) {
-            let r = this.diceResults[i];
+            const r = this.diceResults[i];
             if (res.length > 0) {
                 res += ` + ${r}`
             } else {
@@ -224,7 +221,7 @@ export class Roll implements Node {
     }
 
     getFormattedResults(): string {
-        let mod = this.getMod(" ");
+        const mod = this.getMod(" ");
         if (mod === "" && this.numResults() <= 1) {
             return "";
         }
@@ -264,15 +261,15 @@ export class Link implements Node {
     }
 
     getLinkParser(): RegExp {
-        let r = /(?<protocol>[a-zA-Z][a-zA-Z0-9]+)[:]\/\/(?<id>.*)/
+        const r = /(?<protocol>[a-zA-Z][a-zA-Z0-9]+)[:]\/\/(?<id>.*)/
         //let r = new RegExp(`^(file:)?(?P<filepath>.+?)(((::(?P<row>\d+))(::(?P<col>\d+))?)|(::\#(?P<cid>[a-zA-Z0-9!$@%&_-]+))|(::\*(?P<heading>[a-zA-Z0-9!$@%&_-]+))|(::(?P<textmatch>[a-zA-Z0-9!$@%&_-]+)))?\s*$`)
         return r;
     }
 
     // You get a dict of protocol and id values
     getParse(): {[key:string]: string} {
-        let p = this.getLinkParser();
-        let r = p.exec(this.href);
+        const p = this.getLinkParser();
+        const r = p.exec(this.href);
         if (!r) {
             return {'protocol': 'file', 'id': this.href};
         }
@@ -403,8 +400,8 @@ export class Table implements Node {
 
     public static IsTableLine(): boolean {
         const editor = vscode.window.activeTextEditor;
-        let row = editor.selection.start.line;
-        let line = editor.document.lineAt(row).text;
+        const row = editor.selection.start.line;
+        const line = editor.document.lineAt(row).text;
         const mr = tableLineRe.exec(line);
         if (mr) {
             return true;
@@ -414,8 +411,8 @@ export class Table implements Node {
 
     public static IsFormulaLine(): boolean {
         const editor = vscode.window.activeTextEditor;
-        let row = editor.selection.start.line;
-        let line = editor.document.lineAt(row).text;
+        const row = editor.selection.start.line;
+        const line = editor.document.lineAt(row).text;
         const mr = tableFormulaRe.exec(line);
         if (mr) {
             return true;
@@ -502,8 +499,8 @@ export class Table implements Node {
         }
         this.rows.splice(row,0, { type: rtype })
 
-        let rowd: string[] = Array(this.data[0].length)
-        for (var i = 0; i < this.data[0].length; ++i) {
+        const rowd: string[] = Array(this.data[0].length)
+        for (let i = 0; i < this.data[0].length; ++i) {
             rowd[i] = "";
         }
         this.data.splice(row,0, rowd)
@@ -522,15 +519,15 @@ export class Table implements Node {
             return 
         }
         this.cols.splice(col,1)
-        for( var i = 0; i < this.data.length; ++i) {
+        for( let i = 0; i < this.data.length; ++i) {
             this.data[i].splice(col, 1)
         }
     }
 
     addCol(col: number) {
-        let cd = {alignment: Alignment.Left, width: 0};
+        const cd = {alignment: Alignment.Left, width: 0};
         this.cols.splice(col, 0, cd);
-        for (var r = 0; r < this.data.length; ++r) {
+        for (let r = 0; r < this.data.length; ++r) {
             this.data[r].splice(col, 0, '')
         }
     }
@@ -694,7 +691,7 @@ export class Headline implements Parent {
         if (this.status) {
             status = `${this.status} `;
         }
-        let txt = `${"*".repeat(this.level)} ${status}${this.text.trim()}`
+        const txt = `${"*".repeat(this.level)} ${status}${this.text.trim()}`
         if (this.tags.length > 0) {
             tags = `:${this.tags.join(':')}:`;
             tags = `${padPreHeadline(txt, Sets.tagOffset)} ${tags}`
@@ -960,7 +957,7 @@ function finishHeadline(curNode, start, end, buildup) {
 }
 
 function startHeadline(rootNode, m: RegExpExecArray, curLine, last: Headline | null): Headline {
-    let h: Headline = new Headline();
+    const h: Headline = new Headline();
     // Track our nodes from parent to child and child to parent.
     rootNode.nodes.push(h);
     h.root = rootNode;
@@ -1058,10 +1055,10 @@ class ParserState {
 function* parseLines(rootNode: RootNode, content: string, state: ParserState) {
     state.ownedBy = ParserPhase.None;
     let curLine  = 0;
-    var line;
-    var lastLine = 0;
-    var curNode  = null;
-    var start    = 0;
+    let line;
+    const lastLine = 0;
+    let curNode  = null;
+    let start    = 0;
     //const linere = /(^.*$)|(^\r?\n)/mg;
     const commentRegexp = /^\s*[#][+](?<name>[A-Za-z][A-Za-z0-9_]+)[:]\s*(?<val>.*)$/;
     //content = content.replace(/\r/gm,"");
@@ -1115,11 +1112,11 @@ function* parseLines(rootNode: RootNode, content: string, state: ParserState) {
 
 function* parseNumList(gen, state: ParserState) {
     const numRegexp = /^(?<num>\d+)(?<type>[.)])\s+(?<text>.*)/
-    for (var lineData of gen) {
-        let [rootNode, curNode, offset, curLine, line] = lineData;
-        let m = numRegexp.exec(line);
+    for (const lineData of gen) {
+        const [rootNode, curNode, offset, curLine, line] = lineData;
+        const m = numRegexp.exec(line);
         if (state.canParse(ParserPhase.NumberedLists) && m) {
-            let r    = new NumList();
+            const r    = new NumList();
             r.parent = curNode;
             r.num    = parseInt(m.groups.num);
             r.text   = m.groups.text;
@@ -1137,11 +1134,11 @@ function* parseNumList(gen, state: ParserState) {
 }
 function* parseList(gen, state: ParserState) {
     const listRegexp = /^\s*(?<pre>[+-]+)\s+(?<text>[^\[].*)/
-    for (var lineData of gen) {
-        let [rootNode, curNode, offset, curLine, line] = lineData;
-        let m = listRegexp.exec(line);
+    for (const lineData of gen) {
+        const [rootNode, curNode, offset, curLine, line] = lineData;
+        const m = listRegexp.exec(line);
         if (state.canParse(ParserPhase.Lists) && m) {
-            let r = new List();
+            const r = new List();
             r.parent = curNode;
             r.ltype = m.groups.pre;
             r.text = m.groups.text;
@@ -1158,11 +1155,11 @@ function* parseList(gen, state: ParserState) {
 }
 function* parseCheckList(gen, state: ParserState) {
     const listRegexp = /^\s*(?<pre>[+-]+)\s+\[(?<state>[ x-])\]\s*(?<text>.*)/
-    for (var lineData of gen) {
-        let [rootNode, curNode, offset, curLine, line] = lineData;
-        let m = listRegexp.exec(line);
+    for (const lineData of gen) {
+        const [rootNode, curNode, offset, curLine, line] = lineData;
+        const m = listRegexp.exec(line);
         if (state.canParse(ParserPhase.Checklists) && m) {
-            let r = new CheckList();
+            const r = new CheckList();
             r.parent = curNode;
             r.ltype = m.groups.pre;
             r.text = m.groups.text;
@@ -1180,7 +1177,7 @@ function* parseCheckList(gen, state: ParserState) {
 }
 
 function parseComment(m, rootNode: RootNode, curLine, curNode: Headline=null): Comment {
-    let cmnt = new Comment();
+    const cmnt = new Comment();
     cmnt.name = m.groups.name;
     cmnt.val  = m.groups.val;
     cmnt.parent = curNode;
@@ -1197,10 +1194,10 @@ function parseComment(m, rootNode: RootNode, curLine, curNode: Headline=null): C
 }
 
 function* parseComments(gen, state: ParserState) {
-    for (var lineData of gen) {
+    for (const lineData of gen) {
         const commentRegexp = /^\s*[#][+](?<name>[A-Za-z][A-Za-z0-9_]+)[:]\s*(?<val>.*)$/
-        let [rootNode, curNode, offset, curLine, line] = lineData;
-        let m = commentRegexp.exec(line);
+        const [rootNode, curNode, offset, curLine, line] = lineData;
+        const m = commentRegexp.exec(line);
         if (state.canParse(ParserPhase.Comment) && m) {
             const cmt = parseComment(m, rootNode, curLine, curNode);
             if (cmt) {
@@ -1218,8 +1215,8 @@ function* parseLogbook(gen, state: ParserState) {
     let inDrawer = false;
     let startPos;
     let curEntry = null;
-    for (var lineData of gen) {
-        let [rootNode, curNode, offset, curLine, line] = lineData;
+    for (const lineData of gen) {
+        const [rootNode, curNode, offset, curLine, line] = lineData;
         if (inDrawer) {
             const endRegexp = /^\s*[:]END[:]\s*$/
             const em = endRegexp.exec(line);
@@ -1241,12 +1238,12 @@ function* parseLogbook(gen, state: ParserState) {
                         curEntry = null;
                     }
                     if (lm.groups.clock) {
-                        let r = new ClockEntry();
+                        const r = new ClockEntry();
                         r.parent = curNode;
                         const startPos = new vscode.Position(curLine, lm.index);
                         const endPos   = new vscode.Position(curLine, lm.index + lm[0].length);
 
-                        let dm = OrgDate.getClockRegex().exec(line);
+                        const dm = OrgDate.getClockRegex().exec(line);
                         if (dm) {
                             r.date     = OrgDate.parseFromRegex(dm);
                         }
@@ -1270,7 +1267,7 @@ function* parseLogbook(gen, state: ParserState) {
             if (state.canParse(ParserPhase.LogBook) && sm) {
                 state.setState(ParserPhase.LogBook);
                 inDrawer = true;
-                let p: LogBook = new LogBook();
+                const p: LogBook = new LogBook();
                 startPos = new vscode.Position(curLine, sm.index);
                 curNode.logbook = p;
                 rootNode.nodes.push(p);
@@ -1288,8 +1285,8 @@ function* parseLogbook(gen, state: ParserState) {
 function* parseProperties(gen, state: ParserState) {
     let inPropDrawer = false;
     let startPos;
-    for (var lineData of gen) {
-        let [rootNode, curNode, offset, curLine, line] = lineData;
+    for (const lineData of gen) {
+        const [rootNode, curNode, offset, curLine, line] = lineData;
         if (inPropDrawer) {
             const endRegexp = /^\s*[:]END[:]\s*$/
             const em = endRegexp.exec(line);
@@ -1302,7 +1299,7 @@ function* parseProperties(gen, state: ParserState) {
                 const propRegexp = /^\s*[:](?<name>[A-Za-z][A-Za-z0-9_]+)[:]\s*(?<val>.*)$/
                 const pm = propRegexp.exec(line);
                 if (pm) {
-                    let r = new Property();
+                    const r = new Property();
                     r.name = pm.groups.name;
                     r.val  = pm.groups.val;
                     r.parent = curNode;
@@ -1323,7 +1320,7 @@ function* parseProperties(gen, state: ParserState) {
             if (state.canParse(ParserPhase.Properties) && sm) {
                 inPropDrawer = true;
                 state.setState(ParserPhase.Properties);
-                let p = new PropertyDrawer();
+                const p = new PropertyDrawer();
                 startPos = new vscode.Position(curLine, sm.index);
                 curNode.properties = p;
                 rootNode.nodes.push(p);
@@ -1340,8 +1337,8 @@ function* parseSourceBlock(gen, state: ParserState) {
     let startPos;
     let maxLen = 0;
     let height = 0;
-    for (var lineData of gen) {
-        let [rootNode, curNode, offset, curLine, line] = lineData;
+    for (const lineData of gen) {
+        const [rootNode, curNode, offset, curLine, line] = lineData;
         if (inBlock) {
             const endRegexp = /^\s*[#][+][Ee][Nn][Dd]_[Ss][Rr][Cc]\s*$/
             const em = endRegexp.exec(line);
@@ -1365,7 +1362,7 @@ function* parseSourceBlock(gen, state: ParserState) {
             if (state.canParse(ParserPhase.SourceBlock) && sm) {
                 inBlock = true;
                 state.setState(ParserPhase.SourceBlock);
-                let p = new SourceBlock();
+                const p = new SourceBlock();
                 startPos = new vscode.Position(curLine, sm.index);
                 curNode.sourceBlocks.push(p);
                 rootNode.nodes.push(p);
@@ -1388,8 +1385,8 @@ function* parseTable(gen, state: ParserState) {
     let height = 0;
     let curTable = null;
     const tregexp = /^\s*[|].*$/
-    for (var lineData of gen) {
-        let [rootNode, curNode, offset, curLine, line] = lineData;
+    for (const lineData of gen) {
+        const [rootNode, curNode, offset, curLine, line] = lineData;
         if (inTable) {
             const form = tableFormulaRe.exec(line);
             if (form) {
@@ -1443,12 +1440,12 @@ function* parseTable(gen, state: ParserState) {
 
 
 function* parseLinks(gen, state: ParserState) {
-    for (var lineData of gen) {
+    for (const lineData of gen) {
         const linkRegexp = /\[\[(?<link>[^\]]+)\](\[(?<desc>[^\]]+)\])?\]/g
-        let [rootNode, curNode, offset, curLine, line] = lineData;
-        let m = linkRegexp.exec(line);
+        const [rootNode, curNode, offset, curLine, line] = lineData;
+        const m = linkRegexp.exec(line);
         if (state.canParse(ParserPhase.Links) && m) {
-            let link = new Link();
+            const link = new Link();
             link.href = m.groups.link;
             link.desc = m.groups.desc;
             link.parent = curNode;
@@ -1466,12 +1463,12 @@ function* parseLinks(gen, state: ParserState) {
 }
 
 function* parseRolls(gen, state: ParserState) {
-    for (var lineData of gen) {
+    for (const lineData of gen) {
         const rollRegexp = /(?<spaces>^|\s)\/r(?<numdice>[0-9]+)d(?<dicetype>[0-9]+)(\s*(?<diceOp>[+-])\s*(?<diceMod>[+-]?[0-9]+))*(\s*[:]\s*(?<diceResult>[0-9]+))?/g
-        let [rootNode, curNode, offset, curLine, line] = lineData;
-        let m = rollRegexp.exec(line);
+        const [rootNode, curNode, offset, curLine, line] = lineData;
+        const m = rollRegexp.exec(line);
         if (state.canParse(ParserPhase.Roll) && m) {
-            let rl = new Roll();
+            const rl = new Roll();
             rl.numDice = m.groups.numdice;
             rl.diceType = m.groups.dicetype;
             rl.diceOp = m.groups.diceOp;
@@ -1494,10 +1491,10 @@ function* parseRolls(gen, state: ParserState) {
 }
 
 function* parseSDC(gen, state: ParserState) {
-    for (var lineData of gen) {
-        let [rootNode, curNode, offset, curLine, line] = lineData;
+    for (const lineData of gen) {
+        const [rootNode, curNode, offset, curLine, line] = lineData;
         if (offset < 3) {
-            let m = OrgDate.getRegex().exec(line);
+            const m = OrgDate.getRegex().exec(line);
             if (state.canParse(ParserPhase.SDC) && m) {
                 const date     = OrgDate.parseFromRegex(m);
                 const startPos = new vscode.Position(curLine, m.index);
@@ -1507,7 +1504,7 @@ function* parseSDC(gen, state: ParserState) {
                 switch(date.dateType) {
                     case DateType.SCHEDULED: 
                     {
-                        let r = new Scheduled();
+                        const r = new Scheduled();
                         r.range = range;
                         r.date  = date;
                         r.parent = curNode;
@@ -1517,7 +1514,7 @@ function* parseSDC(gen, state: ParserState) {
                     } break;
                     case DateType.DEADLINE:
                     {
-                        let r = new Deadline();
+                        const r = new Deadline();
                         r.range = range;
                         r.date  = date;
                         r.parent = curNode;
@@ -1527,7 +1524,7 @@ function* parseSDC(gen, state: ParserState) {
                     } break;
                     case DateType.CLOSED:
                     {
-                        let r = new Closed();
+                        const r = new Closed();
                         r.range = range;
                         r.date  = date;
                         r.parent = curNode;
@@ -1537,7 +1534,7 @@ function* parseSDC(gen, state: ParserState) {
                     } break;
                     case DateType.TIMESTAMP:
                     {
-                        let r = new Timestamp();
+                        const r = new Timestamp();
                         r.range = range;
                         r.date  = date;
                         r.parent = curNode;
@@ -1554,8 +1551,8 @@ function* parseSDC(gen, state: ParserState) {
 }
 
 export function parseFileContents(contents: string) {
-    let root: RootNode = new RootNode();
-    let state: ParserState = new ParserState();
+    const root: RootNode = new RootNode();
+    const state: ParserState = new ParserState();
     let gen = parseLines(root, contents, state);
     gen     = parseComments(gen,state);
     gen     = parseSDC(gen,state);
@@ -1569,45 +1566,57 @@ export function parseFileContents(contents: string) {
     gen     = parseSourceBlock(gen,state);
     gen     = parseTable(gen,state);
 
-    for (var x of gen) {}
+    for (const x of gen) {}
 
     return root;
 }
 
 
+// The whole-document parse, for the few commands that want a node tree: the
+// TODO keyword picker, tags, capture and do-what-I-mean. It runs when one of
+// them asks and the document has changed since, not on every keystroke -
+// decorations and folding read the lines themselves.
 export class Parser implements vscode.Disposable {
     public doc: RootNode;
+    private parsedFor: { uri: string, version: number } | undefined;
 
-	public async parse(): Promise<void> {
-		const editor = vscode.window.activeTextEditor;
-		if (!editor) {
-			return Promise.resolve();
-		}
-		const text = editor.document.getText();
-        this.doc = parseFileContents(text);
-        return Promise.resolve();
+    public async parse(): Promise<void> {
+        this.ensureParsed();
+    }
+
+    private ensureParsed() {
+        const editor = vscode.window.activeTextEditor;
+        if (!editor) {
+            return;
+        }
+        const d = editor.document;
+        const key = d.uri.toString();
+        if (!this.parsedFor || this.parsedFor.uri !== key || this.parsedFor.version !== d.version) {
+            this.doc = parseFileContents(d.getText());
+            this.parsedFor = { uri: key, version: d.version };
+        }
     }
 
     public async parseFromDoc(doc: vscode.TextDocument): Promise<void> {
         if (doc) {
-		    const text = doc.getText();
-            this.doc = parseFileContents(text);
+            this.doc = parseFileContents(doc.getText());
+            this.parsedFor = { uri: doc.uri.toString(), version: doc.version };
         }
-        return Promise.resolve();
     }
 
     public async parseFromText(txt: string): Promise<void> {
         if (txt) {
             this.doc = parseFileContents(txt);
+            this.parsedFor = undefined;
         }
-        return Promise.resolve();
     }
 
     public find(pos: vscode.Position | undefined = undefined): Node {
-		const editor = vscode.window.activeTextEditor;
-		if (!editor) {
+        const editor = vscode.window.activeTextEditor;
+        if (!editor) {
             return undefined;
-		}
+        }
+        this.ensureParsed();
         if (pos === undefined) {
             pos = editor.selection.active;
         }
@@ -1626,423 +1635,5 @@ export class Parser implements vscode.Disposable {
     }
 
     public dispose() {
-
     }
 }
-
-
-
-
-/*
-import * as vscode from 'vscode';
-import { Config } from './config';
-import { Head } from './orgdoc';
-
-export class Parser implements vscode.Disposable {
-	private config: Config;
-	private level: number;
-	private state: string[];
-	private headRegex: RegExp;
-	private countRegex: RegExp;
-	private linkRegex: RegExp;
-	private srcRegex: RegExp;
-	private first: Head | undefined;
-	private links: vscode.Range[];
-	private sources: vscode.Range[];
-
-	constructor(context: vscode.ExtensionContext) {
-		this.config = Config.getInstance();
-		this.level = this.config.get('headLevel');
-		this.state = (this.config.get('todoState') + ' ' + this.config.get('doneState')).split(' ');
-		this.headRegex = new RegExp('^[*]{1,' + this.level.toString() + '}\\s+', 'gm');
-		this.countRegex = new RegExp('\\[\\d*\\/\\d*\\]', 'g');
-		this.linkRegex = new RegExp('\\[\\[[^\\n]+\\]\\]', 'g');
-		this.srcRegex = new RegExp('#\\+(begin|end)_src', 'gi');
-		this.first = undefined;
-		this.links = [];
-		this.sources = [];
-	}
-
-	dispose(): void {
-	}
-
-	async parse(): Promise<void> {
-		const editor = vscode.window.activeTextEditor;
-		if (!editor) {
-			return Promise.resolve();
-		}
-		this.first = undefined;
-		this.links = [];
-		this.sources = [];
-		const text = editor.document.getText();
-		let match;
-		const parent: Head[] = [];
-		let prevHead: Head | undefined = undefined;
-		while (match = this.headRegex.exec(text)) {
-			const level = match[0].trim().startsWith('*') ? match[0].trim().length : 0;
-			const pos = editor.document.positionAt(match.index);
-
-			// head
-			const line = editor.document.lineAt(pos.line);
-			const head = new Head(level, line.range);
-			if (!this.first) {
-				this.first = head;
-			}
-
-			// state
-			const lineArray = line.text.split(/\s+/);
-			if ((lineArray.length > 2) && this.state.includes(lineArray[1])) {
-				head.state = lineArray[1];
-				head.stateColumn = line.text.indexOf(head.state);
-			}
-
-			// count
-			const countMatch = this.countRegex.exec(line.text);
-			if (countMatch) {
-				head.count = countMatch[0];
-				head.countColumn = countMatch.index;
-			}
-
-			// schedule and deadline
-			if (editor.document.lineCount > pos.line + 1) {
-				const nextLine = editor.document.lineAt(pos.line + 1);
-				head.scheduleColumn = nextLine.text.indexOf('SCHEDULED:');
-				if (head.scheduleColumn >= 0) {
-					const end = nextLine.text.indexOf('>', head.scheduleColumn);
-					head.schedule = nextLine.text.slice(head.scheduleColumn, end + 1);
-				}
-				head.deadlineColumn = nextLine.text.indexOf('DEADLINE:');
-				if (head.deadlineColumn >= 0) {
-					const end = nextLine.text.indexOf('>', head.deadlineColumn);
-					head.deadline = nextLine.text.slice(head.deadlineColumn, end + 1);
-				}
-			}
-
-			// body
-			if (prevHead) {
-				prevHead.nextHead = head;
-				const prevLine = prevHead.rangeHead.start.line;
-				if (prevLine >= 0 && pos.line - 1 > prevLine) {
-					const range = new vscode.Range(prevLine + 1, 0, pos.line - 1, 0);
-					prevHead.rangeBody = range;
-				}
-			}
-			head.prevHead = prevHead;
-
-			// parent
-			let p = parent.pop();
-			if (!p) {
-				parent.push(head);
-			} else {
-				while (p && p.level >= head.level) {
-					p = parent.pop();
-				}
-				if (p) {
-					p.children.push(head);
-					head.parent = p;
-					parent.push(p);
-				}
-				parent.push(head);
-			}
-
-			prevHead = head;
-		}
-		// end of file
-		if (prevHead) {
-			const prevLine = prevHead.rangeHead.start.line;
-			const lastLine = editor.document.lineCount - 1;
-			if (prevLine >= 0 && lastLine > prevLine) {
-				const range = new vscode.Range(prevLine + 1, 0, lastLine, 0);
-				prevHead.rangeBody = range;
-			}
-		}
-		while (match = this.linkRegex.exec(text)) {
-			const start = editor.document.positionAt(match.index);
-			const end = editor.document.positionAt(match.index + match[0].length);
-			this.links.push(new vscode.Range(start, end));
-		}
-		let beginSrc: vscode.Position | undefined = undefined;
-		while (match = this.srcRegex.exec(text)) {
-			const start = editor.document.positionAt(match.index);
-			const end = editor.document.positionAt(match.index + match[0].length);
-			if (match[0].toLowerCase() === '#+begin_src') {
-				beginSrc = editor.document.positionAt(match.index);
-			} else if (beginSrc) {
-				this.sources.push(new vscode.Range(beginSrc, editor.document.positionAt(match.index)));
-				beginSrc = undefined;
-			}
-		}
-		return Promise.resolve();
-	}
-
-	getHead(line: number | undefined = undefined): Head | undefined {
-		if (!line) {
-			return this.first;
-		}
-		let h = this.first;
-		while (h) {
-			const headLine = h.rangeHead.start.line;
-			const bodyLine = (h.rangeBody) ? h.rangeBody.end.line : h.rangeHead.start.line;
-			if (line >= headLine && line <= bodyLine) {
-				break;
-			}
-			h = h.nextHead;
-		}
-		return h;
-	}
-
-	getLinks(): vscode.Range[] {
-		return this.links;
-	}
-
-	getSources(): vscode.Range[] {
-		return this.sources;
-	}
-}
-*/
-
-
-/*
-
-import * as fs from "fs";
-import * as readline from "readline";
-import * as stream from "stream";
-import * as pevt from "p-event";
-
-function readLines( input : fs.ReadStream) : stream.PassThrough 
-{
-    const output = new stream.PassThrough({ objectMode: true });
-    const rl = readline.createInterface({ input });
-    rl.on("line", line => { 
-        output.write(line);
-    });
-    rl.on("close", () => {
-        output.push(null);
-    }); 
-    return output;
-}
-
-function* range(start: number, stop: number)
-{
-    for (let i = start; i < stop; yield i++) {}
-}
-
-class OrgProperties
-{
-    key : string;
-    value : string;
-    line : number;
-}
-
-class OrgBlock
-{
-    line: number;
-}
-
-class OrgDynamicBlocks
-{
-    line: number;
-}
-
-class OrgDateTime extends Date
-{
-    
-}
-
-
-class OffsetIter implements Iterator<string> 
-{
-    lines: string[];
-    cur:   number;
-    
-    constructor(lines:string[]) 
-    {
-        this.lines = lines;
-        this.cur   = 0;
-    }
-    
-    public next(): IteratorResult<string>
-    {
-        if(this.cur < this.lines.length)
-        {
-            let rv = { done: false, value: this.lines[this.cur]};
-            this.cur += 1;
-            return rv;
-        }
-        else
-        {
-            return { done: true, value: null };
-        }
-    }    
-    
-    offset() : number
-    {
-        return this.cur;
-    }
-}
-
-class OrgNode
-{
-    start: number;
-    end: number;
-    heading: string;
-    header: string;
-    level: number;
-    tags:  string[];
-    todo: string;
-    priority: string;
-    properties: OrgProperties[];
-    blocks: OrgBlock[];
-    scheduled: OrgDateTime;
-    deadline: OrgDateTime;
-    closed: OrgDateTime;
-    timestamps: OrgDateTime[];
-    clocklist: OrgDateTime[];
-    customId: string;
-    
-};
-
-class Chunk
-{
-    lines : string[];
-    start : number;
-    end : number;
-    
-    constructor(lines : string[], s : number, e: number)
-    {
-        this.lines = lines;
-        this.start = s;
-        this.end = e;
-    }
-};
-
-export async function* chunk(rh : fs.ReadStream) : AsyncGenerator<Chunk>
-{
-    let chunks: string[] = [];
-    let start = 0;
-    let end   = 0;
-    let count = 0;
-    let rr : readline.ReadLine = readline.createInterface({input: rh, crlfDelay: Infinity});
-    const asyncIterator : AsyncIterableIterator<string> = pevt.iterator(rr, 'line', {
-        resolutionEvents: ['close']
-    });
-    for await ( const line of asyncIterator )
-    {
-        if(/^\s*[*]+\s/.test(line))
-        {
-            end = count - 1;
-            yield new Chunk(chunks, start, end);
-            chunks = [];
-            start = count;
-        }
-        chunks.push(line);
-        count += 1;
-    }
-    end = count - 1;
-    yield new Chunk(chunks, start, end);
-    return;
-}
-
-class OrgFile
-{
-    public nodes : OrgNode[];
-    
-    ParseHeader(c : Chunk)
-    {
-        
-    }
-    
-    ParseNodeHeading(n: OrgNode)
-    {
-        // TODO This has to be the full list of headings.
-        let todoCandidates = ["DONE", "TODO"];
-        n.header = n.heading;
-        let m = n.heading.match(/^(\*+)\s+(.*?)\s*$/);
-        n.level = m[1].length;
-        let remainder = m[2];
-        // priority
-        m = remainder.match(/^\s*\[#([A-Z0-9])\] ?(.*)$/);
-        if(!m)
-        {
-            n.priority = m[1];
-            remainder  = m[2];
-        }
-        // tags
-        m = remainder.match(/(.*?)\s*:([\w@:]+):\s*$/);
-        if(!m)
-        {
-            n.tags = m[2].split(":");
-            remainder = m[1];
-        }
-        // todo
-        for(let todo of todoCandidates)
-        {
-            let todows = todo + " ";            
-            if(remainder.startsWith(todows))
-            {
-                remainder = remainder.slice(todows.length);
-                n.todo = todo;
-                break;
-            }
-        }
-        n.heading = remainder;
-    }
-    
-    *ParseSdc(ilines: OffsetIter)
-    {
-        for(let i of range(0,3))
-        {
-            let linei = ilines.next();
-        } 
-        
-    }
-    
-    ParseChunk(c : Chunk) : OrgNode
-    {
-        let n : OrgNode = new OrgNode();
-        n.start = c.start;
-        n.end   = c.end;
-        n.heading = c.lines[0];
-        this.ParseNodeHeading(n);
-        
-        let ilines = new OffsetIter(c.lines);
-        let gen = this.ParseSdc(ilines)
-        //gen = self._iparse_names(gen, ilines)
-        //gen = self._iparse_clock(gen, ilines)
-        //gen = self._iparse_tables(gen, ilines)
-        //gen = self._iparse_properties(gen, ilines)
-        //gen = self._iparse_drawers(gen, ilines)
-        //gen = self._iparse_targets(gen, ilines)
-        //gen = self._iparse_blocks(gen, ilines)
-        //gen = self._iparse_repeated_tasks(gen, ilines)
-        //gen = self._iparse_timestamps(gen, ilines)
-        
-        return n;
-    }
-    
-    async FromChunks(g : AsyncGenerator<Chunk>)
-    {
-        let ci : IteratorResult<Chunk>;
-        ci = await g.next();
-        this.ParseHeader(ci.value);
-        
-        while(ci = await g.next())
-        {
-            let c: Chunk = ci.value;
-            this.nodes.push(this.ParseChunk(c));
-        }
-    }
-};
-
-
-
-export function parseFile(filename: string) : OrgFile
-{
-    let rs : fs.ReadStream = fs.createReadStream(filename);
-    let f : OrgFile = new OrgFile();
-    
-    f.FromChunks(chunk(rs));
-    return f;
-}
-
-*/

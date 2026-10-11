@@ -1,4 +1,14 @@
 import * as vscode from 'vscode';
+/* SDOC: Developers
+* Logging in, or not
+  =Auth= holds the token from a login and refreshes it before it runs out.
+  =probe()= asks the server, with no token, whether it answers: =open= (a
+  =noAuth: true= server - no login needed), =closed=, or =unreachable=.
+  =isLoggedIn()= is true for a valid token or an open server, so everything
+  that waits for a login works against a noAuth server; =onAccessChanged=
+  tells the status bar (=connection.ts=).
+EDOC */
+
 import * as https from 'https';
 import * as crypto from 'crypto';
 import { Sets } from './sets';
@@ -13,6 +23,16 @@ async function fetch(url, ...args) {
         callFetch = temp['default'];
     }
     return callFetch(url, ...args);
+}
+
+// The agent for a request to the orgs server: none over plain http, which an
+// https agent refuses outright, and one that takes a self-signed certificate
+// when the user has said to.
+export function orgsAgent(): https.Agent | undefined {
+    if (!Sets.orgsConnection.startsWith('https:')) {
+        return undefined;
+    }
+    return Sets.allowSelfSigned ? new https.Agent({ rejectUnauthorized: false }) : https.globalAgent;
 }
 
 export interface AuthToken {
@@ -31,6 +51,12 @@ export class Auth {
     // anything holding a copy (the worg panels) can be handed the new one.
     private tokenChanged = new vscode.EventEmitter<AuthToken | null>();
     public readonly onTokenChanged = this.tokenChanged.event;
+    // What the server at the configured address said when asked without a
+    // token: 'open' (noAuth - no login wanted), 'closed' (log in), or
+    // 'unreachable'. Undefined until asked.
+    private access: { url: string, state: 'open' | 'closed' | 'unreachable' } | undefined;
+    private accessChanged = new vscode.EventEmitter<'open' | 'closed' | 'unreachable'>();
+    public readonly onAccessChanged = this.accessChanged.event;
 
     private constructor() {}
 
@@ -48,10 +74,56 @@ export class Auth {
             this.currentToken = stored;
             this.scheduleRefresh();
         }
+        // A new address is a new server to ask.
+        context.subscriptions.push(vscode.workspace.onDidChangeConfiguration(e => {
+            if (e.affectsConfiguration('org.orgsConnection')) {
+                this.access = undefined;
+                this.probe();
+            }
+        }));
+        this.probe();
     }
 
+    // Whether the plugin can talk to the server: a login that has not run out,
+    // or a server that wants none.
     public isLoggedIn(): boolean {
-        return this.currentToken !== null && !this.isExpired();
+        return (this.currentToken !== null && !this.isExpired()) || this.isOpen();
+    }
+
+    // A server started with noAuth: true answers everybody.
+    public isOpen(): boolean {
+        return !!this.access && this.access.url === Sets.orgsConnection && this.access.state === 'open';
+    }
+
+    public accessState(): 'open' | 'closed' | 'unreachable' | undefined {
+        return this.access && this.access.url === Sets.orgsConnection ? this.access.state : undefined;
+    }
+
+    // Ask the server, without a token, whether it answers. Remembered per
+    // address; whoever listens to onAccessChanged hears when it changes.
+    public async probe(): Promise<'open' | 'closed' | 'unreachable'> {
+        const url = Sets.orgsConnection;
+        let state: 'open' | 'closed' | 'unreachable';
+        try {
+            const res = await fetch(new Request(new URL(url + '/status').toString(), {
+                method: 'GET',
+                headers: { 'Accept': 'application/json' },
+                agent: orgsAgent(),
+            }));
+            state = res.status === 401 || res.status === 403 ? 'closed' : res.ok ? 'open' : 'unreachable';
+        } catch (e) {
+            state = 'unreachable';
+        }
+        const before = this.accessState();
+        this.access = { url, state };
+        if (state !== before) {
+            this.accessChanged.fire(state);
+            // Anything waiting for a login (the agenda, the clock) goes now.
+            if (state === 'open') {
+                this.tokenChanged.fire(this.currentToken);
+            }
+        }
+        return state;
     }
 
     public isExpired(): boolean {
@@ -71,11 +143,15 @@ export class Auth {
     // The token with its expiry, for passing on to something that has to know
     // when it runs out.
     public getTokenInfo(): AuthToken | null {
-        return this.isLoggedIn() ? this.currentToken : null;
+        return this.currentToken !== null && !this.isExpired() ? this.currentToken : null;
     }
 
     public async ensureLoggedIn(): Promise<boolean> {
         if (this.isLoggedIn()) {
+            return true;
+        }
+        // Not asked yet (or asked another address): a noAuth server needs no login page.
+        if (this.accessState() === undefined && await this.probe() === 'open') {
             return true;
         }
         if (this.currentToken && this.isExpired()) {
@@ -138,7 +214,7 @@ export class Auth {
     // separators and order must match both exactly.
     //
     // A server too old to answer GET /salt can only take the password itself.
-    private async secretFor(username: string, password: string, agent: https.Agent): Promise<string> {
+    private async secretFor(username: string, password: string, agent: https.Agent | undefined): Promise<string> {
         let salt: string | null = null;
         try {
             const url = new URL(Sets.orgsConnection + '/salt');
@@ -171,10 +247,7 @@ export class Auth {
             headers.set('Content-Type', 'application/json');
             headers.set('Accept', 'application/json');
 
-            var httpsAgent = https.globalAgent;
-            if (Sets.allowSelfSigned) {
-                httpsAgent = new https.Agent({ rejectUnauthorized: false });
-            }
+            const httpsAgent = orgsAgent();
 
             const request: RequestInfo = new Request(url.toString(), {
                 method: 'POST',
@@ -259,10 +332,7 @@ export class Auth {
             headers.set('Accept', 'application/json');
             headers.set('Authorization', 'Bearer ' + this.currentToken.token);
 
-            var httpsAgent = https.globalAgent;
-            if (Sets.allowSelfSigned) {
-                httpsAgent = new https.Agent({ rejectUnauthorized: false });
-            }
+            const httpsAgent = orgsAgent();
 
             const request: RequestInfo = new Request(url.toString(), {
                 method: 'POST',

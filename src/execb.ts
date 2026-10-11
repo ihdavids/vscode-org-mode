@@ -1,16 +1,7 @@
 
-import { join, parse } from 'path';
 import * as vscode from 'vscode';
-import { Page } from "./page";
-import { Signal } from "./signal";
-import * as Util from './utils';
-import * as CC from './cursor-context';
-import { OrgDuration } from './duration';
 import './duration';
-import * as Datetime from './simple-datetime';
 import {ODb} from "./db"
-import { Sets } from './sets';
-import { Parser } from './parser';
 import { Log } from './log';
 
 // THESE DO NOT WORK! This is just an idea!
@@ -55,16 +46,34 @@ export async function showFunctionNames(): Promise<void> {
 
 
 export async function execBlock(): Promise<void> {
-    const src = await ODb.getHashTarget();
+    const doc = vscode.window.activeTextEditor.document;
     const row = vscode.window.activeTextEditor.selection.active.line;
-    const res: any = await ODb.execBlock(src, row);
+    // The server runs what is on disk, so the line has to mean the same there.
+    if (doc.isDirty) {
+        await doc.save();
+    }
+    // Source blocks, #+CALL: and inline code go through babel. /execb is what
+    // is left for dynamic blocks, which babel finds nothing to run in.
+    let src: any = doc.fileName;
+    let res: any = await ODb.babelExec(doc.fileName, row);
+    if (res && (!res.Ran || res.Ran.length === 0)) {
+        src = await ODb.getHashTarget();
+        const dyn: any = await ODb.execBlock(src, row);
+        // Not a dynamic block either: babel says why better than /execb does.
+        if (dyn && dyn.Ok) {
+            res = dyn;
+        }
+    }
+    if (!res) {
+        return;
+    }
     if (!res.Ok) {
         Log.get().error("EXECB: ", src);
         Log.get().error("  > EXECB ERROR: ", JSON.stringify(res))
-        vscode.window.showErrorMessage("ERROR failed to exec block", res.Msg )
+        vscode.window.showErrorMessage('Could not run the block: ' + (res.Msg || 'the orgs server did not say why'));
     } else {
         Log.get().log("EXECB RESULT: ", src);
-        vscode.window.showInformationMessage("Execb executed: ", res.Msg )
+        vscode.window.setStatusBarMessage('$(check) Ran' + (res.Msg ? ': ' + res.Msg : ''), 4000);
     }
 }
 

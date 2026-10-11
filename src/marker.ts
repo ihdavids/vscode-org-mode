@@ -1,11 +1,8 @@
-import { join, parse } from 'path';
 import * as vscode from 'vscode';
-import { Signal } from "./signal";
 import * as Util from './utils';
 import {ODb} from "./db"
+import { settled } from './org-files';
 import { Sets } from './sets';
-import { Parser } from './parser';
-import { Log } from './log';
 
 
 async function getMarkerName(): Promise<string> {
@@ -23,18 +20,23 @@ async function getMarkerName(): Promise<string> {
 }
 
 export async function setMarker(): Promise<void> {
-    const src = await ODb.getHashTarget();
     const marker = await getMarkerName();
-    if (!marker) {
+    const editor = vscode.window.activeTextEditor;
+    if (!marker || !editor) {
         return undefined;
     }
-    const res: any = await ODb.setMarker(src, marker);
-    if (!res.Ok) {
-        Log.get().error("MARKER: ", src);
-        Log.get().error("  > MARKER ERROR: ", JSON.stringify(res))
-    } else {
-        Log.get().log("MARKER: ", src);
+    // The server finds the heading in the saved file.
+    if (editor.document.isDirty && !await editor.document.save()) {
+        return;
     }
+    const src = await ODb.getHashTarget();
+    const res: any = await ODb.setMarker(src, marker);
+    if (!res || !res.Ok) {
+        vscode.window.showErrorMessage(`Could not set the ${marker} marker: ${res && res.Msg || 'the orgs server did not answer'}`);
+        return;
+    }
+    await settled([src.filename]);
+    vscode.window.setStatusBarMessage(`$(bookmark) ${marker} is here`, 3000);
 }
 
 export async function jumpToMarker(): Promise<void> {
@@ -43,11 +45,10 @@ export async function jumpToMarker(): Promise<void> {
         return undefined;
     }
     const res: any = await ODb.getMarker(marker);
-    if (!res) {
-        Log.get().error("  > JUMP MARKER ERROR: ", JSON.stringify(res))
-    } else {
-        Log.get().error("  > JUMP MARKER: ", JSON.stringify(res))
-        Util.jumpToHeading(res[0].Filename, res[0].LineNum);
+    if (!Array.isArray(res) || res.length === 0) {
+        vscode.window.showInformationMessage(`No heading has the ${marker} marker. Set Marker puts it on one.`);
+        return;
     }
+    Util.jumpToHeading(res[0].Filename, res[0].LineNum);
 }
 

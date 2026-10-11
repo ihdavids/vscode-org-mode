@@ -1,0 +1,34 @@
+#+TITLE: Previews and panels
+#+DOC_ORDER: 10
+
+* Web page and slides
+    *Show Web*, *Show Reveal JS* and *Show Impress JS* preview the file the way
+    the orgs server exports it, beside the editor. The preview follows the
+    org file you are in, as Markdown's preview does, and redraws when you
+    save - keeping where you had scrolled to. Press =s= in it to save the page
+    as html. See [[file:export.org][Exporting]] to write the files instead.
+
+    #+CAPTION: The file previewed as a web page, beside it.
+    [[./images/preview.png]]
+
+
+* Gantt chart and mind map
+    *Show Gantt* and *Show Mind Map* draw the headings a query finds: one of the
+    named queries in =org.gantts=, or one you type. They redraw when an org
+    file is saved. Worg has fuller versions (*Show Gantt Chart*, *Show Mind
+    Map*).
+
+* Pictures and maths
+    *Show Pictures And Maths* opens a panel that follows the subtree the cursor
+    is in and shows its linked images and its LaTeX - =$e=mc^2$=, =\(…\)=,
+    =\[…\]=, =$$…$$= and =\begin{equation}…= - typeset with KaTeX. Click one to
+    go to it. VS Code cannot draw pictures inside the text; this is the next
+    best thing. (Hovering an image link shows it too - see [[file:links.org][Links]].)
+    The maths needs a network connection the first time, to fetch KaTeX.
+
+    #+CAPTION: The pictures and maths of the subtree the cursor is in, drawn beside the text.
+    [[./images/maths.png]]
+
+
+* Column view
+    See [[file:column-view.org][Column view]].

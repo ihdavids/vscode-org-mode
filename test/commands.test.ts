@@ -1,6 +1,5 @@
 import * as vscode from 'vscode';
 import * as assert from 'assert';
-import { deflateSync } from 'zlib';
 import { OrgExtension } from '../src/extension';
 
 interface TestEditorOptions {
@@ -28,7 +27,7 @@ function move(editor: vscode.TextEditor, line: number, col: number) {
 
 async function insert(editor: vscode.TextEditor, text: string) {
     await editor.edit((edit) => {
-        let pos = editor.selection.active;
+        const pos = editor.selection.active;
         edit.insert(pos, text);
     });
 }
@@ -233,8 +232,8 @@ suite('Commands', () => {
         // So remove the timezone from the equation.
         //const datePart = now.toString().slice(0, 10);
 
-        var tzoffset = (new Date()).getTimezoneOffset() * 60000; //offset in milliseconds
-        var datePart = (new Date(Date.now() - tzoffset)).toISOString().slice(0, 10);
+        const tzoffset = (new Date()).getTimezoneOffset() * 60000; //offset in milliseconds
+        const datePart = (new Date(Date.now() - tzoffset)).toISOString().slice(0, 10);
         const dayOfWeek = weekdayArray[now.getDay()];
 
         const initial = '';

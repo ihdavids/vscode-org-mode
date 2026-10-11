@@ -1,14 +1,10 @@
 
-import { join, parse } from 'path';
 import * as vscode from 'vscode';
 import { Page } from "./page";
 import { Signal } from "./signal";
-import * as Util from './utils';
-import * as CC from './cursor-context';
-import { OrgDuration } from './duration';
 import './duration';
-import * as Datetime from './simple-datetime';
 import {ODb} from "./db"
+import { settled } from './org-files';
 import { Sets } from './sets';
 import { Parser } from './parser';
 import { Log } from './log';
@@ -133,13 +129,13 @@ export class CapturePage implements vscode.TextDocumentContentProvider {
     
     async rebuildCaptureTemplates(): Promise<any> {
         this.templates = await ODb.captureTemplates();
-        let knownTemplates = Sets.captureTemplates;
+        const knownTemplates = Sets.captureTemplates;
         let didUpdate = false;
         // TODO: I want to be able to map multiple capture templates to a single target definition
         // TODO: I want to have vscode side target definitions that do not exist on the server side
         // TODO: I want to automatically add server side definitions if they do not exist on the vscode side?
         //
-        let notInTemplates = [];
+        const notInTemplates = [];
         if (!this.templates) {
             return [knownTemplates, notInTemplates];
         }
@@ -163,7 +159,7 @@ export class CapturePage implements vscode.TextDocumentContentProvider {
                 knownTemplates[item.Name] = {
                     "selector": item.Name,
                     "type":    item.Type,
-                    "target":  item.Target,
+                    "target":  item.CapTarget,
                     "snippet": this.getCaptureSnippetDefault(item.Type)
                 }
             }
@@ -183,7 +179,7 @@ export class CapturePage implements vscode.TextDocumentContentProvider {
         
         const [knownTemplates, notInTemplates] = await this.rebuildCaptureTemplates();
         console.log("knownTemplates", knownTemplates);
-        let temps: string[] = [];
+        const temps: string[] = [];
         Object.entries(knownTemplates).forEach(([name, item]) => { if (!item['hide']) { temps.push(name); }});
         const templateName = await vscode.window.showQuickPick(temps)
         console.log("RESULTS", templateName);
@@ -204,7 +200,7 @@ export class CapturePage implements vscode.TextDocumentContentProvider {
         this.page.onWindowsChanged(this.context, (content) => {
             if (!this.doNotSave && !haveCaptured) {
                 if (this.template['type'] === 'entry') {
-                    let parser: Parser = new Parser();
+                    const parser: Parser = new Parser();
                     parser.parseFromText(content);
                     if (parser.doc && parser.doc.children) {
                         const h = parser.doc.children[0];
@@ -214,12 +210,12 @@ export class CapturePage implements vscode.TextDocumentContentProvider {
                         const tags = h.tags;
                         const priority = "";
                         haveCaptured = true;
-                        ODb.capture(selector, headline, body, tags, props, priority);
+                        ODb.capture(selector, headline, body, tags, props, priority).then(r => captured(r, selector));
                     }
                 }
                 else {
                     haveCaptured = true;
-                    ODb.capture(selector, "", content, [], {}, "");
+                    ODb.capture(selector, "", content, [], {}, "").then(r => captured(r, selector));
                 }
             }
         });
@@ -242,43 +238,22 @@ export class CapturePage implements vscode.TextDocumentContentProvider {
     }
 }
 
+// The answer to a capture: said, either way, and the file it went into shown
+// as the server left it.
+async function captured(res: any, template: string) {
+    if (res && res.Ok) {
+        vscode.window.setStatusBarMessage(`$(check) Captured (${template})`, 3000);
+    } else {
+        vscode.window.showErrorMessage(`Capture failed: ${res && res.Msg || 'the orgs server did not answer'}`);
+    }
+    await settled(vscode.workspace.textDocuments.filter(d => d.languageId === 'org').map(d => d.uri.fsPath));
+}
+
 // Do we ever want to expose this?
 async function deleteHeading(): Promise<void> {
     const src = await ODb.getHashTarget();
     await ODb.delete(src);
 }
-
-export async function refileHeading(): Promise<void> {
-    const src = await ODb.getHashTarget();
-    const tgts = await ODb.refiletargets();
-    const r = await vscode.window.showQuickPick(tgts);
-    if (r) {
-        let to = new NodeTarget();
-        const rs = r.split("|");
-        to.filename = rs[0]; 
-        to.type = "file+olp"
-        to.id = rs.slice(1).join("::");
-        const res: any = await ODb.refile(src, to);
-        if (!res.Ok) {
-            Log.get().error("REFILE: ", r, " <- ", src);
-            Log.get().error("  > REFILE ERROR: ", JSON.stringify(res))
-        } else {
-            Log.get().log("RESULT: ", r, " <- ", src);
-        }
-    }
-}
-
-export async function archiveHeading(): Promise<void> {
-    const src = await ODb.getHashTarget();
-    const res: any = await ODb.archive(src);
-    if (!res.Ok) {
-        Log.get().error("ARCHIVE: ", src);
-        Log.get().error("  > ARCHIVE ERROR: ", JSON.stringify(res))
-    } else {
-        Log.get().log("RESULT: ", src);
-    }
-}
-
 
 export async function createJira(): Promise<void> {
     const src = await ODb.getHashTarget();
@@ -286,10 +261,10 @@ export async function createJira(): Promise<void> {
     if (!res.Ok) {
         Log.get().error("JIRA: ", src);
         Log.get().error("  > JIRA ERROR: ", JSON.stringify(res))
-        vscode.window.showErrorMessage("ERROR failed to create JIRA ticket", res.Msg )
+        vscode.window.showErrorMessage('Could not create the Jira ticket: ' + (res && res.Msg || 'the orgs server did not answer'));
     } else {
         Log.get().log("JIRA RESULT: ", src);
-        vscode.window.showInformationMessage("Jira ticket created: ", res.Msg )
+        vscode.window.showInformationMessage('Jira ticket created: ' + res.Msg);
     }
 }
 

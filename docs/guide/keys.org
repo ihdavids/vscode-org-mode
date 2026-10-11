@@ -1,0 +1,75 @@
+#+TITLE: Keys
+#+DOC_ORDER: 2
+
+    One key to remember: *Ctrl+Alt+O M* opens a menu of everything, with what
+    fits where the cursor is first and each item's key beside it.
+
+    #+CAPTION: Ctrl+Alt+O M on a heading: the heading commands first, each with its key, then everything else.
+    [[./images/menu.png]]
+
+
+    The keys that act on a table or a heading only take over on a table or
+    heading line; everywhere else Tab, Enter and Alt+arrows are VS Code's.
+    With VSCodeVim, everything here works in insert mode; the vim column is
+    for normal mode.
+
+* Everywhere in an org file
+    | Key                 | Does                                       | Vim normal |
+    |---------------------+--------------------------------------------+------------|
+    | Ctrl+Alt+O M        | The menu                                   |            |
+    | Ctrl+Alt+O R        | Run what is at the cursor                  |            |
+    | Ctrl+Alt+O O        | Sort: table rows, a list, the headings under one |      |
+    | Ctrl+Alt+O .        | Insert a timestamp                         |            |
+    | Ctrl+Alt+O K        | Insert a link                              |            |
+    | Ctrl+Alt+O Shift+K  | Store a link to here                       |            |
+    | Ctrl+Alt+O Shift+O  | Open the link under the cursor             |            |
+    | F12 / Ctrl+click    | Follow a link                              | =gd=       |
+    | Shift+F12           | Links to this heading                      | =gr=       |
+    | Ctrl+Alt+O W        | Refile the subtree                         |            |
+    | Ctrl+Alt+O Shift+W  | Copy the subtree to…                       |            |
+    | Ctrl+Alt+O A        | Archive the subtree                        |            |
+    | Ctrl+Alt+O E        | Export the file                            |            |
+    | Ctrl+Alt+O Shift+E  | Export the subtree                         |            |
+    | Ctrl+Alt+O Shift+A  | Attach a file                              |            |
+    | Ctrl+Alt+O Shift+F  | Search this file                           |            |
+    | Ctrl+Alt+O Ctrl+I   | Clock in                                   |            |
+    | Ctrl+Alt+O Ctrl+O   | Clock out                                  |            |
+    | Ctrl+Alt+O Shift+N  | Narrow to the subtree                      |            |
+    | Ctrl+Alt+O Shift+C  | Column view                                |            |
+    | Ctrl+Alt+O Ctrl+F   | Insert a footnote / go between it and its note |        |
+    | Alt+Left / Alt+Right | Cycle the TODO keyword, or step a date    |            |
+
+* Anywhere in VS Code
+    | Key           | Does                              |
+    |---------------+-----------------------------------|
+    | Ctrl+Alt+O F  | Search every org file             |
+    | Ctrl+Alt+O J  | Go to the running clock           |
+    | Ctrl+Alt+O N  | New org file                      |
+    | Ctrl+Alt+O Q  | Quick capture                     |
+    | Ctrl+Alt+O Shift+T | Start a timer (pomodoro)     |
+
+* On a heading
+    | Key                          | Does                                  | Vim normal       |
+    |------------------------------+---------------------------------------+------------------|
+    | Tab                          | Fold, show children, show all         | Tab              |
+    | Shift+Tab                    | The whole file: overview, contents, all | Shift+Tab      |
+    | Alt+Up / Alt+Down            | Move the subtree                      | Alt+K / Alt+J    |
+    | Alt+Shift+Left / Alt+Shift+Right | Promote / demote the subtree      | Alt+H / Alt+L    |
+
+* In a table
+    | Key                          | Does                                  | Vim normal                |
+    |------------------------------+---------------------------------------+---------------------------|
+    | Tab / Shift+Tab              | Next / previous cell, aligning        | Tab / Shift+Tab           |
+    | Enter                        | Down a row, making one at the end     | (vim's own Enter)         |
+    | Shift+Enter                  | Copy the cell down                    |                           |
+    | Alt+arrows                   | Move the row or column                | Alt+H/J/K/L               |
+    | Alt+Shift+Down / Up          | Insert a row / delete the row         | Alt+Shift+J / Alt+Shift+K |
+    | Alt+Shift+Right / Left       | Insert a column / delete the column   | Alt+Shift+L / Alt+Shift+H |
+    | Ctrl+-                       | A rule below                          |                           |
+    | Ctrl+Alt+O Enter             | A rule below, and on under it         |                           |
+    | Ctrl+Alt+O =                 | Edit the cell's formula               |                           |
+    | Ctrl+Alt+O Shift+R           | Recalculate every table               |                           |
+    | Ctrl+Alt+O G                 | Plot the table                        |                           |
+
+    *Set Up Vim Table Keys* adds =<leader>t…= mappings for the table commands
+    (see [[file:tables.org][Tables]]).

@@ -1,8 +1,5 @@
 import * as datefns from 'date-fns';
-import * as vscode from 'vscode';
-import * as Utils from './utils';
 import {Sets} from './sets';
-import internal = require('assert');
 
 const weekdayArray = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -26,7 +23,7 @@ export function parseDateTime(dateString: string): ISimpleDateTime {
     const year = dateResult ? parseInt(dateResult.groups.year, 10) : undefined;
     const month = dateResult ? parseInt(dateResult.groups.month, 10) : undefined;
     const day = dateResult ? parseInt(dateResult.groups.day, 10) : undefined;
-    let active: boolean = dateResult ? dateResult.groups.active === '<' : false;
+    const active: boolean = dateResult ? dateResult.groups.active === '<' : false;
     const hours = dateResult  && dateResult.groups.hours ? parseInt(dateResult.groups.hours, 10) : undefined; 
     const minutes = dateResult && dateResult.groups.mins ? parseInt(dateResult.groups.mins, 10) : undefined; 
 
@@ -46,7 +43,7 @@ export function parseDate(dateString: string): ISimpleDate {
     const year = dateResult ? parseInt(dateResult[2], 10) : undefined;
     const month = dateResult ? parseInt(dateResult[3], 10) : undefined;
     const day = dateResult ? parseInt(dateResult[4], 10) : undefined;
-    let active: boolean = dateResult ? dateResult[1] === '<' : false;
+    const active: boolean = dateResult ? dateResult[1] === '<' : false;
 
 
     const weekdayRegExp = /[A-Za-z]{3}/;
@@ -81,7 +78,7 @@ export function buildDateTimeString(datetime: ISimpleDateTime): string {
     const { year, month, day, hours, minutes, weekday } = datetime;
 
     let dateString = `${padLeft(year,4)}-${padLeft(month,2)}-${padLeft(day,2)}`;
-    let timeString = `${hours}:${padLeft(minutes,2)}`;
+    const timeString = `${hours}:${padLeft(minutes,2)}`;
     if (weekday) {
         dateString = `${dateString} ${weekday}`;
     }
@@ -170,7 +167,7 @@ export function dateToRawString(dt: Date, includeTime: boolean, includeWeekday: 
     if (includeTime) {
         const hours   = dt.getHours();
         const minutes = dt.getMinutes();
-        let timeString = `${hours}:${padLeft(minutes,2)}`;
+        const timeString = `${hours}:${padLeft(minutes,2)}`;
         return `${dateString} ${timeString}`
     }
     return dateString
@@ -213,7 +210,7 @@ export function getClockTotal(line) {
     const hours = Math.floor(clock / (60 * 60 * 1000));
     const minutes = clock / (60 * 1000) - (60 * hours);
 
-    let clockString = `${hours}:${padLeft(minutes,2)}`;
+    const clockString = `${hours}:${padLeft(minutes,2)}`;
     return clockString;
 }
 
@@ -289,7 +286,7 @@ export class OrgDate {
             emins    = parseInt(m.groups.emins);
         }
         let dateType: DateType;
-        let r: OrgDate = new OrgDate();
+        const r: OrgDate = new OrgDate();
         r.dateType = DateType.CLOCK;
         r.haveTime = haveTime;
         let d: Date;
@@ -342,7 +339,7 @@ export class OrgDate {
                 case 'CLOSED':    dateType = DateType.CLOSED; break;
             }
         }
-        let r: OrgDate = new OrgDate();
+        const r: OrgDate = new OrgDate();
         r.dateType = dateType;
         r.haveTime = haveTime;
         let d: Date;
@@ -375,7 +372,7 @@ export class OrgDate {
     }
 
     public static parse(line: string): OrgDate | undefined {
-            let m = OrgDate.getRegex().exec(line);
+            const m = OrgDate.getRegex().exec(line);
             if (m) {
                 return OrgDate.parseFromRegex(m);
             }

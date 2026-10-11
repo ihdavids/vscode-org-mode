@@ -1,6 +1,6 @@
 import * as vscode from "vscode"
 import * as utils from "./utils"
-import {Range, TextDocument, Position, TextEditor, TextEditorEdit, Selection} from "vscode";
+import { Range, Position, TextEditor, TextEditorEdit } from "vscode";
 
 class OrgDrawer
 {
@@ -15,7 +15,7 @@ class OrgDrawer
     indent : string;
 };
 
-let sdcRe = /^\s*(SCHEDULED|DEADLINE|CLOSED)[:]/
+const sdcRe = /^\s*(SCHEDULED|DEADLINE|CLOSED)[:]/
 
 function findPropertyDrawer(doc: TextEditor, drawer: string = ":PROPERTIES:", pos: Position = null) : OrgDrawer
 {
@@ -23,13 +23,13 @@ function findPropertyDrawer(doc: TextEditor, drawer: string = ":PROPERTIES:", po
     {
         pos = doc.selection.active;   
     }
-    let start: Position = utils.findBeginningOfBlock(doc.document, pos);
-    let end: Position   = utils.findEndOfBlock(doc.document, start);
-    let drawerReStr = `^\\s*${drawer}\\s*$`;
-    let drawerRe = new RegExp(drawerReStr);
-    let drawerEndRe = /^\s*:END:\s*$/;
+    const start: Position = utils.findBeginningOfBlock(doc.document, pos);
+    const end: Position   = utils.findEndOfBlock(doc.document, start);
+    const drawerReStr = `^\\s*${drawer}\\s*$`;
+    const drawerRe = new RegExp(drawerReStr);
+    const drawerEndRe = /^\s*:END:\s*$/;
     let haveProp = -1;
-    let m = doc.document.lineAt(start).text.match(/^(\s*\*+ )/);
+    const m = doc.document.lineAt(start).text.match(/^(\s*\*+ )/);
     let indent = "";
     if(m)
     {
@@ -37,7 +37,7 @@ function findPropertyDrawer(doc: TextEditor, drawer: string = ":PROPERTIES:", po
     }
     for(let i = start.line; i <= end.line; ++i)
     {
-        let line = doc.document.lineAt(i).text;
+        const line = doc.document.lineAt(i).text;
         if(haveProp == -1 && drawerRe.test(line))
         {
             haveProp = i;
@@ -56,14 +56,14 @@ async function insertPropertyDrawerIfNotPresent(doc: TextEditor, drawer: string 
     {
         pos = doc.selection.active;   
     }
-    let prop: OrgDrawer = findPropertyDrawer(doc, drawer, pos);
+    const prop: OrgDrawer = findPropertyDrawer(doc, drawer, pos);
     if(prop)
     {
         return prop;
     }
-    let start: Position = utils.findBeginningOfBlock(doc.document, pos);
-    let end: Position   = utils.findEndOfBlock(doc.document, start);
-    let m = doc.document.lineAt(start).text.match(/^(\s*\*+ )/);
+    const start: Position = utils.findBeginningOfBlock(doc.document, pos);
+    const end: Position   = utils.findEndOfBlock(doc.document, start);
+    const m = doc.document.lineAt(start).text.match(/^(\s*\*+ )/);
     let indent = "";
     if(m)
     {
@@ -72,7 +72,7 @@ async function insertPropertyDrawerIfNotPresent(doc: TextEditor, drawer: string 
     let i = start.line + 1;
     for(; i < end.line; ++i)
     {
-        let line = doc.document.lineAt(i).text;
+        const line = doc.document.lineAt(i).text;
         if(!sdcRe.test(line))
         {
             break;
@@ -84,7 +84,7 @@ async function insertPropertyDrawerIfNotPresent(doc: TextEditor, drawer: string 
     }
 
     return doc.edit( (edit) => {
-        let p = new Position(i, 0);
+        const p = new Position(i, 0);
         edit.insert(p, indent + drawer + "\n" + indent + ":END:\n");
     }).then( () => {
         return new OrgDrawer(i, i+1, drawer, indent);
@@ -93,19 +93,19 @@ async function insertPropertyDrawerIfNotPresent(doc: TextEditor, drawer: string 
 
 async function findProperty(doc: TextEditor, drawer: string=":PROPERTIES:", key: string) : Promise<[number, string, string]>
 {
-    let prop: OrgDrawer = findPropertyDrawer(doc, drawer);
+    const prop: OrgDrawer = findPropertyDrawer(doc, drawer);
     if(prop)
     {
         for(let l = prop.region.start.line + 1; l < prop.region.end.line; ++l)
         {
-            let line = doc.document.lineAt(l).text;
-            let m = line.match(/^\s*[:]([^:]+)[:]\s*(.*)+/);
+            const line = doc.document.lineAt(l).text;
+            const m = line.match(/^\s*[:]([^:]+)[:]\s*(.*)+/);
             if(m)
             {
-                let name = m[1].trim();
+                const name = m[1].trim();
                 if(name != "END" && name == key)
                 {
-                    let value = m[2].trim();
+                    const value = m[2].trim();
                     return [l,name,value];                    
                 }
             }
@@ -116,11 +116,11 @@ async function findProperty(doc: TextEditor, drawer: string=":PROPERTIES:", key:
 
 async function addProperty(doc: TextEditor, key: string, value: string)
 {
-    let prop : OrgDrawer = await insertPropertyDrawerIfNotPresent(doc);
+    const prop : OrgDrawer = await insertPropertyDrawerIfNotPresent(doc);
     if(prop)
     {
         return doc.edit( (edit) => {
-            let pos : Position = new Position(prop.region.start.line + 1, 0);
+            const pos : Position = new Position(prop.region.start.line + 1, 0);
             edit.insert(pos , prop.indent + "  :" + key + ": " + value + "\n");
             return pos;
         });
@@ -130,12 +130,12 @@ async function addProperty(doc: TextEditor, key: string, value: string)
 
 async function updateProperty(doc: TextEditor, key: string, value: string)
 {
-    let prop = await findProperty(doc, ":PROPERTIES:", key);
+    const prop = await findProperty(doc, ":PROPERTIES:", key);
     if(prop)
     {
         return doc.edit( (edit) => {
-            let pos: Position = new Position(prop[0],0);
-            let indent: string = utils.getLineIndent(doc.document, pos);
+            const pos: Position = new Position(prop[0],0);
+            const indent: string = utils.getLineIndent(doc.document, pos);
             edit.replace(new Range(pos, new Position(prop[0],utils.lineLen(doc.document,pos))), `${indent}:${key}: ${value}`);
         });
     }
@@ -147,11 +147,11 @@ async function updateProperty(doc: TextEditor, key: string, value: string)
 
 async function removeProperty(doc: TextEditor, key: string, value: string)
 {
-    let prop = await findProperty(doc, ":PROPERTIES:", key);
+    const prop = await findProperty(doc, ":PROPERTIES:", key);
     if(prop)
     {
         return doc.edit( (edit) => {
-            let pos: Position = new Position(prop[0],0);
+            const pos: Position = new Position(prop[0],0);
             edit.replace(new Range(pos, new Position(prop[0] + 1,0)), "");
         });
     }

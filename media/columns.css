@@ -1,0 +1,40 @@
+body {
+    background: var(--vscode-editor-background);
+    color: var(--vscode-editor-foreground);
+    font-family: var(--vscode-font-family);
+    font-size: var(--vscode-font-size);
+    margin: 0;
+    padding: 12px 16px;
+}
+header { display: flex; align-items: baseline; gap: 12px; margin-bottom: 10px; }
+h1 { font-size: 1.1em; font-weight: 600; margin: 0; }
+#hint { color: var(--vscode-descriptionForeground); font-size: 11px; }
+table { border-collapse: collapse; width: 100%; }
+thead th {
+    position: sticky; top: 0; background: var(--vscode-editor-background);
+    text-align: left; font-weight: 600; color: var(--vscode-descriptionForeground);
+    padding: 4px 6px; border-bottom: 1px solid var(--vscode-editorIndentGuide-background, rgba(128,128,128,.3));
+}
+td { padding: 1px 2px; border-bottom: 1px solid var(--vscode-editorIndentGuide-background, rgba(128,128,128,.12)); white-space: nowrap; }
+th.item, td.item { width: 42%; min-width: 220px; }
+.item-wrap { display: flex; align-items: center; gap: 2px; }
+td select { min-width: 72px; }
+tr.level1 td.item input { font-weight: 600; }
+input, select {
+    width: 100%; box-sizing: border-box; background: transparent; color: inherit;
+    font: inherit; border: 1px solid transparent; border-radius: 2px; padding: 3px 4px;
+}
+input:hover, select:hover { border-color: var(--vscode-input-border, rgba(128,128,128,.4)); }
+input:focus, select:focus { outline: none; border-color: var(--vscode-focusBorder); background: var(--vscode-input-background); }
+select option { background: var(--vscode-dropdown-background); color: var(--vscode-dropdown-foreground); }
+select.state.todo { color: var(--vscode-charts-red, #e34948); font-weight: 600; }
+select.state.done { color: var(--vscode-charts-green, #1baf7a); font-weight: 600; }
+select.pri { color: var(--vscode-charts-orange, #eb6834); }
+td.sum input::placeholder { color: var(--vscode-descriptionForeground); font-style: italic; opacity: 1; }
+input::placeholder { color: var(--vscode-descriptionForeground); opacity: .7; }
+button.go {
+    background: none; border: none; color: var(--vscode-textLink-foreground); cursor: pointer;
+    font-size: 14px; padding: 0 4px; line-height: 1;
+}
+button.go:hover { color: var(--vscode-textLink-activeForeground); }
+.empty { color: var(--vscode-descriptionForeground); }

@@ -1,0 +1,35 @@
+#+TITLE: The agenda
+#+DOC_ORDER: 11
+
+    The *Org* icon in the activity bar opens the agenda: today, and the days
+    after it (=org.agendaDays=, a week by default), from the orgs server.
+
+    #+CAPTION: The agenda and the Clock view in the Org side bar: today with what is overdue, the week ahead, and where the time went.
+    [[./images/agenda.png]]
+
+
+    - Today carries what is overdue, as org's agenda does: a scheduled task
+      not done shows as "scheduled 2d ago", a deadline coming up as "due in
+      3d", one gone by in red.
+    - Each entry shows its time, keyword, priority, title, effort and tags.
+      Hover for the headings above it and its file.
+    - Each day says how much there is to do, and the effort it adds up to.
+    - Days after today with nothing on them are left out.
+
+* Acting on an entry
+    | Do                       | To                                         |
+    |--------------------------+--------------------------------------------|
+    | Click it                 | Go to it                                   |
+    | The ✓ button on it       | Mark it done                               |
+    | The ▶ button on it       | Clock in on it                             |
+    | Right-click (Shift+F10)  | Change state…, Set priority…, Set effort…, Reschedule…, Clock in |
+
+    Reschedule offers today, tomorrow, next Monday, a week from now, or a
+    date you type. The server makes each change in the file, so the agenda
+    and the file always agree; the agenda refreshes itself when you save an
+    org file, every few minutes, and with its refresh button.
+
+    The keyboard works throughout: arrows to move, Enter to go to an entry,
+    Shift+F10 for its menu.
+
+    The full agenda - weeks, filters, the timeline - is worg's: *Show Agenda*.

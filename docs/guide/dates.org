@@ -1,0 +1,33 @@
+#+TITLE: Dates and properties
+#+DOC_ORDER: 7
+
+* Timestamps
+    *Insert Timestamp* (Ctrl+Alt+O .) offers, in one list:
+
+    #+CAPTION: Insert Timestamp: today or now, active or inactive, or from the calendar.
+    [[./images/timestamp.png]]
+
+
+    | Choice                 | Inserts                                     |
+    |------------------------+---------------------------------------------|
+    | today                  | =<2026-10-11 Sun>= - shows in the agenda    |
+    | now                    | =<2026-10-11 Sun 14:05>=                    |
+    | today, inactive        | =[2026-10-11 Sun]= - a note of when, kept out of the agenda |
+    | now, inactive          | =[2026-10-11 Sun 14:05]=                    |
+    | Pick a date…           | From the calendar                           |
+    | Schedule… / Deadline…  | =SCHEDULED:= or =DEADLINE:= on the heading, from the calendar |
+
+    With the cursor on a date, Alt+Left and Alt+Right step it a day.
+
+* Properties
+    These go in the heading's =:PROPERTIES:= drawer, which is made (under any
+    =SCHEDULED:= line, as org has it) when there is none:
+
+    | Command                 | Adds                                                     |
+    |-------------------------+----------------------------------------------------------|
+    | Insert Created Property | =:CREATED: [2026-10-11 Sun 14:05]=, if it is not there already |
+    | Insert Custom ID        | =:CUSTOM_ID:= made from the title, unique in the file - for =[[#id]]= links and html anchors |
+    | Insert ID               | =:ID:= a uuid - =[[id:…]]= links find the heading wherever it moves |
+
+    Typing =:= in a drawer offers property names, and their values after them
+    (see [[file:completion.org][Completion]]).

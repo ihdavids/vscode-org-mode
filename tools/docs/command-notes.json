@@ -1,0 +1,718 @@
+{
+    "_about": "One line about each command, and the part of the manual it belongs to. tools/docs/reference.js joins these with package.json to write the command and key references.",
+    "categories": [
+        "Start here",
+        "Outline",
+        "TODOs and tags",
+        "Lists and checkboxes",
+        "Properties",
+        "Markup",
+        "Tables",
+        "Links",
+        "Footnotes",
+        "Dates and the clock",
+        "Running code",
+        "Refile and archive",
+        "Capture",
+        "Agenda",
+        "Export and preview",
+        "Panels",
+        "The server's tools",
+        "Worg views",
+        "Connection"
+    ],
+    "commands": {
+        "org.menu": [
+            "Start here",
+            "Every org command in one searchable list, the ones that fit where the cursor is first, each with its key."
+        ],
+        "org.tableMenu": [
+            "Start here",
+            "The same menu as Org: Menu (kept for older key bindings)."
+        ],
+        "org.openPractice": [
+            "Start here",
+            "Opens a practice org file to try Tab, tables and links on."
+        ],
+        "org.cycle": [
+            "Outline",
+            "On a heading: fold it, then show its children, then everything under it (org's Tab)."
+        ],
+        "org.globalCycle": [
+            "Outline",
+            "The whole file: top headings only, then every heading, then everything (org's Shift+Tab)."
+        ],
+        "org.moveSubtreeUp": [
+            "Outline",
+            "Moves the heading, and everything under it, above the heading before it."
+        ],
+        "org.moveSubtreeDown": [
+            "Outline",
+            "Moves the heading, and everything under it, below the heading after it."
+        ],
+        "org.promoteSubtree": [
+            "Outline",
+            "Takes a star off the heading and every heading under it."
+        ],
+        "org.demoteSubtree": [
+            "Outline",
+            "Adds a star to the heading and every heading under it."
+        ],
+        "org.doPromote": [
+            "Outline",
+            "Takes a star off this heading only."
+        ],
+        "org.doDemote": [
+            "Outline",
+            "Adds a star to this heading only."
+        ],
+        "org.insertHeadingRespectContent": [
+            "Outline",
+            "A new heading at this level, after the current entry's content."
+        ],
+        "org.insertSubheading": [
+            "Outline",
+            "A new heading one level down, under the current one."
+        ],
+        "org.sort": [
+            "Outline",
+            "Sorts what the cursor is in: table rows, a list, or the headings under a heading."
+        ],
+        "org.selectNode": [
+            "Outline",
+            "Selects the block or entry the cursor is in."
+        ],
+        "org.narrowToSubtree": [
+            "Outline",
+            "Opens the subtree in a tab of its own; saving it writes it back (org's C-x n s)."
+        ],
+        "org.updateStatistics": [
+            "Outline",
+            "Works out every [2/5] and [40%] statistics cookie in the file again."
+        ],
+        "org.tabHandler": [
+            "Outline",
+            "Folds or unfolds the heading or drawer on the cursor's line."
+        ],
+        "org.addDoWhatIMean": [
+            "Outline",
+            "Does the obvious thing: a new heading, checkbox or list item like the one the cursor is on, or follows a link."
+        ],
+        "org.butterfly": [
+            "Outline",
+            "M-x butterfly. An xkcd joke; harmless."
+        ],
+        "org.incrementContext": [
+            "TODOs and tags",
+            "Steps the date under the cursor forward a day, or the heading's keyword to the next one."
+        ],
+        "org.decrementContext": [
+            "TODOs and tags",
+            "Steps the date under the cursor back a day, or the heading's keyword to the one before."
+        ],
+        "org.chooseTodo": [
+            "TODOs and tags",
+            "Picks the heading's TODO keyword from a list."
+        ],
+        "org.insertTag": [
+            "TODOs and tags",
+            "Adds a tag to the heading."
+        ],
+        "org.insertProjectTag": [
+            "TODOs and tags",
+            "Adds the project tag to the heading."
+        ],
+        "org.insertWorkTag": [
+            "TODOs and tags",
+            "Adds the work tag to the heading."
+        ],
+        "org.chooseTodoView": [
+            "TODOs and tags",
+            "Opens one of your org.todoConfigs TODO lists, from the orgs server."
+        ],
+        "org.setMarker": [
+            "TODOs and tags",
+            "Puts one of your marker tags (org.markers) on this heading, taking it off any other."
+        ],
+        "org.jumpToMarker": [
+            "TODOs and tags",
+            "Goes to the heading carrying a marker tag."
+        ],
+        "org.toggleCheckbox": [
+            "Lists and checkboxes",
+            "Ticks or unticks the checkbox on the line."
+        ],
+        "org.insertCheckbox": [
+            "Lists and checkboxes",
+            "A new checkbox item under this one."
+        ],
+        "org.insertCheckboxSummary": [
+            "Lists and checkboxes",
+            "Adds a [n/m] summary to the list's parent."
+        ],
+        "org.recalcCheckboxSummary": [
+            "Lists and checkboxes",
+            "Works out the checkbox summary above the cursor again."
+        ],
+        "org.recalcAllCheckboxSummaries": [
+            "Lists and checkboxes",
+            "Works out every checkbox summary in the file again."
+        ],
+        "org.updateNumberedList": [
+            "Lists and checkboxes",
+            "Numbers the numbered list under the cursor again, from 1."
+        ],
+        "org.appendNumberedList": [
+            "Lists and checkboxes",
+            "Adds the next item to a numbered list."
+        ],
+        "org.insertPropertyDrawer": [
+            "Properties",
+            "Adds a :PROPERTIES: drawer to the heading, if it has none."
+        ],
+        "org.insertLogbookDrawer": [
+            "Properties",
+            "Adds a :LOGBOOK: drawer to the heading, if it has none."
+        ],
+        "org.insertProperty": [
+            "Properties",
+            "Sets a property in the heading's drawer."
+        ],
+        "org.updateEffortProperty": [
+            "Properties",
+            "Sets the heading's EFFORT."
+        ],
+        "org.insertCreated": [
+            "Properties",
+            "Adds :CREATED: with the time now to the heading's drawer."
+        ],
+        "org.insertCustomId": [
+            "Properties",
+            "Adds a :CUSTOM_ID: made from the title, for [[#id]] links."
+        ],
+        "org.insertId": [
+            "Properties",
+            "Adds an :ID: (a uuid); [[id:...]] links find the heading wherever it moves."
+        ],
+        "org.columnView": [
+            "Panels",
+            "The file's headings and their properties as an editable table, with totals."
+        ],
+        "org.bold": [
+            "Markup",
+            "Surrounds the selection with *bold* markers."
+        ],
+        "org.italic": [
+            "Markup",
+            "Surrounds the selection with /italic/ markers."
+        ],
+        "org.underline": [
+            "Markup",
+            "Surrounds the selection with _underline_ markers."
+        ],
+        "org.code": [
+            "Markup",
+            "Surrounds the selection with ~code~ markers."
+        ],
+        "org.verbose": [
+            "Markup",
+            "Surrounds the selection with =verbatim= markers."
+        ],
+        "org.literal": [
+            "Markup",
+            "Turns the line into fixed-width text (\": \" in front of it)."
+        ],
+        "org.reformat": [
+            "Markup",
+            "Has the orgs server rewrite the file the way org writes it."
+        ],
+        "org.gotoNextCell": [
+            "Tables",
+            "Aligns the table and goes to the next cell, making a row past the last one."
+        ],
+        "org.gotoPreviousCell": [
+            "Tables",
+            "Aligns the table and goes to the previous cell."
+        ],
+        "org.nextRow": [
+            "Tables",
+            "Goes down a row in the same column, making a row at the end or over a rule."
+        ],
+        "org.formatUnderCursor": [
+            "Tables",
+            "Aligns the table under the cursor."
+        ],
+        "org.moveRowUp": [
+            "Tables",
+            "Swaps the row with the one above."
+        ],
+        "org.moveRowDown": [
+            "Tables",
+            "Swaps the row with the one below."
+        ],
+        "org.moveColLeft": [
+            "Tables",
+            "Swaps the column with the one to its left."
+        ],
+        "org.moveColRight": [
+            "Tables",
+            "Swaps the column with the one to its right."
+        ],
+        "org.addRowDown": [
+            "Tables",
+            "A new row below."
+        ],
+        "org.addRowUp": [
+            "Tables",
+            "A new row above."
+        ],
+        "org.deleteRow": [
+            "Tables",
+            "Deletes the row."
+        ],
+        "org.addColLeft": [
+            "Tables",
+            "A new column to the left."
+        ],
+        "org.addColRight": [
+            "Tables",
+            "A new column to the right."
+        ],
+        "org.deleteCol": [
+            "Tables",
+            "Deletes the column."
+        ],
+        "org.insertSeparator": [
+            "Tables",
+            "A rule (|---+---|) under the row."
+        ],
+        "org.insertSeparatorAndMove": [
+            "Tables",
+            "A rule under the row, and on to the row below it."
+        ],
+        "org.clearCell": [
+            "Tables",
+            "Empties the cell."
+        ],
+        "org.copyFieldDown": [
+            "Tables",
+            "Copies the cell into the row below (an empty one takes the cell above); numbers count up."
+        ],
+        "org.splitCell": [
+            "Tables",
+            "Moves the text after the cursor into a new row below."
+        ],
+        "org.joinRows": [
+            "Tables",
+            "Joins the row below onto this one, cell by cell."
+        ],
+        "org.createTable": [
+            "Tables",
+            "A new table of the size you ask for."
+        ],
+        "org.execTable": [
+            "Tables",
+            "Recalculates the table's #+TBLFM: formulas (through the orgs server)."
+        ],
+        "org.execAllTables": [
+            "Tables",
+            "Recalculates every table with formulas in the file."
+        ],
+        "org.editTableFormula": [
+            "Tables",
+            "Writes, changes or removes the formula for the cell under the cursor."
+        ],
+        "org.sortTable": [
+            "Tables",
+            "Sorts the rows between rules by the cursor's column."
+        ],
+        "org.transposeTable": [
+            "Tables",
+            "Turns rows into columns."
+        ],
+        "org.sumTableColumn": [
+            "Tables",
+            "Adds up the column and copies the total."
+        ],
+        "org.convertToTable": [
+            "Tables",
+            "Turns the selection, or the paragraph, into a table."
+        ],
+        "org.pasteAsTable": [
+            "Tables",
+            "Pastes the clipboard's csv or tab separated text as a table."
+        ],
+        "org.importTable": [
+            "Tables",
+            "Reads a csv or tsv file into a table."
+        ],
+        "org.insertTableName": [
+            "Tables",
+            "Inserts the #+NAME: of a table, for remote()."
+        ],
+        "org.gotoTable": [
+            "Tables",
+            "Goes to any table the orgs server knows."
+        ],
+        "org.plotTable": [
+            "Tables",
+            "Charts the table beside the editor, following #+PLOT:."
+        ],
+        "org.setupVimTableKeys": [
+            "Tables",
+            "Adds <leader>t... mappings for the table commands to VSCodeVim."
+        ],
+        "org.tableModeOn": [
+            "Tables",
+            "Turns the table keys (Tab, Enter, Alt+arrows) back on."
+        ],
+        "org.tableModeOff": [
+            "Tables",
+            "Turns the table keys off, so they do what they do outside tables."
+        ],
+        "org.randomTableRow": [
+            "Tables",
+            "Inserts a random row of a named table."
+        ],
+        "org.openLink": [
+            "Links",
+            "Follows the link under the cursor (urls in the browser)."
+        ],
+        "org.storeLink": [
+            "Links",
+            "Remembers the heading you are under, to link to with Insert Link."
+        ],
+        "org.insertLink": [
+            "Links",
+            "Inserts a link to any heading in the workspace, a file or a web address."
+        ],
+        "org.showBacklinks": [
+            "Links",
+            "Every link to the heading the cursor is under."
+        ],
+        "org.insertFootnote": [
+            "Footnotes",
+            "Inserts the next numbered footnote and takes you to write it; on a footnote, goes between it and its note."
+        ],
+        "org.timestamp": [
+            "Dates and the clock",
+            "Inserts today's date."
+        ],
+        "org.insertTimestamp": [
+            "Dates and the clock",
+            "A menu of timestamps: today or now, active or inactive, or from the calendar."
+        ],
+        "org.scheduleNode": [
+            "Dates and the clock",
+            "SCHEDULED: on the heading, picked from the calendar."
+        ],
+        "org.deadlineNode": [
+            "Dates and the clock",
+            "DEADLINE: on the heading, picked from the calendar."
+        ],
+        "org.timestampNode": [
+            "Dates and the clock",
+            "A timestamp picked from the calendar."
+        ],
+        "org.clockin": [
+            "Dates and the clock",
+            "Starts the clock on the heading the cursor is under."
+        ],
+        "org.clockout": [
+            "Dates and the clock",
+            "Stops the clock."
+        ],
+        "org.clockactive": [
+            "Dates and the clock",
+            "Says whether the clock is running, and on what."
+        ],
+        "org.jumpToClock": [
+            "Dates and the clock",
+            "Goes to the heading the clock is running on."
+        ],
+        "org.updateclock": [
+            "Dates and the clock",
+            "Works out the total of the CLOCK: line under the cursor again."
+        ],
+        "org.updateAllClocks": [
+            "Dates and the clock",
+            "Works out every CLOCK: line's total in the file again."
+        ],
+        "org.startTimer": [
+            "Dates and the clock",
+            "A pomodoro or a timer of your own in the status bar; clocks in on the heading."
+        ],
+        "org.stopTimer": [
+            "Dates and the clock",
+            "Stops the timer (and the clock it started)."
+        ],
+        "org.timerMenu": [
+            "Dates and the clock",
+            "Pause, add time to or stop the running timer."
+        ],
+        "org.clock.refresh": [
+            "Dates and the clock",
+            "Refreshes the Clock view."
+        ],
+        "org.clock.open": [
+            "Dates and the clock",
+            "Goes to a heading from the Clock view."
+        ],
+        "org.prevDayPage": [
+            "Dates and the clock",
+            "Opens the day page before this one."
+        ],
+        "org.nextDayPage": [
+            "Dates and the clock",
+            "Opens the day page after this one."
+        ],
+        "org.showDayPageToday": [
+            "Dates and the clock",
+            "Opens today's day page, making it if need be."
+        ],
+        "org.run": [
+            "Running code",
+            "Runs what is at the cursor: a table's formulas, a source block, a #+CALL:, inline code or a dynamic block."
+        ],
+        "org.execBlock": [
+            "Running code",
+            "Runs the block at the cursor (the same as Run At Cursor)."
+        ],
+        "org.runAllBlocks": [
+            "Running code",
+            "Runs every source block, call and inline code in the file."
+        ],
+        "org.updateAllDynamicBlocks": [
+            "Running code",
+            "Refreshes every #+BEGIN: dynamic block in the file."
+        ],
+        "org.tangle": [
+            "Running code",
+            "Writes out the blocks with a :tangle header."
+        ],
+        "org.refile": [
+            "Refile and archive",
+            "Moves the subtree (or the selected ones) under any heading."
+        ],
+        "org.copySubtree": [
+            "Refile and archive",
+            "Copies the subtree under any heading, leaving it where it is too."
+        ],
+        "org.archive": [
+            "Refile and archive",
+            "Sends the subtree to its archive."
+        ],
+        "org.archiveAllDone": [
+            "Refile and archive",
+            "Archives every finished subtree in the file, after asking."
+        ],
+        "org.createJira": [
+            "Refile and archive",
+            "Makes a Jira ticket from the heading (if the server has Jira set up)."
+        ],
+        "org.capture": [
+            "Capture",
+            "Opens a capture page for one of your templates."
+        ],
+        "org.quickCapture": [
+            "Capture",
+            "Captures one line from anywhere, through a server template."
+        ],
+        "org.showAgenda": [
+            "Agenda",
+            "Opens worg's agenda (or the classic one, with org.agendaView)."
+        ],
+        "org.agenda.refresh": [
+            "Agenda",
+            "Refreshes the side bar agenda."
+        ],
+        "org.agenda.open": [
+            "Agenda",
+            "Goes to an agenda entry."
+        ],
+        "org.agenda.done": [
+            "Agenda",
+            "Marks an agenda entry done."
+        ],
+        "org.agenda.state": [
+            "Agenda",
+            "Changes an agenda entry's keyword."
+        ],
+        "org.agenda.priority": [
+            "Agenda",
+            "Sets an agenda entry's priority."
+        ],
+        "org.agenda.effort": [
+            "Agenda",
+            "Sets an agenda entry's effort."
+        ],
+        "org.agenda.reschedule": [
+            "Agenda",
+            "Schedules an agenda entry for another day."
+        ],
+        "org.agenda.clockIn": [
+            "Agenda",
+            "Clocks in on an agenda entry."
+        ],
+        "org.export": [
+            "Export and preview",
+            "Exports the file as html, pdf, LaTeX, slides or markdown, next to it."
+        ],
+        "org.exportSubtree": [
+            "Export and preview",
+            "Exports just the subtree the cursor is in."
+        ],
+        "org.latexExport": [
+            "Export and preview",
+            "Opens the file's LaTeX beside it."
+        ],
+        "org.showWeb": [
+            "Export and preview",
+            "Previews the file as a web page, following the file you are in."
+        ],
+        "org.showReveal": [
+            "Export and preview",
+            "Previews the file as Reveal.js slides."
+        ],
+        "org.showImpress": [
+            "Export and preview",
+            "Previews the file as Impress.js slides."
+        ],
+        "org.showGantt": [
+            "Export and preview",
+            "A Gantt chart of the headings a query finds."
+        ],
+        "org.showMindMap": [
+            "Export and preview",
+            "A mind map of the headings a query finds."
+        ],
+        "org.showMediaPanel": [
+            "Panels",
+            "The pictures and LaTeX in the subtree you are in, drawn beside the editor."
+        ],
+        "org.habits": [
+            "The server's tools",
+            "Your habits, due ones first; pick one to mark it done today, or take it back."
+        ],
+        "org.encryptHeading": [
+            "The server's tools",
+            "Encrypts the heading's body with gpg."
+        ],
+        "org.decryptHeading": [
+            "The server's tools",
+            "Shows, or decrypts in the file, an encrypted heading."
+        ],
+        "org.attachFile": [
+            "The server's tools",
+            "Attaches files to the heading."
+        ],
+        "org.openAttachment": [
+            "The server's tools",
+            "Opens one of the heading's attachments."
+        ],
+        "org.fileHistory": [
+            "The server's tools",
+            "Compares the file with an earlier commit."
+        ],
+        "org.newFile": [
+            "The server's tools",
+            "Starts a new org file, from a template if you like."
+        ],
+        "org.searchFiles": [
+            "The server's tools",
+            "Searches the text of every org file as you type."
+        ],
+        "org.searchThisFile": [
+            "The server's tools",
+            "Searches the text of this file as you type."
+        ],
+        "org.showWorgSearch": [
+            "Worg views",
+            "Worg's search view."
+        ],
+        "org.showWorgStoredQueries": [
+            "Worg views",
+            "Worg's saved queries."
+        ],
+        "org.showWorgKanban": [
+            "Worg views",
+            "Worg's kanban board."
+        ],
+        "org.showWorgGanttChart": [
+            "Worg views",
+            "Worg's Gantt chart."
+        ],
+        "org.showWorgColumns": [
+            "Worg views",
+            "Worg's column view."
+        ],
+        "org.showWorgClockReport": [
+            "Worg views",
+            "Worg's clock report."
+        ],
+        "org.showWorgTables": [
+            "Worg views",
+            "Worg's tables view."
+        ],
+        "org.showWorgFiles": [
+            "Worg views",
+            "Worg's files view and editor."
+        ],
+        "org.showWorgLinks": [
+            "Worg views",
+            "Worg's link graph."
+        ],
+        "org.showWorgMindMap": [
+            "Worg views",
+            "Worg's mind map."
+        ],
+        "org.showWorgCollections": [
+            "Worg views",
+            "Worg's record collections."
+        ],
+        "org.showWorgContacts": [
+            "Worg views",
+            "Worg's contacts."
+        ],
+        "org.showWorgCode": [
+            "Worg views",
+            "Worg's code view."
+        ],
+        "org.showWorgDrill": [
+            "Worg views",
+            "Worg's flashcards."
+        ],
+        "org.showWorgDiff": [
+            "Worg views",
+            "Worg's diff and history view."
+        ],
+        "org.showWorgPresentation": [
+            "Worg views",
+            "Worg's presentation view."
+        ],
+        "org.showWorgVoiceNotes": [
+            "Worg views",
+            "Worg's voice notes."
+        ],
+        "org.showWorgStarmap": [
+            "Worg views",
+            "Worg's starmap."
+        ],
+        "org.connectToOrgs": [
+            "Connection",
+            "Checks that the orgs server answers."
+        ],
+        "org.login": [
+            "Connection",
+            "Logs in to the orgs server."
+        ],
+        "org.logout": [
+            "Connection",
+            "Logs out of the orgs server."
+        ],
+        "org.connectionMenu": [
+            "Connection",
+            "Log in or out, check the server, open worg or change its address."
+        ]
+    }
+}

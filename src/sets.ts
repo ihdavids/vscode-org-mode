@@ -15,6 +15,13 @@ export class Sets {
 
     public constructor() {
         this.settings = vscode.workspace.getConfiguration("org");
+        // A WorkspaceConfiguration is a snapshot: without this a changed
+        // setting went unseen until the window was reloaded.
+        vscode.workspace.onDidChangeConfiguration(e => {
+            if (e.affectsConfiguration('org')) {
+                this.reload();
+            }
+        });
     }
   	public reload() {
 		this.settings = vscode.workspace.getConfiguration('org');
@@ -33,12 +40,10 @@ export class Sets {
         return Sets.get().settings.get<T>(name, defaultVal); 
     }
 
-    public static setProp<T>(name: string, val: T) {
-        // This is a bit goofy, when we set a property we have to reload the window.
-        // I am not sure if doing this on every set will be a good idea.
-        return Sets.get().settings.update(name, val, true).then(() => {
-		    vscode.commands.executeCommand('workbench.action.reloadWindow');
-        });
+    // Settings are read afresh when they change (see the constructor), so a
+    // write takes effect at once; this used to reload the whole window.
+    public static setProp<T>(name: string, val: T): Thenable<void> {
+        return Sets.get().settings.update(name, val, true);
     }
     public static get keywords(): string[] {
         const todoKeywords = Sets.getProp<string[]>("todoKeywords");
@@ -96,6 +101,9 @@ export class Sets {
     public static get markers(): string[]              { return Sets.getProp<string[]>("markers",["TODAY"]);    }
     public static get popupLog(): boolean             { return Sets.getProp<boolean>("popupLog", false);         }
     public static get showTableStatus(): boolean             { return Sets.getProp<boolean>("showTableStatus", true);         }
+    // When a Tab or Enter recalculates a table: "marked" rows (a # in the first column, as org has it), "always", or "off".
+    public static get tableAutoRecalc(): string       { return Sets.getProp<string>("tableAutoRecalc", "marked");     }
+    public static get tableRecalcOnSave(): boolean    { return Sets.getProp<boolean>("tableRecalcOnSave", false);     }
     public static get selectedCellIndicator(): {[key:string]: string} { return Sets.getProp<{[key:string]: string}>("selectedCellIndicator", {
 			            "light": {
       			            "textDecoration": "bold;",

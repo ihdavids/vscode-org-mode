@@ -27,7 +27,7 @@ function move(editor: vscode.TextEditor, line: number, col: number) {
 
 async function insert(editor: vscode.TextEditor, text: string) {
     await editor.edit((edit) => {
-        let pos = editor.selection.active;
+        const pos = editor.selection.active;
         edit.insert(pos, text);
     });
 }

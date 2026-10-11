@@ -7,10 +7,8 @@ import {
     TextDocument,
     workspace
 } from "vscode";
-import * as Datetime from './simple-datetime';
 import { Sets } from './sets';
 import * as Util from './utils';
-import { Script } from "vm";
 
 // Any potential data labels should go here
 export const DATE  = "DATE";
@@ -149,7 +147,7 @@ export function getSubNodeCursorContext(textEditor: TextEditor, edit: TextEditor
 }
 
 export function getCursorContext(textEditor: TextEditor, edit: TextEditorEdit, { includeTodo = true, includeLists = false} ): IContextData {
-    let ctx = getSubNodeCursorContext(textEditor, edit, {includeTodo: includeTodo, includeLists: includeLists});
+    const ctx = getSubNodeCursorContext(textEditor, edit, {includeTodo: includeTodo, includeLists: includeLists});
     if (!ctx) {
         const document = Util.getActiveTextEditorEdit();
         const cursorPos = Util.getCursorPosition();
@@ -254,7 +252,7 @@ export function getNodeContext(cursorPos: Position, document: TextDocument): INo
     const todoHeaderRegexp = new RegExp(`^(\\s*\\*+\\s+)(${todoKeywords})(?:\\b|\\[|$)`);
     let startLine: number = -1;
     let endLine: number = document.lineCount-1;
-    let lineNum: number = cursorPos.line;
+    const lineNum: number = cursorPos.line;
     let numStars: number = 0;
     let match;
     let startText: string = "";
@@ -265,7 +263,7 @@ export function getNodeContext(cursorPos: Position, document: TextDocument): INo
             timestamp = parseTimestampContext(tpos, tempLine);
         }
         if (!scheduled || !deadline){
-            let ctx = parseScheduledContext(tpos, tempLine);
+            const ctx = parseScheduledContext(tpos, tempLine);
             if (ctx && ctx.dataLabel === SCHEDULED) {
                 scheduled = ctx;
             } else if (ctx && ctx.dataLabel === DEADLINE) {
@@ -297,7 +295,7 @@ export function getNodeContext(cursorPos: Position, document: TextDocument): INo
                 timestamp = parseTimestampContext(tpos, tempLine);
             } 
             if (!scheduled || !deadline){
-                let ctx = parseScheduledContext(tpos, tempLine);
+                const ctx = parseScheduledContext(tpos, tempLine);
                 if (ctx && ctx.dataLabel === SCHEDULED) {
                     scheduled = ctx;
                 } else if (ctx && ctx.dataLabel === DEADLINE) {

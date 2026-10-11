@@ -4,15 +4,10 @@
 // This uses the latex module to convert
 // the current org file to a latex file.
 
-import { parse } from 'path';
 import * as vscode from 'vscode';
 import { Page } from "./page";
-import { Signal } from "./signal";
-import { OrgDuration } from './duration';
 import './duration';
-import { Sets } from './sets';
 import { ODb } from './db';
-import { OrgExtension  } from "./extension";
 
 /*
 async function selectTodoView(): Promise<string | undefined> {
@@ -31,7 +26,7 @@ async function latexFile(name: string, content: string): Promise<boolean> {
         //    return false;
         //}
 
-        var page = new Page();
+        const page = new Page();
         await page.create({ language: 'latex', content: content });
         await page.show();
 		//await redraw();
@@ -50,11 +45,12 @@ async function latexFile(name: string, content: string): Promise<boolean> {
 
 
 export async function convertToLatex(doc: vscode.TextEditor, edit: vscode.TextEditorEdit) {
-    await ODb.get();
-    let qry = vscode.window.activeTextEditor.document.fileName;
-    let res = await ODb.latex(qry);
-    if (res) {
+    const qry = vscode.window.activeTextEditor.document.fileName;
+    const res = await ODb.latex(qry);
+    if (res && res.Ok) {
         latexFile("Latex", res.Msg);
+    } else if (res) {
+        vscode.window.showErrorMessage('LaTeX export failed: ' + (res.Msg || 'the orgs server did not say why'));
     }
     //let todoName = await selectTodoView();
     //if (todoName !== undefined) {

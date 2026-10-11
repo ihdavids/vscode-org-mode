@@ -1,5 +1,4 @@
 
-import { parse } from 'path';
 import * as vscode from 'vscode';
 import { Page } from "./page";
 import { Signal } from "./signal";
@@ -47,7 +46,7 @@ export class CalendarEffector {
 }
 
 function SimpleTime(dt: Date): string {
-	let DS: string = ' ' + ('0' + dt.getHours()).slice(-2)
+	const DS: string = ' ' + ('0' + dt.getHours()).slice(-2)
 				   + ':' + ('0' + dt.getMinutes()).slice(-2)
 	return DS
 }
@@ -87,9 +86,9 @@ export class CalendarState {
 		} else {
         	this.effector.editor = vscode.window.activeTextEditor;
 		}
-		let line = this.effector.node.line + 1;
-		let column = 0;
-		let length = 0;
+		const line = this.effector.node.line + 1;
+		const column = 0;
+		const length = 0;
         let didDelete = false;
         let delLine = -1;
         if (this.effector.node.scheduled && this.effector.mode === CalendarMode.schedule) {
@@ -114,13 +113,13 @@ export class CalendarState {
             didDelete = true;
         }
         let idt = 0;
-        let numStars = this.effector.node.info;
+        const numStars = this.effector.node.info;
         idt = numStars + 1;
         let prefix = "";
         // Insert newline if required.
         if (!didDelete) {
 			await this.effector.editor.edit((editBuilder) => {
-                let indent = " ".repeat(idt);
+                const indent = " ".repeat(idt);
 				editBuilder.insert(new vscode.Position(line, 0), indent + '\n');
 			});
         } else {
@@ -132,9 +131,9 @@ export class CalendarState {
         const tlines = this.effector.node.range.end.line - this.effector.node.range.start.line
         const newline = tlines > 2 && (didDelete && delLine != line) ? '\n' : '';
 
-        var tzoffset = (new Date()).getTimezoneOffset() * 60000; //offset in milliseconds
-        var tdate = (new Date(this.date.getTime() - tzoffset));
-		var dtinfo = "";
+        const tzoffset = (new Date()).getTimezoneOffset() * 60000; //offset in milliseconds
+        const tdate = (new Date(this.date.getTime() - tzoffset));
+		let dtinfo = "";
 		if (includeTime) {
 			dtinfo = SimpleTime(this.date);
 		}
@@ -385,7 +384,7 @@ export class Calendar implements vscode.TextDocumentContentProvider {
 	   if (this.hasTimestamp()) {
 		// IANCLOCK	
 		const canvas = draw_clock(this.date, 20,20);
-		let texts = this.text.split("\n");
+		const texts = this.text.split("\n");
 		let max_len = 0;
 		for (let i = 0; i < texts.length; ++i) {
 			const len = texts[i].length;
@@ -440,8 +439,8 @@ export class Calendar implements vscode.TextDocumentContentProvider {
 		const year = date.getFullYear();
 		let i;
 		for (i = 0; i < this.calendars.length; i++) {
-			let mname = date.toLocaleString('en-US', { month: 'long' });
-			let idx   = mname + ' ' + year.toString();
+			const mname = date.toLocaleString('en-US', { month: 'long' });
+			const idx   = mname + ' ' + year.toString();
 			if (this.calendars[i][0].includes(idx)) {
 				return i;
 			}
@@ -467,9 +466,9 @@ export class Calendar implements vscode.TextDocumentContentProvider {
 		} else {
 			date = this.date;
 		}
-		let monthIndex = this.findMonth(date);
-		let weekIndex = this.findWeek(date, monthIndex);
-		let dayIndex = date.getDay();
+		const monthIndex = this.findMonth(date);
+		const weekIndex = this.findWeek(date, monthIndex);
+		const dayIndex = date.getDay();
         if (monthIndex < 0 || weekIndex < 0 || dayIndex < 0) {
 		    return null;
         } else {
@@ -546,16 +545,16 @@ export class Calendar implements vscode.TextDocumentContentProvider {
         // Open up the page with the calendar on it!
 		await this.openCalendarPage();
         //vscode.window.showInputBox();
-        let box = vscode.window.createInputBox();
+        const box = vscode.window.createInputBox();
         box.onDidChangeValue((strLine: string) => {
-            let dt = OrgDuration.parse(strLine);
+            const dt = OrgDuration.parse(strLine);
             if(dt && dt.mins > 0) {
-                let cdate: Date = new Date();
+                const cdate: Date = new Date();
                 this.setDate(cdate.addDuration(dt), false);
             } else {
-                let sd = Datetime.parseDateTime(strLine);
+                const sd = Datetime.parseDateTime(strLine);
                 if (sd && sd.year !== undefined) {
-                    let d = Datetime.simpleDateTimeToDate(sd);
+                    const d = Datetime.simpleDateTimeToDate(sd);
                     if (d) {
                         this.setDate(d, false);
                     }

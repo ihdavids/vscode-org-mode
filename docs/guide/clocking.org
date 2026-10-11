@@ -1,0 +1,57 @@
+#+TITLE: Clocking
+#+DOC_ORDER: 12
+
+    The orgs server keeps the clock: one runs at a time, wherever you started
+    it - here, in worg, or on the command line - and the time goes in the
+    heading's =:LOGBOOK:= drawer.
+
+    | Key / command                 | Does                                                  |
+    |-------------------------------+-------------------------------------------------------|
+    | Ctrl+Alt+O Ctrl+I             | Clock in on the heading the cursor is under (clocking out of any other) |
+    | Ctrl+Alt+O Ctrl+O             | Clock out                                             |
+    | Ctrl+Alt+O J                  | Go to the heading the clock is running on             |
+    | Update All Clock Totals       | Work out every =CLOCK:= line's total in the file again |
+    | Ctrl+Alt+O Ctrl+U             | The same for the line under the cursor                |
+
+    While the clock runs, the status bar shows how long and on what -
+    =⏱ 0:42 Write the report= - and a click takes you there. It notices a clock
+    started or stopped elsewhere within a couple of minutes.
+
+    A clocked heading reads:
+
+    #+BEGIN_SRC org
+    ** Write the report
+       :LOGBOOK:
+       CLOCK: [2026-10-11 Sun 15:38]--[2026-10-11 Sun 16:20] =>  0:42
+       :END:
+    #+END_SRC
+
+    The drawer is set on the server (=clockIntoDrawer=, =LOGBOOK= by default).
+
+* Where the time went
+    The *Clock* view, under the agenda in the Org side bar, lists today's and
+    this week's clocked time by heading - most first, with each one's share.
+    Click a heading to go to it.
+
+* A focus timer
+    *Start Timer* (Ctrl+Alt+O Shift+T) runs a pomodoro (25 minutes), a long
+    one (50), or a time of your own, in the status bar. Started under a
+    heading, it clocks in there and out again when the time is up
+    (=org.pomodoroClocks= turns that off); then it offers a 5 or 15 minute
+    break, or another round on the same heading. Click it to pause, add five
+    minutes or stop.
+
+    #+CAPTION: A pomodoro running: the timer, and the clock it started, on the right of the status bar.
+    [[./images/timer.png]]
+
+
+* The clocktable
+    A clocktable is a dynamic block that sums the clocked time:
+
+    #+BEGIN_SRC org
+    #+BEGIN: clocktable :scope file :maxlevel 3
+    #+END:
+    #+END_SRC
+
+    Put the cursor in it and Run (Ctrl+Alt+O R), or click its *Update* link
+    (see [[file:running-code.org][Running code]]).

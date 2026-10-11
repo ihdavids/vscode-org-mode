@@ -1,0 +1,56 @@
+body {
+    background: var(--vscode-editor-background);
+    color: var(--vscode-editor-foreground);
+    font-family: var(--vscode-font-family);
+    font-size: var(--vscode-font-size);
+    margin: 0;
+    padding: 16px;
+}
+header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+h1 { font-size: 1.15em; font-weight: 600; margin: 0; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+button {
+    background: var(--vscode-button-secondaryBackground);
+    color: var(--vscode-button-secondaryForeground);
+    border: none;
+    border-radius: 2px;
+    padding: 4px 10px;
+    font: inherit;
+    cursor: pointer;
+}
+button:hover { background: var(--vscode-button-secondaryHoverBackground); }
+#legend { display: flex; flex-wrap: wrap; gap: 4px 16px; margin: 0 0 8px; color: var(--vscode-descriptionForeground); }
+.key { display: inline-flex; align-items: center; gap: 6px; }
+.key i, .sw { display: inline-block; width: 10px; height: 10px; border-radius: 2px; }
+.sw { margin-right: 4px; vertical-align: -1px; }
+#chart { width: 100%; }
+#chart svg { display: block; overflow: visible; }
+.grid { stroke: var(--vscode-editorIndentGuide-background, rgba(128, 128, 128, 0.18)); stroke-width: 1; }
+.zero { stroke: var(--vscode-descriptionForeground); stroke-opacity: 0.5; stroke-width: 1; }
+.axis { fill: var(--vscode-descriptionForeground); font-size: 11px; }
+.axis.label { font-size: 12px; }
+.direct { fill: var(--vscode-editor-foreground); font-size: 11px; }
+.line { fill: none; stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+.dot { stroke: var(--vscode-editor-background); stroke-width: 2; }
+.mark { transition: opacity 0.1s; }
+.mark.lit { opacity: 0.8; }
+.hit { fill: transparent; }
+.cross { stroke: var(--vscode-descriptionForeground); stroke-opacity: 0.5; stroke-dasharray: 3 3; }
+#tip {
+    position: fixed;
+    display: none;
+    pointer-events: none;
+    background: var(--vscode-editorHoverWidget-background);
+    color: var(--vscode-editorHoverWidget-foreground, var(--vscode-editor-foreground));
+    border: 1px solid var(--vscode-editorHoverWidget-border);
+    border-radius: 3px;
+    padding: 6px 8px;
+    font-size: 12px;
+    line-height: 1.5;
+    white-space: nowrap;
+}
+#table table { border-collapse: collapse; }
+#table th, #table td { padding: 3px 12px 3px 0; text-align: left; border-bottom: 1px solid var(--vscode-editorIndentGuide-background, rgba(128, 128, 128, 0.2)); }
+#table th { color: var(--vscode-descriptionForeground); font-weight: 600; }
+#table td.num { text-align: right; font-variant-numeric: tabular-nums; }
+#note, #error { color: var(--vscode-descriptionForeground); margin-top: 8px; }
+#error { color: var(--vscode-errorForeground); }
